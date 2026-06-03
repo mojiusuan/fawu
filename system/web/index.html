@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>智能法务系统</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- ========================= 侧边栏 ========================= -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="icon">⚖️</div>
+    <div>
+      <h1>智能法务系统</h1>
+      <span>LEGAL AI PLATFORM</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-item active" data-page="home">🏠 系统首页</div>
+    <div class="nav-item" data-page="contract">📄 合同管理</div>
+    <div class="nav-item" data-page="consultation">💬 智能咨询</div>
+    <div class="nav-item" data-page="kg">🔍 知识图谱</div>
+    <div class="nav-item" data-page="audit">📊 审计报告</div>
+    <div class="nav-item" data-page="rpa">🤖 自动化工具</div>
+    <div class="nav-item" data-page="settings">⚙️ 系统配置</div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <span id="status-indicator" class="status-dot offline"></span>
+    <span id="status-text">服务未连接</span>
+  </div>
+</aside>
+
+<!-- ========================= 主内容区 ========================= -->
+<main class="main-content">
+
+<!-- ====== 首页 ====== -->
+<section class="page-section active" id="page-home">
+  <div class="page-title">智能法务系统</div>
+  <div class="page-desc">基于大语言模型与智能体技术 · 企业级法务管理平台</div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="icon">📄</div><div class="value">合同智能管理</div><div class="label">上传即审 · 风险识别 · 条款比对 · AI 生成</div></div>
+    <div class="stat-card"><div class="icon">💬</div><div class="value">全天候法律咨询</div><div class="label">7×24 在线 · RAG 增强 · 可追溯 · 多轮对话</div></div>
+    <div class="stat-card"><div class="icon">🔍</div><div class="value">知识图谱引擎</div><div class="label">Neo4j · 实体抽取 · 判例追溯 · 关联可视化</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="home-ai">🤖 AI 引擎</button>
+    <button class="tab" data-tab="home-arch">🏗 技术架构</button>
+    <button class="tab" data-tab="home-safety">🛡 安全合规</button>
+  </div>
+
+  <div class="tab-content" data-tab="home-ai" style="display:block">
+    <div class="table-wrap"><table>
+      <thead><tr><th>能力</th><th>技术</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>Claude / GPT-4o 双引擎</td><td>LangChain 统一封装</td><td>法律文本深度理解，多模型热切换</td></tr>
+        <tr><td>合同审查 Agent</td><td>RAG + KG + LLM 协同</td><td>逐条风险标注（高/中/低）+ 法律依据 + 修改建议</td></tr>
+        <tr><td>法律咨询 Agent</td><td>BM25 + 语义混合检索</td><td>7×24 在线，回答可追溯至具体法条</td></tr>
+        <tr><td>知识抽取引擎</td><td>LLM + Neo4j</td><td>从法规/判例/合同自动抽取实体和关系</td></tr>
+        <tr><td>RPA 自动化</td><td>LLM + Playwright</td><td>文档数据提取，批量结构化输出</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="tab-content" data-tab="home-arch" style="display:none">
+    <div class="table-wrap"><table>
+      <thead><tr><th>层次</th><th>选型</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td>API 网关</td><td>FastAPI 0.111</td><td>高性能异步 REST API</td></tr>
+        <tr><td>Agent 框架</td><td>LangGraph</td><td>Supervisor 模式多 Agent 编排</td></tr>
+        <tr><td>知识图谱</td><td>Neo4j 5.20</td><td>Cypher 查询 + 内置可视化</td></tr>
+        <tr><td>向量存储</td><td>ChromaDB</td><td>语义级相似度检索</td></tr>
+        <tr><td>全文检索</td><td>Whoosh</td><td>BM25 精确关键词匹配</td></tr>
+        <tr><td>前端界面</td><td>HTML5 + CSS3 + JS</td><td>零依赖现代 Web 界面</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="tab-content" data-tab="home-safety" style="display:none">
+    <div class="table-wrap"><table>
+      <thead><tr><th>合规措施</th><th>实现方式</th></tr></thead>
+      <tbody>
+        <tr><td>全链路审计</td><td>每次 AI 调用记录完整决策链路</td></tr>
+        <tr><td>安全护栏</td><td>System Prompt 禁止编造法条、预测胜诉、规避法律</td></tr>
+        <tr><td>数据脱敏</td><td>原始文本 SHA256 哈希，不可逆还原</td></tr>
+        <tr><td>日志防篡改</td><td>Append-only JSONL 格式</td></tr>
+        <tr><td>引用追溯</td><td>法规名称 + 条款号 + 施行日期 + 原文</td></tr>
+        <tr><td>免责声明</td><td>全部输出附加"不构成正式法律意见"</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ====== 合同管理 ====== -->
+<section class="page-section" id="page-contract">
+  <div class="page-title">📄 合同管理</div>
+  <div class="page-desc">上传解析 · AI 审查 · 条款比对 · 合同生成</div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="contract-upload">📤 上传</button>
+    <button class="tab" data-tab="contract-review">🔍 审查</button>
+    <button class="tab" data-tab="contract-compare">⚖ 比对</button>
+    <button class="tab" data-tab="contract-generate">✏ 生成</button>
+  </div>
+
+  <div class="tab-content" data-tab="contract-upload" style="display:block">
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">合同名称</label>
+          <input class="form-input" id="contract-title" placeholder="如：货物买卖合同">
+        </div>
+        <div class="form-group">
+          <label class="form-label">合同类型</label>
+          <select class="form-select" id="contract-type">
+            <option>买卖合同</option><option>租赁合同</option><option>服务合同</option><option>劳动合同</option><option>借款合同</option><option>其他</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">甲方</label>
+          <input class="form-input" id="contract-party-a" placeholder="甲方公司全称">
+        </div>
+        <div class="form-group">
+          <label class="form-label">乙方</label>
+          <input class="form-input" id="contract-party-b" placeholder="乙方公司全称">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">合同正文</label>
+        <textarea class="form-textarea" id="contract-content" placeholder="请粘贴合同文本&#10;&#10;第一条 合同标的&#10;第二条 价款与支付&#10;…" style="min-height:200px"></textarea>
+      </div>
+      <button class="btn btn-primary btn-lg" onclick="uploadContract()">📤 上传合同</button>
+      <button class="btn btn-outline btn-sm" onclick="clearContracts()" style="margin-left:.5rem">🗑 清除全部合同</button>
+    </div>
+  </div>
+
+  <div class="tab-content" data-tab="contract-review" style="display:none">
+    <div id="contract-list" style="margin-bottom:1rem"></div>
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group" style="flex:1"><label class="form-label">合同 ID</label><input class="form-input" id="review-contract-id" placeholder="输入合同 ID 或点击上方合同自动填充"></div>
+        <div class="form-group" style="align-self:end"><button class="btn btn-accent btn-lg" id="review-btn" onclick="reviewContract()">🔍 开始审查</button></div>
+      </div>
+    </div>
+    <div class="stats-grid" id="review-stats"></div>
+    <div id="review-clauses"></div>
+    <div id="review-summary"></div>
+  </div>
+
+  <div class="tab-content" data-tab="contract-compare" style="display:none">
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">合同 A ID（基准）</label><input class="form-input" id="compare-contract-a-id"></div>
+        <div class="form-group"><label class="form-label">合同 B ID（待审）</label><input class="form-input" id="compare-contract-b-id"></div>
+      </div>
+      <button class="btn btn-accent btn-lg" onclick="compareContracts()">⚖ 开始比对</button>
+    </div>
+    <div class="stats-grid" id="compare-stats" style="margin-top:1rem"></div>
+    <div id="compare-diffs" style="margin-top:.5rem"></div>
+  </div>
+
+  <div class="tab-content" data-tab="contract-generate" style="display:none">
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">合同类型</label><select class="form-select" id="gen-type"><option>买卖合同</option><option>租赁合同</option><option>服务合同</option><option>劳动合同</option><option>借款合同</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">甲方信息</label><input class="form-input" id="gen-pa" placeholder="XX 有限公司"></div>
+        <div class="form-group"><label class="form-label">乙方信息</label><input class="form-input" id="gen-pb" placeholder="YY 科技有限公司"></div>
+      </div>
+      <div class="form-group"><label class="form-label">关键条款要求（可选）</label><input class="form-input" id="gen-terms" placeholder="如：分期付款、质保12个月、违约金不超过20%"></div>
+      <button class="btn btn-accent btn-lg" onclick="generateContract()">✏ AI 生成合同草案</button>
+    </div>
+    <div id="gen-result"></div>
+  </div>
+</section>
+
+<!-- ====== 智能咨询 ====== -->
+<section class="page-section" id="page-consultation">
+  <div class="page-title">💬 智能法律咨询</div>
+  <div class="page-desc">基于法律知识库的 AI 问答 · 回答可追溯 · 多轮对话</div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <div id="chat-history-list" style="margin-bottom:.5rem"></div>
+    <div class="chat-area" id="chat-area"></div>
+    <div style="display:flex;gap:.5rem">
+      <input class="form-input" id="chat-input" placeholder="输入法律问题后按 Enter 发送…" style="flex:1">
+      <select class="form-select" id="chat-scope" style="width:120px"><option>全部</option><option>法规</option><option>判例</option><option>合同</option></select>
+      <button class="btn btn-accent" onclick="askQuestion()">发送</button>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem">
+    <button class="btn btn-outline btn-sm quick-q" data-q="合同违约金约定多少算过高？怎么调整？">📝 违约金标准</button>
+    <button class="btn btn-outline btn-sm quick-q" data-q="什么情况下可以单方解除合同？需要什么程序？">📝 合同解除</button>
+    <button class="btn btn-outline btn-sm quick-q" data-q="违约责任有哪些承担方式？赔偿范围怎么确定？">📝 违约责任</button>
+    <button class="btn btn-outline btn-sm quick-q" data-q="合同纠纷的诉讼时效是多久？从什么时候开始算？">📝 诉讼时效</button>
+    <button class="btn btn-outline btn-sm quick-q" data-q="公司单方面裁员需要支付多少经济补偿？">📝 劳动纠纷</button>
+  </div>
+  <button class="btn btn-outline btn-sm" onclick="clearChat()">🔄 清空对话</button>
+</section>
+
+<!-- ====== 知识图谱 ====== -->
+<section class="page-section" id="page-kg">
+  <div class="page-title">🔍 法律知识图谱</div>
+  <div class="page-desc">Neo4j 图数据库 · 法律实体关系网络 · 判例追溯</div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="value">8 种</div><div class="label">实体类型</div></div>
+    <div class="stat-card"><div class="value">12 种</div><div class="label">关系类型</div></div>
+    <div class="stat-card"><div class="value">15 条</div><div class="label">已导入法条</div></div>
+    <div class="stat-card"><div class="value">2 份</div><div class="label">已导入判例</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="kg-search">🔎 关键词检索</button>
+    <button class="tab" data-tab="kg-structure">📋 本体结构</button>
+    <button class="tab" data-tab="kg-trace">🔗 关系追溯</button>
+  </div>
+
+  <div class="tab-content" data-tab="kg-search" style="display:block">
+    <div class="card">
+      <div class="table-wrap"><table>
+        <thead><tr><th>类型</th><th>名称</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-blue">法律概念</span></td><td>违约金</td><td>当事人约定一方违约时应支付的金钱</td></tr>
+          <tr><td><span class="badge badge-blue">法律法规</span></td><td>中华人民共和国民法典</td><td>民事 · 现行有效</td></tr>
+          <tr><td><span class="badge badge-blue">法条</span></td><td>第 585 条</td><td>约定的违约金过分高于造成的损失…可请求适当减少</td></tr>
+          <tr><td><span class="badge badge-blue">法条</span></td><td>第 584 条</td><td>损失赔偿额应相当于因违约所造成的损失…</td></tr>
+          <tr><td><span class="badge badge-blue">判例</span></td><td>(2023) 最高法民终 123 号</td><td>买卖合同纠纷 · 违约金调整</td></tr>
+        </tbody>
+      </table></div>
+      <p style="font-size:.8rem;color:var(--text-muted);margin-top:.75rem">实时查询请在 Neo4j Browser 中运行 Cypher 语句</p>
+    </div>
+  </div>
+
+  <div class="tab-content" data-tab="kg-structure" style="display:none">
+    <div class="table-wrap"><table>
+      <thead><tr><th>实体</th><th>属性</th><th>关系</th></tr></thead>
+      <tbody>
+        <tr><td>法律法规 Law</td><td>名称 · 类型 · 施行日期 · 状态</td><td>包含 → 法条</td></tr>
+        <tr><td>法条 Article</td><td>编号 · 内容 · 所属法规 · 章节</td><td>属于 法规 · 被引用 判例</td></tr>
+        <tr><td>判例 Case</td><td>案号 · 名称 · 法院 · 日期</td><td>引用 → 法条 · 审理 法院</td></tr>
+        <tr><td>合同 Contract</td><td>名称 · 类型 · 甲方 · 乙方</td><td>包含 → 条款</td></tr>
+        <tr><td>条款 Clause</td><td>编号 · 内容 · 风险等级</td><td>存在风险 → 风险点</td></tr>
+        <tr><td>风险点 RiskPoint</td><td>类型 · 等级 · 描述 · 法律依据</td><td>依据 → 法条</td></tr>
+        <tr><td>法律概念 LegalConcept</td><td>名称 · 定义</td><td>关联 → 法条</td></tr>
+        <tr><td>法院 Court</td><td>名称 · 层级 · 管辖</td><td>审理 ← 案件</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="tab-content" data-tab="kg-trace" style="display:none">
+    <div class="kg-diagram">
+民法典 ──CONTAINS──▶ 第585条 ◀──CITES── (2023)最高法民终123号
+                      │                    └──HEARD_BY──▶ 最高人民法院
+                      ├──RELATED_TO──▶ 违约金
+                      └──CITES── (2024)沪01民初1234号
+                                     └──HEARD_BY──▶ 上海市第一中级人民法院
+    </div>
+    <p style="font-size:.8rem;color:var(--text-muted);margin-top:.75rem">完整可视化请使用 Neo4j Browser: <code>MATCH (n)-[r]->(m) RETURN n, r, m LIMIT 50</code></p>
+  </div>
+</section>
+
+<!-- ====== 审计报告 ====== -->
+<section class="page-section" id="page-audit">
+  <div class="page-title">📊 合规审计报告</div>
+  <div class="page-desc">AI 决策全链路追溯 · SHA256 脱敏 · Append-only 防篡改</div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="value" id="aud-total">0</div><div class="label">总调用次数</div></div>
+    <div class="stat-card"><div class="value" id="aud-cases">0</div><div class="label">覆盖案件</div></div>
+    <div class="stat-card"><div class="value" id="aud-users">0</div><div class="label">活跃用户</div></div>
+    <div class="stat-card"><div class="value" id="aud-errors">0%</div><div class="label">异常率</div></div>
+  </div>
+
+  <div id="audit-table" class="card" style="margin-bottom:1.5rem">
+    <p style="font-size:.85rem;color:var(--text-secondary);text-align:center;padding:2rem">加载中…</p>
+  </div>
+
+  <div class="card">
+    <h3 style="font-size:.95rem;margin-bottom:1rem">合规检查清单</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;font-size:.85rem">
+      <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer"><input type="checkbox" checked disabled> 审计日志完整性</label>
+      <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer"><input type="checkbox" checked disabled> PII 脱敏 · SHA256 哈希</label>
+      <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer"><input type="checkbox" checked disabled> 日志防篡改 · append-only</label>
+      <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer"><input type="checkbox" checked disabled> 多维度查询支持</label>
+      <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer"><input type="checkbox" checked disabled> 异常记录可筛选</label>
+      <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer"><input type="checkbox" checked disabled> 导出 JSON / CSV / Markdown</label>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 自动化工具 ====== -->
+<section class="page-section" id="page-rpa">
+  <div class="page-title">🤖 自动化工具</div>
+  <div class="page-desc">AI 驱动的文档数据提取 · 批量处理 · 结构化输出</div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="rpa-single">📋 单文档提取</button>
+    <button class="tab" data-tab="rpa-batch">📦 批量提取</button>
+  </div>
+
+  <div class="tab-content" data-tab="rpa-single" style="display:block">
+    <div class="card">
+      <h3 style="font-size:.95rem;margin-bottom:1rem">合同关键信息提取</h3>
+      <p style="font-size:.82rem;color:var(--text-secondary);margin-bottom:1rem">支持 DOCX / PDF / TXT 格式，自动识别甲乙双方、金额、期限、争议解决方式</p>
+      <div class="form-group"><input type="file" class="form-input" id="rpa-file" accept=".pdf,.docx,.txt"></div>
+      <button class="btn btn-accent btn-lg" onclick="extractData()">🚀 提取关键信息</button>
+      <div id="rpa-result" style="margin-top:1rem"></div>
+    </div>
+  </div>
+
+  <div class="tab-content" data-tab="rpa-batch" style="display:none">
+    <div class="card">
+      <h3 style="font-size:.95rem;margin-bottom:1rem">批量关键条款挖掘</h3>
+      <p style="font-size:.82rem;color:var(--text-secondary);margin-bottom:1rem">同时选择多份合同，AI 逐个分析每份合同的违约责任、争议解决、保密等关键条款。</p>
+      <div class="form-group"><input type="file" class="form-input" id="rpa-batch-file" accept=".pdf,.docx,.txt" multiple></div>
+      <button class="btn btn-accent btn-lg" onclick="batchExtract()">📦 批量挖掘</button>
+      <div id="rpa-batch-result" style="margin-top:1rem"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 系统配置 ====== -->
+<section class="page-section" id="page-settings">
+  <div class="page-title">⚙️ 系统配置</div>
+  <div class="page-desc">大模型设置 · API 密钥 · 知识图谱数据库连接</div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <h3 style="font-size:.95rem;margin-bottom:1rem">🤖 大语言模型</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">提供商</label>
+        <select class="form-select" id="cfg-provider">
+          <option>DeepSeek (深度求索)</option><option>Claude (Anthropic)</option><option>OpenAI (GPT)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">随机度 Temperature</label>
+        <input type="range" class="form-input" id="cfg-temp" min="0" max="1" step="0.05" value="0.1" style="padding:.25rem 0">
+        <span style="font-size:.8rem;color:var(--text-muted);margin-left:.5rem">0.1</span>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Claude 模型</label><select class="form-select" id="cfg-claude-model"><option>claude-sonnet-4-20250514</option><option>claude-opus-4-20250514</option><option>claude-haiku-4-5-20251001</option></select></div>
+      <div class="form-group"><label class="form-label">OpenAI 模型</label><select class="form-select" id="cfg-openai-model"><option>gpt-4o</option><option>gpt-4o-mini</option><option>gpt-4.1</option></select></div>
+      <div class="form-group"><label class="form-label">DeepSeek 模型</label><select class="form-select" id="cfg-deepseek-model"><option>deepseek-chat</option><option>deepseek-reasoner</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">最大输出令牌 Max Tokens</label><input type="number" class="form-input" id="cfg-max-tokens" value="4096" min="256" max="128000" step="256"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <h3 style="font-size:.95rem;margin-bottom:1rem">🔑 API 密钥</h3>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Anthropic (Claude) Key</label><input type="password" class="form-input" id="cfg-ak" placeholder="sk-ant-…"></div>
+      <div class="form-group"><label class="form-label">OpenAI Key</label><input type="password" class="form-input" id="cfg-ok" placeholder="sk-…"></div>
+      <div class="form-group"><label class="form-label">DeepSeek Key</label><input type="password" class="form-input" id="cfg-dk" placeholder="sk-…"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <h3 style="font-size:.95rem;margin-bottom:1rem">🗄️ 知识图谱数据库</h3>
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="form-group"><label class="form-label">连接地址</label><input class="form-input" id="cfg-neo4j-uri" value="neo4j://127.0.0.1:7687"></div>
+      <div class="form-group"><label class="form-label">用户名</label><input class="form-input" id="cfg-neo4j-user" value="neo4j"></div>
+      <div class="form-group"><label class="form-label">密码</label><input type="password" class="form-input" id="cfg-neo4j-pass"></div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:.75rem">
+    <button class="btn btn-accent btn-lg" onclick="saveConfig()">💾 保存配置</button>
+    <button class="btn btn-outline btn-lg" onclick="testLLM()">🔍 测试大模型连接</button>
+    <button class="btn btn-outline btn-lg" onclick="testNeo4j()">🗄️ 测试图谱连接</button>
+  </div>
+  <div id="test-result" style="margin-top:1rem"></div>
+</section>
+
+</main>
+
+<div id="toast-container" class="toast-container"></div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "created_at": "2026-05-14T00:00:00Z",
+  "embedding_model": "text-embedding-3-large",
+  "chunk_strategy": "article-level",
+  "collections": {
+    "laws": {"count": 2, "last_updated": "2026-05-14"},
+    "cases": {"count": 2, "last_updated": "2026-05-14"},
+    "contracts": {"count": 2, "last_updated": "2026-05-14"}
+  }
+}
