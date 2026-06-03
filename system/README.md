@@ -20,7 +20,7 @@
 
 - **Python 3.11+** （必需）
 - **LLM API Key**（必需，至少一个）：[DeepSeek](https://platform.deepseek.com/)（推荐，国内可用）/ [Anthropic](https://console.anthropic.com/) / [OpenAI](https://platform.openai.com/)
-- **Docker**（可选）：仅知识图谱功能需要
+- **Neo4j Desktop**（可选）：仅知识图谱功能需要，[下载地址](https://neo4j.com/download/)
 
 ## 快速开始
 
@@ -64,9 +64,9 @@ python -m src.main
 
 ### 启动知识图谱（可选）
 
-```bash
-docker compose up -d
-```
+1. 下载安装 [Neo4j Desktop](https://neo4j.com/download/)
+2. 创建本地 DBMS（5.x 版本），使用默认密码 `legaladmin123`
+3. 重新运行 `python scripts/init_knowledge_base.py`
 
 Neo4j 未启动时系统会自动降级，合同审查、法律咨询、RAG 检索等核心功能不受影响。
 
@@ -121,8 +121,8 @@ system/
 | 问题 | 解决方法 |
 |------|----------|
 | 启动后无法使用 AI 功能 | 检查 `.env` 中是否填写了 `DEEPSEEK_API_KEY` |
-| 知识图谱页面无数据 | 需启动 Neo4j：`docker compose up -d`，然后重新运行 `python scripts/init_knowledge_base.py` |
+| 知识图谱页面无数据 | 需启动 Neo4j Desktop 并创建 DBMS，然后重新运行 `python scripts/init_knowledge_base.py` |
 | 首次启动缓慢 | 正在下载本地嵌入模型（约 1.3GB），仅首次需要，之后秒加载 |
 | 国内模型下载慢 | 在 `.env` 中设置 `HF_ENDPOINT=https://hf-mirror.com` |
-| ChromaDB 报错 | 部分 Windows 需安装 [Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe) |
+| ChromaDB 报错 | 部分 Windows 需安装 [Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe)。如仍有问题，尝试 `pip install chromadb --force-reinstall` 获取预编译版本 |
 | 端口被占用 | 在 `.env` 中修改 `PORT` 为其他端口 |

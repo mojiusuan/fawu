@@ -65,14 +65,13 @@ python scripts/init_knowledge_base.py || {
     echo "  请编辑 .env 填写 DEEPSEEK_API_KEY 后重新运行: python scripts/init_knowledge_base.py"
 }
 
-# Check Neo4j / Docker
+# Neo4j Desktop
 echo ""
-echo "[6/6] 检查 Neo4j..."
-if docker compose up -d 2>/dev/null; then
-    echo "Neo4j: 已启动"
-else
-    echo "Neo4j 未启动（Docker 不可用或未安装），知识图谱功能暂不可用"
-fi
+echo "[6/6] Neo4j Desktop (optional, for knowledge graph)..."
+echo "  Download: https://neo4j.com/download/"
+echo "  Install Neo4j Desktop, create a local DBMS (v5.x),"
+echo "  then re-run: python scripts/init_knowledge_base.py"
+echo "  Default connection: bolt://localhost:7687 (neo4j/legaladmin123)"
 
 echo ""
 echo "=========================================="

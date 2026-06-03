@@ -65,13 +65,11 @@ if errorlevel 1 (
 )
 
 echo.
-echo [6/6] Starting Neo4j...
-docker compose up -d 2>nul
-if errorlevel 1 (
-    echo Neo4j not started (Docker unavailable), knowledge graph disabled
-) else (
-    echo Neo4j: started
-)
+echo [6/6] Neo4j Desktop (optional, for knowledge graph)...
+echo   Download: https://neo4j.com/download/
+echo   Install Neo4j Desktop, create a local DBMS (v5.x),
+echo   then re-run: python scripts/init_knowledge_base.py
+echo   Default connection: bolt://localhost:7687 (neo4j/legaladmin123)
 
 echo.
 echo ==========================================
