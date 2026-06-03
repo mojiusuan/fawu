@@ -1,7 +1,7 @@
 /**
  * 智能法务系统 · 前端应用逻辑
  */
-const API = 'http://localhost:8080';
+const API = window.location.origin;
 
 // =========== 导航 ===========
 function initNav() {

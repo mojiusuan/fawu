@@ -48,6 +48,9 @@ class Settings:
     KNOWLEDGE_BASE_DIR: str = os.getenv("KNOWLEDGE_BASE_DIR", str(BASE_DIR / "knowledge"))
     PROMPTS_DIR: str = str(BASE_DIR / "prompts")
 
+    # --- 模型下载镜像 ---
+    HF_ENDPOINT: str = os.getenv("HF_ENDPOINT", "https://huggingface.co")
+
     # --- 日志 ---
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
 

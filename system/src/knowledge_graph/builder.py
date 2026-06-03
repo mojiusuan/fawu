@@ -2,6 +2,7 @@
 知识图谱构建器 —— 将抽取结果写入 Neo4j
 """
 from neo4j import GraphDatabase
+from neo4j.exceptions import ServiceUnavailable
 
 from src.config import settings
 from src.knowledge_graph.extractor import knowledge_extractor
@@ -13,6 +14,17 @@ class GraphBuilder:
 
     def __init__(self):
         self.driver = None
+        self._available = None
+
+    def _ensure_connected(self) -> bool:
+        if self._available is not None:
+            return self._available
+        try:
+            self.connect()
+            self._available = True
+        except Exception:
+            self._available = False
+        return self._available
 
     def connect(self):
         """连接 Neo4j"""
@@ -20,12 +32,17 @@ class GraphBuilder:
             settings.NEO4J_URI,
             auth=(settings.NEO4J_USERNAME, settings.NEO4J_PASSWORD),
         )
+        self.driver.verify_connectivity()
         self._create_indexes()
+        self._available = True
         return self
 
     def close(self):
         if self.driver:
-            self.driver.close()
+            try:
+                self.driver.close()
+            except Exception:
+                pass
 
     def _create_indexes(self):
         """创建索引和约束"""
@@ -48,12 +65,16 @@ class GraphBuilder:
 
     def clear_all(self):
         """清空所有数据"""
+        if not self._ensure_connected():
+            return
         with self.driver.session() as session:
             session.run("MATCH (n) DETACH DELETE n")
 
     def create_entity(self, entity_type: str, properties: dict) -> str:
         """创建单个实体"""
-        # 获取主键属性名
+        if not self._ensure_connected():
+            return ""
+
         key_map = {
             "Law": "name",
             "Article": "article_number",
@@ -89,6 +110,9 @@ class GraphBuilder:
         target_name: str,
     ):
         """创建关系"""
+        if not self._ensure_connected():
+            return
+
         source_key_map = {
             "Law": "name",
             "Article": "article_number",
@@ -115,9 +139,10 @@ class GraphBuilder:
 
     async def build_from_extraction(self, extracted: dict) -> int:
         """从提取结果批量构建图谱"""
-        count = 0
+        if not self._ensure_connected():
+            return 0
 
-        # 先创建实体
+        count = 0
         entity_ids = {}
         for entity in extracted.get("entities", []):
             etype = entity["type"]
@@ -128,7 +153,6 @@ class GraphBuilder:
                 entity_ids[key] = eid
                 count += 1
 
-        # 再创建关系
         for rel in extracted.get("relationships", []):
             self.create_relationship(
                 rel["source_type"],
@@ -157,6 +181,9 @@ class GraphBuilder:
 
     def get_stats(self) -> dict:
         """获取图谱统计信息"""
+        if not self._ensure_connected():
+            return {"nodes": {}, "relationships": 0, "total_nodes": 0}
+
         with self.driver.session() as session:
             result = session.run(
                 """

@@ -12,21 +12,40 @@ class KGQuery:
 
     def __init__(self):
         self.driver = None
+        self._available = None
+
+    def _ensure_connected(self) -> bool:
+        if self._available is not None:
+            return self._available
+        try:
+            self.connect()
+            self._available = True
+        except Exception:
+            self._available = False
+        return self._available
+
+    @property
+    def is_available(self) -> bool:
+        return self._ensure_connected()
 
     def connect(self):
         self.driver = GraphDatabase.driver(
             settings.NEO4J_URI,
             auth=(settings.NEO4J_USERNAME, settings.NEO4J_PASSWORD),
         )
+        self.driver.verify_connectivity()
+        self._available = True
         return self
 
     def close(self):
         if self.driver:
-            self.driver.close()
+            try:
+                self.driver.close()
+            except Exception:
+                pass
 
-    def query_entity(self, entity_type: str, entity_id: str) -> EntityDetail | None:
-        """查询单个实体"""
-        type_key_map = {
+    def _get_type_key_map(self):
+        return {
             "Law": "name",
             "Article": "article_number",
             "Case": "case_number",
@@ -36,8 +55,13 @@ class KGQuery:
             "LegalConcept": "name",
             "Court": "name",
         }
-        key = type_key_map.get(entity_type, "name")
 
+    def query_entity(self, entity_type: str, entity_id: str) -> EntityDetail | None:
+        """查询单个实体"""
+        if not self._ensure_connected():
+            return None
+
+        key = self._get_type_key_map().get(entity_type, "name")
         cypher = f"MATCH (n:{entity_type} {{{key}: $eid}}) RETURN n"
         with self.driver.session() as session:
             result = session.run(cypher, eid=entity_id)
@@ -53,17 +77,11 @@ class KGQuery:
 
     def query_relations(self, entity_type: str, entity_id: str) -> list[RelationshipDetail]:
         """查询实体的所有关系"""
-        type_key_map = {
-            "Law": "name",
-            "Article": "article_number",
-            "Case": "case_number",
-            "Contract": "title",
-            "Clause": "clause_number",
-            "RiskPoint": "risk_type",
-            "LegalConcept": "name",
-            "Court": "name",
-        }
-        key = type_key_map.get(entity_type, "name")
+        if not self._ensure_connected():
+            return []
+
+        key_map = self._get_type_key_map()
+        key = key_map.get(entity_type, "name")
 
         cypher = f"""
         MATCH (n:{entity_type} {{{key}: $eid}})-[r]->(m)
@@ -75,15 +93,11 @@ class KGQuery:
         with self.driver.session() as session:
             result = session.run(cypher, eid=entity_id)
             relationships = []
-            target_key_map = dict(type_key_map)  # not needed for m
-
             for record in result:
                 node = record["m"]
                 ttype = record["target_type"]
-                tkey = type_key_map.get(ttype, "name")
+                tkey = key_map.get(ttype, "name")
                 target_id = node.get(tkey, "")
-                direction = "out" if record["rel"] else "in"
-
                 relationships.append(
                     RelationshipDetail(
                         source_type=entity_type,
@@ -97,6 +111,9 @@ class KGQuery:
 
     def search_law_articles(self, law_name: str) -> list[dict]:
         """查询某部法规下的所有法条"""
+        if not self._ensure_connected():
+            return []
+
         cypher = """
         MATCH (l:Law {name: $name})-[:CONTAINS]->(a:Article)
         RETURN a.article_number as article, a.content as content, a.chapter as chapter
@@ -108,6 +125,9 @@ class KGQuery:
 
     def find_related_articles(self, concept: str) -> list[dict]:
         """查找与法律概念相关的法条"""
+        if not self._ensure_connected():
+            return []
+
         cypher = """
         MATCH (c:LegalConcept)-[:RELATED_TO]->(a:Article)
         WHERE c.name CONTAINS $concept
@@ -119,6 +139,9 @@ class KGQuery:
 
     def find_case_precedents(self, article_number: str) -> list[dict]:
         """查找引用某法条的判例"""
+        if not self._ensure_connected():
+            return []
+
         cypher = """
         MATCH (ca:Case)-[:CITES]->(a:Article {article_number: $article})
         RETURN ca.case_number as case_number, ca.title as title,
@@ -131,6 +154,9 @@ class KGQuery:
 
     def query_risks_for_contract(self, contract_title: str) -> list[dict]:
         """查询合同的所有风险点"""
+        if not self._ensure_connected():
+            return []
+
         cypher = """
         MATCH (ct:Contract {title: $title})-[:CONTAINS]->(cl:Clause)-[:HAS_RISK]->(rp:RiskPoint)
         RETURN cl.clause_number as clause, rp.risk_type as risk_type,
@@ -143,17 +169,11 @@ class KGQuery:
 
     def get_subgraph(self, entity_type: str, entity_id: str, depth: int = 2) -> GraphQueryResult:
         """获取子图"""
-        type_key_map = {
-            "Law": "name",
-            "Article": "article_number",
-            "Case": "case_number",
-            "Contract": "title",
-            "Clause": "clause_number",
-            "RiskPoint": "risk_type",
-            "LegalConcept": "name",
-            "Court": "name",
-        }
-        key = type_key_map.get(entity_type, "name")
+        if not self._ensure_connected():
+            return GraphQueryResult(entities=[], relationships=[])
+
+        key_map = self._get_type_key_map()
+        key = key_map.get(entity_type, "name")
 
         cypher = f"""
         MATCH path = (n:{entity_type} {{{key}: $eid}})-[*1..{depth}]-(m)
@@ -195,6 +215,9 @@ class KGQuery:
 
     def search_fulltext(self, keyword: str) -> list[dict]:
         """关键词搜索实体"""
+        if not self._ensure_connected():
+            return []
+
         cypher = """
         CALL db.index.fulltext.queryNodes("entitySearch", $keyword)
         YIELD node, score

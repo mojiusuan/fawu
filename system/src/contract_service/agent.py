@@ -7,8 +7,6 @@ import json
 from src.utils.llm_client import llm_client
 from src.config import settings
 from src.rag_service.retriever import hybrid_retriever
-from src.knowledge_graph.query import kg_query
-from src.knowledge_graph.builder import graph_builder
 from src.audit_service.logger import audit_logger
 from src.contract_service.models import ClauseInfo, RiskLevel
 

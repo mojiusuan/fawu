@@ -1,9 +1,10 @@
 """
 智能法务系统 - FastAPI 主入口
 """
-# 必须在所有 import 之前设置，否则 huggingface 下载走不通
+# 必须在所有 import 之前设置 HF_ENDPOINT，否则 huggingface 下载走不通
 import os
-os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
+from src.config import settings
+os.environ.setdefault("HF_ENDPOINT", settings.HF_ENDPOINT)
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -12,17 +13,24 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pathlib import Path
 
-from src.config import settings
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings.ensure_directories()
     print(f"  {settings.APP_NAME} v{settings.APP_VERSION}")
     print(f"  LLM: {settings.LLM_PROVIDER} / {settings.llm_model}")
-    print(f"  Neo4j: {settings.NEO4J_URI}")
     print(f"  前端界面: http://{settings.HOST}:{settings.PORT}")
     print(f"  API 文档: http://{settings.HOST}:{settings.PORT}/docs")
+
+    # 检查 Neo4j 连接
+    try:
+        from neo4j import GraphDatabase
+        drv = GraphDatabase.driver(settings.NEO4J_URI, auth=(settings.NEO4J_USERNAME, settings.NEO4J_PASSWORD))
+        drv.verify_connectivity()
+        drv.close()
+        print(f"  Neo4j: {settings.NEO4J_URI} - 已连接")
+    except Exception as e:
+        print(f"  Neo4j: 未连接（知识图谱功能不可用）")
 
     # 预加载本地嵌入模型（首次需下载，之后秒加载）
     if settings.EMBEDDING_PROVIDER == "local":
@@ -31,7 +39,7 @@ async def lifespan(app: FastAPI):
             print("  预加载本地嵌入模型...")
             _ = await llm_client.embed_query("init")
         except Exception as e:
-            print(f"  ⚠️ 模型预加载失败: {e}")
+            print(f"  模型预加载失败: {e}")
 
     yield
     print("  服务关闭")

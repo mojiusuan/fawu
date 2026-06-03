@@ -86,21 +86,19 @@ def query_legal_graph(cypher: str) -> str:
     """查询法律知识图谱。输入 Cypher 查询语句，返回查询结果。"""
     from src.knowledge_graph.query import kg_query
 
+    if not kg_query.is_available:
+        return "知识图谱不可用（Neo4j 未启动），请使用 RAG 检索代替"
+
     try:
-        kg_query.connect()
-        # 简化：做关键词搜索
-        if "keyword" in cypher.lower() or "search" in cypher.lower():
-            import re
-            match = re.search(r"['\"](.+?)['\"]", cypher)
-            if match:
-                results = kg_query.search_fulltext(match.group(1))
-                parts = [f"{r['type']}: {r['properties']}" for r in results[:10]]
-                return "\n".join(parts)
+        import re
+        match = re.search(r"['\"](.+?)['\"]", cypher)
+        if match:
+            results = kg_query.search_fulltext(match.group(1))
+            parts = [f"{r['type']}: {r['properties']}" for r in results[:10]]
+            return "\n".join(parts)
         return "请使用 search_fulltext 进行关键词搜索"
     except Exception as e:
         return f"图谱查询失败: {e}"
-    finally:
-        kg_query.close()
 
 
 # 工具注册表
