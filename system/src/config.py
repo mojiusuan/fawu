@@ -51,6 +51,11 @@ class Settings:
     # --- 模型下载镜像 ---
     HF_ENDPOINT: str = os.getenv("HF_ENDPOINT", "https://huggingface.co")
 
+    # --- 认证 ---
+    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "legal-system-jwt-secret-change-in-production")
+    JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "480"))
+
     # --- 日志 ---
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
 
@@ -67,6 +72,7 @@ class Settings:
         """确保必要的目录存在"""
         for d in [self.AUDIT_LOG_DIR, self.EXPORT_DIR, self.KNOWLEDGE_BASE_DIR]:
             Path(d).mkdir(parents=True, exist_ok=True)
+        (Path(self.BASE_DIR) / "data").mkdir(parents=True, exist_ok=True)
 
 
 settings = Settings()

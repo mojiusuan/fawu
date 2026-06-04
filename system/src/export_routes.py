@@ -3,9 +3,10 @@
 """
 import io
 from urllib.parse import quote
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from src.auth_service.dependencies import require_role
 
 router = APIRouter(prefix="/api/export", tags=["文件导出"])
 
@@ -58,7 +59,7 @@ def _build_docx(title: str, content_blocks: list[tuple[str, str]]) -> io.BytesIO
 
 
 @router.get("/contract-review/{contract_id}")
-async def export_contract_review(contract_id: str):
+async def export_contract_review(contract_id: str, current_user: dict = Depends(require_role("admin","legal","business"))):
     """导出合同审查报告为 Word"""
     from src.contract_service.service import contract_service
 
@@ -101,7 +102,7 @@ async def export_contract_review(contract_id: str):
 
 
 @router.post("/contract-draft")
-async def export_contract_draft(req: ExportTextRequest):
+async def export_contract_draft(req: ExportTextRequest, current_user: dict = Depends(require_role("admin","legal","business"))):
     """导出 AI 生成的合同草案为 Word"""
     import re
     content = req.content.strip()
@@ -145,7 +146,7 @@ async def export_contract_draft(req: ExportTextRequest):
 
 
 @router.post("/consultation")
-async def export_consultation(req: ExportChatRequest):
+async def export_consultation(req: ExportChatRequest, current_user: dict = Depends(require_role("admin","legal","business"))):
     """导出咨询对话为 Word"""
     blocks: list[tuple[str, str]] = []
     for i, m in enumerate(req.messages):

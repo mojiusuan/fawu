@@ -29,6 +29,16 @@
   </nav>
 
   <div class="sidebar-footer">
+    <div id="user-info" style="display:none;margin-bottom:.5rem">
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <span>👤</span>
+        <div style="flex:1">
+          <div id="user-display-name" style="font-size:.82rem;font-weight:600;color:#e2e8f0"></div>
+          <div id="user-role-tag" style="font-size:.68rem;color:#94a3b8"></div>
+        </div>
+        <button id="logout-btn" onclick="doLogout()" style="margin-left:auto;background:none;border:1px solid #475569;color:#94a3b8;padding:2px 8px;border-radius:4px;font-size:.7rem;cursor:pointer">退出</button>
+      </div>
+    </div>
     <span id="status-indicator" class="status-dot offline"></span>
     <span id="status-text">服务未连接</span>
   </div>
@@ -382,6 +392,26 @@
 </section>
 
 </main>
+
+<!-- ====== 登录浮层 ====== -->
+<div id="login-overlay" class="login-overlay">
+  <div class="login-card">
+    <div class="login-logo">⚖️</div>
+    <h2>智能法务系统</h2>
+    <p style="color:var(--text-secondary);font-size:.85rem;margin-bottom:1.5rem">请输入账号和密码登录</p>
+    <div class="form-group">
+      <label class="form-label">用户名</label>
+      <input type="text" class="form-input" id="login-username" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label class="form-label">密码</label>
+      <input type="password" class="form-input" id="login-password" placeholder="••••••" autocomplete="current-password">
+    </div>
+    <div id="login-error" style="color:var(--danger);font-size:.82rem;margin-bottom:.5rem;display:none"></div>
+    <button class="btn btn-accent btn-lg" onclick="doLogin()" style="width:100%">登 录</button>
+    <p style="font-size:.75rem;color:var(--text-muted);margin-top:1rem;text-align:center">默认管理员: admin / admin123</p>
+  </div>
+</div>
 
 <div id="toast-container" class="toast-container"></div>
 

@@ -1,0 +1,34 @@
+[
+  {
+    "id": "c7b62f59",
+    "username": "admin",
+    "display_name": "系统管理员",
+    "hashed_password": "$2b$12$ngzwd9Fdfr4EP0PFYtiU4.0oWQt5k4rg1roaHtnjCIbLTUqEoowYm",
+    "role": "admin",
+    "created_at": "2026-06-04T18:46:58.481521"
+  },
+  {
+    "id": "5cde3633",
+    "username": "legal01",
+    "display_name": "张法务",
+    "hashed_password": "$2b$12$UWo2UZUtIzT530QkrOuAUO3BcNF5hRVxUBxwy4AkveqZuohF1T0FW",
+    "role": "legal",
+    "created_at": "2026-06-04T18:46:58.669941"
+  },
+  {
+    "id": "109a19cc",
+    "username": "biz01",
+    "display_name": "王业务",
+    "hashed_password": "$2b$12$ouxGlTzX/yKVgbkomZ7HZOHzHQQVLGhzx3GG0JcMi40VAlC8YI7NK",
+    "role": "business",
+    "created_at": "2026-06-04T18:46:58.856787"
+  },
+  {
+    "id": "b7a36969",
+    "username": "audit01",
+    "display_name": "赵审计",
+    "hashed_password": "$2b$12$5TDmp1O55wPzVl09R4tzyOcEB7a.A6u2.DHdsvBZm3IuMiKwcC3/C",
+    "role": "auditor",
+    "created_at": "2026-06-04T18:46:59.046126"
+  }
+]

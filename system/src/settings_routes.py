@@ -5,9 +5,10 @@ import os
 import re
 from pathlib import Path
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from dotenv import load_dotenv
+from src.auth_service.dependencies import require_admin
 
 router = APIRouter(prefix="/api/settings", tags=["系统配置"])
 
@@ -94,7 +95,7 @@ def write_env_file(config: dict):
 
 
 @router.get("/")
-async def get_settings():
+async def get_settings(current_user: dict = Depends(require_admin())):
     """获取当前配置（脱敏显示 API Key）"""
     config = read_env_file()
     # 脱敏
@@ -109,7 +110,7 @@ async def get_settings():
 
 
 @router.post("/update")
-async def update_settings(update: SettingsUpdate):
+async def update_settings(update: SettingsUpdate, current_user: dict = Depends(require_admin())):
     """更新系统配置"""
     field_map = {
         "llm_provider": "LLM_PROVIDER",
@@ -157,7 +158,7 @@ async def update_settings(update: SettingsUpdate):
 
 
 @router.post("/test-connection")
-async def test_llm_connection():
+async def test_llm_connection(current_user: dict = Depends(require_admin())):
     """测试 LLM API 连接是否正常"""
     from src.utils.llm_client import LLMClient
     from src.config import settings
@@ -200,7 +201,7 @@ async def test_llm_connection():
 
 
 @router.post("/test-neo4j")
-async def test_neo4j_connection():
+async def test_neo4j_connection(current_user: dict = Depends(require_admin())):
     """测试 Neo4j 连接"""
     from neo4j import GraphDatabase
 

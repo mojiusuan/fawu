@@ -32,7 +32,8 @@ class ConsultationAgent:
     def __init__(self):
         self.client = llm_client
 
-    async def ask(self, question: str, source_type: str = "全部") -> tuple[str, list[SearchResult], list[str], str]:
+    async def ask(self, question: str, source_type: str = "全部",
+                  user_id: str = "anonymous") -> tuple[str, list[SearchResult], list[str], str]:
         """
         解答法律问题
 
@@ -81,7 +82,7 @@ class ConsultationAgent:
 
         # 4. 记录审计
         audit_id = audit_logger.log(
-            user_id="anonymous",
+            user_id=user_id,
             case_id="consultation",
             task_type="legal_consultation",
             prompt_version="consultation-v1.0.0",

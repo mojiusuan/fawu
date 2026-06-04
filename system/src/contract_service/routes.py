@@ -1,7 +1,7 @@
 """
 合同服务 - FastAPI 路由
 """
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
 from fastapi.responses import JSONResponse
 
 from src.contract_service.models import (
@@ -16,12 +16,13 @@ from src.contract_service.models import (
 )
 from src.contract_service.service import contract_service
 from src.contract_service.agent import contract_agent
+from src.auth_service.dependencies import require_role
 
 router = APIRouter(prefix="/api/contracts", tags=["合同管理"])
 
 
 @router.post("/upload", response_model=ContractInfo)
-async def upload_contract(req: ContractUploadRequest):
+async def upload_contract(req: ContractUploadRequest, current_user: dict = Depends(require_role("admin","legal","business"))):
     """上传/创建合同"""
     contract = contract_service.create_contract(
         title=req.title,
@@ -37,7 +38,7 @@ async def upload_contract(req: ContractUploadRequest):
 
 
 @router.get("/{contract_id}", response_model=ContractInfo)
-async def get_contract(contract_id: str):
+async def get_contract(contract_id: str, current_user: dict = Depends(require_role("admin","legal","business"))):
     """获取合同详情"""
     contract = contract_service.get_contract(contract_id)
     if not contract:
@@ -46,13 +47,13 @@ async def get_contract(contract_id: str):
 
 
 @router.get("/", response_model=list[ContractInfo])
-async def list_contracts():
+async def list_contracts(current_user: dict = Depends(require_role("admin","legal","business"))):
     """获取合同列表"""
     return contract_service.list_contracts()
 
 
 @router.post("/review/{contract_id}", response_model=ContractReviewResult)
-async def review_contract(contract_id: str):
+async def review_contract(contract_id: str, current_user: dict = Depends(require_role("admin","legal"))):
     """审查合同"""
     contract = contract_service.get_contract(contract_id)
     if not contract:
@@ -68,6 +69,7 @@ async def review_contract(contract_id: str):
         title=contract.title,
         contract_type=contract.contract_type,
         clauses=contract.clauses,
+        user_id=current_user.get("user_id", "system"),
     )
 
     # 更新合同并持久化
@@ -78,7 +80,7 @@ async def review_contract(contract_id: str):
 
 
 @router.post("/compare", response_model=ContractCompareResult)
-async def compare_contracts(req: ContractCompareRequest):
+async def compare_contracts(req: ContractCompareRequest, current_user: dict = Depends(require_role("admin","legal"))):
     """比对两份合同"""
     contract_a = contract_service.get_contract(req.contract_a_id)
     contract_b = contract_service.get_contract(req.contract_b_id)
@@ -99,7 +101,7 @@ async def compare_contracts(req: ContractCompareRequest):
 
 
 @router.post("/generate", response_model=ContractGenerateResult)
-async def generate_contract(req: ContractGenerateRequest):
+async def generate_contract(req: ContractGenerateRequest, current_user: dict = Depends(require_role("admin","legal"))):
     """AI 生成合同草案"""
     content = await contract_agent.generate_contract(
         contract_type=req.contract_type.value if hasattr(req.contract_type, "value") else req.contract_type,
@@ -128,7 +130,7 @@ async def generate_contract(req: ContractGenerateRequest):
 
 
 @router.delete("/clear")
-async def clear_contracts():
+async def clear_contracts(current_user: dict = Depends(require_role("admin"))):
     """清除所有合同"""
     contract_service._contracts.clear()
     contract_service._save()

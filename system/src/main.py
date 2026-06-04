@@ -11,7 +11,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from fastapi import Depends
 from pathlib import Path
+from src.auth_service.dependencies import require_role
 
 
 @asynccontextmanager
@@ -83,8 +85,11 @@ app.include_router(rpa_router)
 from src.export_routes import router as export_router
 app.include_router(export_router)
 
+from src.auth_service.routes import router as auth_router
+app.include_router(auth_router)
+
 @app.get("/api/audit/logs")
-async def get_audit_logs():
+async def get_audit_logs(current_user: dict = Depends(require_role("admin","auditor"))):
     """获取审计日志列表"""
     from src.audit_service.logger import audit_logger
     logs = audit_logger.get_all_logs(limit=100)

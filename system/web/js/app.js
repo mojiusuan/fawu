@@ -3,6 +3,31 @@
  */
 const API = window.location.origin;
 
+// =========== 认证管理 ===========
+let authToken = localStorage.getItem('legal_auth_token') || null;
+let currentUser = JSON.parse(localStorage.getItem('legal_auth_user') || 'null');
+
+const ROLE_PAGE_PERMISSIONS = {
+  home: ['admin','legal','business','auditor'],
+  contract: ['admin','legal','business'],
+  consultation: ['admin','legal','business','auditor'],
+  kg: ['admin','legal'],
+  audit: ['admin','auditor'],
+  rpa: ['admin','legal'],
+  settings: ['admin'],
+};
+
+const ROLE_LABELS = {
+  admin: '系统管理员',
+  legal: '法务人员',
+  business: '业务人员',
+  auditor: '审计员',
+};
+
+function getAuthHeaders() {
+  return authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
+}
+
 // =========== 导航 ===========
 function initNav() {
   document.querySelectorAll('.nav-item').forEach(el => {
@@ -14,6 +39,14 @@ function initNav() {
 }
 
 function navigateTo(page) {
+  // 角色权限检查
+  if (currentUser) {
+    const allowed = ROLE_PAGE_PERMISSIONS[page] || [];
+    if (!allowed.includes(currentUser.role)) {
+      showToast('您没有访问此页面的权限', 'error');
+      return;
+    }
+  }
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active');
   document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
@@ -68,13 +101,141 @@ function createToastContainer() {
 // =========== API 辅助 ===========
 async function api(path, options = {}) {
   const url = `${API}${path}`;
-  const defaults = { headers: { 'Content-Type': 'application/json' } };
-  const resp = await fetch(url, { ...defaults, ...options });
+  const defaults = {
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }
+  };
+  const merged = { ...defaults, ...options };
+  if (options.headers) {
+    merged.headers = { ...defaults.headers, ...options.headers };
+  }
+  const resp = await fetch(url, merged);
+  if (resp.status === 401) {
+    clearAuth();
+    showLoginOverlay('登录已过期，请重新登录');
+    throw new Error('登录已过期');
+  }
   if (!resp.ok) {
     const text = await resp.text();
-    throw new Error(text || `HTTP ${resp.status}`);
+    let msg = text;
+    try { const j = JSON.parse(text); msg = j.detail || j.message || text; } catch(e) {}
+    throw new Error(msg);
   }
   return resp.json();
+}
+
+// =========== 认证操作 ===========
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!username || !password) {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('login-error').textContent = '请输入用户名和密码';
+    return;
+  }
+  try {
+    const resp = await fetch(`${API}/api/auth/login`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username, password}),
+    });
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.detail || '登录失败');
+    }
+    const data = await resp.json();
+    authToken = data.access_token;
+    currentUser = data.user;
+    localStorage.setItem('legal_auth_token', authToken);
+    localStorage.setItem('legal_auth_user', JSON.stringify(currentUser));
+    hideLoginOverlay();
+    applyRoleUI();
+    showToast(`欢迎回来，${currentUser.display_name}`, 'success');
+    // 加载数据
+    loadContracts();
+    loadChatHistory();
+    loadAudit();
+  } catch(e) {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('login-error').textContent = e.message;
+  }
+}
+
+function doLogout() {
+  clearAuth();
+  showLoginOverlay();
+  showToast('已退出登录', 'info');
+}
+
+function clearAuth() {
+  authToken = null;
+  currentUser = null;
+  localStorage.removeItem('legal_auth_token');
+  localStorage.removeItem('legal_auth_user');
+}
+
+function showLoginOverlay(msg) {
+  const overlay = document.getElementById('login-overlay');
+  if (overlay) overlay.style.display = 'flex';
+  if (msg) {
+    const err = document.getElementById('login-error');
+    if (err) { err.style.display = 'block'; err.textContent = msg; }
+  }
+}
+
+function hideLoginOverlay() {
+  const overlay = document.getElementById('login-overlay');
+  if (overlay) overlay.style.display = 'none';
+  const err = document.getElementById('login-error');
+  if (err) err.style.display = 'none';
+}
+
+function applyRoleUI() {
+  if (!currentUser) return;
+
+  // 更新用户信息区域
+  const userInfo = document.getElementById('user-info');
+  if (userInfo) userInfo.style.display = 'block';
+  const displayName = document.getElementById('user-display-name');
+  if (displayName) displayName.textContent = currentUser.display_name;
+  const roleTag = document.getElementById('user-role-tag');
+  if (roleTag) roleTag.textContent = ROLE_LABELS[currentUser.role] || currentUser.role;
+
+  // 根据角色显示/隐藏导航项
+  document.querySelectorAll('.nav-item[data-page]').forEach(el => {
+    const page = el.dataset.page;
+    const allowedRoles = ROLE_PAGE_PERMISSIONS[page] || [];
+    if (allowedRoles.includes(currentUser.role)) {
+      el.classList.remove('hidden');
+    } else {
+      el.classList.add('hidden');
+    }
+  });
+
+  // 如果当前页面不在权限范围内，重定向到 home
+  const hashPage = window.location.hash.replace('#', '') || 'home';
+  const allowed = ROLE_PAGE_PERMISSIONS[hashPage] || [];
+  if (!allowed.includes(currentUser.role)) {
+    navigateTo('home');
+  }
+}
+
+function initAuth() {
+  // 登录页 Enter 发送
+  document.getElementById('login-password')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  if (!authToken || !currentUser) {
+    showLoginOverlay();
+  } else {
+    applyRoleUI();
+    // 验证 token 是否仍然有效
+    fetch(`${API}/api/auth/me`, {
+      headers: getAuthHeaders()
+    }).then(resp => {
+      if (!resp.ok) { clearAuth(); showLoginOverlay('登录已过期，请重新登录'); }
+    }).catch(() => {});
+  }
 }
 
 // =========== 状态检测 ===========
@@ -225,7 +386,7 @@ function clearChat() { chatHistory = []; renderChat(); }
 
 async function exportReview(contractId) {
   try {
-    const resp = await fetch(`${API}/api/export/contract-review/${contractId}`);
+    const resp = await fetch(`${API}/api/export/contract-review/${contractId}`, { headers: getAuthHeaders() });
     if (!resp.ok) { const e = await resp.json(); showToast(e.error||'导出失败','error'); return; }
     const blob = await resp.blob();
     if (blob.size < 100) { showToast('导出内容为空，请先审查合同','warning'); return; }
@@ -240,7 +401,7 @@ async function downloadGenerated(filename, content) {
   try {
     const resp = await fetch(`${API}/api/export/contract-draft`, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', ...getAuthHeaders()},
       body: JSON.stringify({title: filename.replace('.docx',''), content: content})
     });
     if (!resp.ok) throw new Error('导出失败');
@@ -264,7 +425,7 @@ async function clearContracts() {
 
 async function loadAudit() {
   try {
-    const resp = await fetch(`${API}/api/audit/logs`);
+    const resp = await fetch(`${API}/api/audit/logs`, { headers: getAuthHeaders() });
     if (!resp.ok) return;
     const data = await resp.json();
     const logs = data.logs || [];
@@ -290,7 +451,7 @@ async function loadAudit() {
 
 async function loadContracts() {
   try {
-    const resp = await fetch(`${API}/api/contracts/`);
+    const resp = await fetch(`${API}/api/contracts/`, { headers: getAuthHeaders() });
     if (!resp.ok) return;
     const data = await resp.json();
     if (!data || !data.length) return;
@@ -321,7 +482,7 @@ async function loadContracts() {
 
 async function loadChatHistory() {
   try {
-    const resp = await fetch(`${API}/api/consultation/history`);
+    const resp = await fetch(`${API}/api/consultation/history`, { headers: getAuthHeaders() });
     if (!resp.ok) return;
     const data = await resp.json();
     if (!data || !data.length) return;
@@ -340,7 +501,7 @@ async function exportChat() {
   try {
     const resp = await fetch(`${API}/api/export/consultation`, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', ...getAuthHeaders()},
       body: JSON.stringify({messages: chatHistory})
     });
     if (!resp.ok) throw new Error('导出失败');
@@ -429,7 +590,7 @@ async function batchExtract() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const resp = await fetch(`${API}/api/rpa/batch-extract`, { method: 'POST', body: formData });
+      const resp = await fetch(`${API}/api/rpa/batch-extract`, { method: 'POST', headers: getAuthHeaders(), body: formData });
       if (!resp.ok) { const t = await resp.text(); throw new Error(t); }
       const result = await resp.json();
       const clauses = result.key_clauses || [];
@@ -454,7 +615,7 @@ async function extractData() {
   try {
     const formData = new FormData();
     formData.append('file', file);
-    const resp = await fetch(`${API}/api/rpa/extract`, { method: 'POST', body: formData });
+    const resp = await fetch(`${API}/api/rpa/extract`, { method: 'POST', headers: getAuthHeaders(), body: formData });
     if (!resp.ok) { const t = await resp.text(); throw new Error(t); }
     const result = await resp.json();
     area.innerHTML = `<pre style="background:#f8fafc;padding:1rem;border-radius:var(--radius-sm);font-size:.82rem;overflow-x:auto">${JSON.stringify(result, null, 2)}</pre>`;
@@ -488,13 +649,16 @@ function renderMarkdown(md) {
 
 // =========== 初始化 ===========
 document.addEventListener('DOMContentLoaded', () => {
+  initAuth();
   initNav();
   initTabs();
   initExpanders();
 
-  // 初始页面
-  const hash = window.location.hash.replace('#', '') || 'home';
-  navigateTo(hash);
+  // 初始页面（仅在已登录时）
+  if (currentUser) {
+    const hash = window.location.hash.replace('#', '') || 'home';
+    navigateTo(hash);
+  }
 
   // 定期检测状态
   checkStatus();
@@ -513,8 +677,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 加载持久化数据
-  loadContracts();
-  loadChatHistory();
-  loadAudit();
+  // 加载持久化数据（仅在已登录时）
+  if (currentUser) {
+    loadContracts();
+    loadChatHistory();
+    loadAudit();
+  }
 });

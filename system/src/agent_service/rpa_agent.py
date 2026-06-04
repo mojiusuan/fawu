@@ -33,7 +33,7 @@ class RPAAgent:
     def __init__(self):
         self.client = llm_client
 
-    async def extract_contract_data(self, file_path: str) -> dict:
+    async def extract_contract_data(self, file_path: str, user_id: str = "system") -> dict:
         """从合同文档中提取结构化数据"""
         ext = Path(file_path).suffix.lower()
 
@@ -110,7 +110,7 @@ class RPAAgent:
 
         # 审计
         audit_logger.log(
-            user_id="system",
+            user_id=user_id,
             case_id="rpa_extract",
             task_type="rpa_data_extraction",
             prompt_version="rpa-extract-v1.0.0",

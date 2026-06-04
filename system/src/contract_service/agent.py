@@ -55,7 +55,8 @@ class ContractAgent:
         self.client = llm_client
 
     async def review_contract(
-        self, contract_id: str, title: str, contract_type: str, clauses: list[ClauseInfo]
+        self, contract_id: str, title: str, contract_type: str, clauses: list[ClauseInfo],
+        user_id: str = "system",
     ) -> tuple[list[ClauseInfo], str]:
         """
         审查合同
@@ -114,7 +115,7 @@ class ContractAgent:
 
             # 记录审计
             audit_logger.log(
-                user_id="system",
+                user_id=user_id,
                 case_id=contract_id,
                 task_type="contract_review",
                 prompt_version="contract-review-v1.0.0",
