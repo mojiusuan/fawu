@@ -10,6 +10,10 @@
 </head>
 <body>
 
+<!-- ====== 移动端汉堡菜单 ====== -->
+<button class="hamburger" id="hamburger-btn" aria-label="打开菜单">☰</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
 <!-- ========================= 侧边栏 ========================= -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
@@ -120,6 +124,14 @@
 
   <div class="tab-content" data-tab="contract-upload" style="display:block">
     <div class="card">
+      <!-- 文件上传区域 -->
+      <div class="file-drop-zone" id="contract-file-drop">
+        <div class="file-drop-icon">📁</div>
+        <div class="file-drop-text">拖拽文件到此处，或点击选择</div>
+        <div class="file-drop-hint">支持 DOCX / PDF / TXT 格式，自动提取文本</div>
+        <input type="file" id="contract-file-input" accept=".pdf,.docx,.txt" style="display:none">
+      </div>
+      <div id="contract-file-name" style="display:none;font-size:.85rem;color:var(--accent);margin-bottom:.75rem"></div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">合同名称</label>
@@ -144,10 +156,10 @@
       </div>
       <div class="form-group">
         <label class="form-label">合同正文</label>
-        <textarea class="form-textarea" id="contract-content" placeholder="请粘贴合同文本&#10;&#10;第一条 合同标的&#10;第二条 价款与支付&#10;…" style="min-height:200px"></textarea>
+        <textarea class="form-textarea" id="contract-content" placeholder="请粘贴合同文本，或拖拽文件自动提取&#10;&#10;第一条 合同标的&#10;第二条 价款与支付&#10;…" style="min-height:200px"></textarea>
       </div>
       <button class="btn btn-primary btn-lg" onclick="uploadContract()">📤 上传合同</button>
-      <button class="btn btn-outline btn-sm" onclick="clearContracts()" style="margin-left:.5rem">🗑 清除全部合同</button>
+      <button class="btn btn-outline btn-sm" onclick="confirmDialog('确定清除所有合同吗？此操作不可恢复。', clearContracts)" style="margin-left:.5rem">🗑 清除全部合同</button>
     </div>
   </div>
 
@@ -159,6 +171,7 @@
         <div class="form-group" style="align-self:end"><button class="btn btn-accent btn-lg" id="review-btn" onclick="reviewContract()">🔍 开始审查</button></div>
       </div>
     </div>
+    <div id="review-progress" class="progress-card" style="display:none"></div>
     <div class="stats-grid" id="review-stats"></div>
     <div id="review-clauses"></div>
     <div id="review-summary"></div>
@@ -200,6 +213,13 @@
   <div class="card" style="margin-bottom:1rem">
     <div id="chat-history-list" style="margin-bottom:.5rem"></div>
     <div class="chat-area" id="chat-area" role="log" aria-live="polite" aria-label="对话记录"></div>
+    <!-- 打字指示器 -->
+    <div class="typing-indicator" id="typing-indicator" style="display:none">
+      <span class="typing-dot"></span>
+      <span class="typing-dot"></span>
+      <span class="typing-dot"></span>
+      <span style="font-size:.82rem;color:var(--text-muted);margin-left:.5rem">AI 正在思考...</span>
+    </div>
     <div style="display:flex;gap:.5rem">
       <input class="form-input" id="chat-input" placeholder="输入法律问题后按 Enter 发送…" style="flex:1">
       <select class="form-select" id="chat-scope" style="width:120px"><option>全部</option><option>法规</option><option>判例</option><option>合同</option></select>
@@ -222,20 +242,30 @@
   <div class="page-title">🔍 法律知识图谱</div>
   <div class="page-desc">Neo4j 图数据库 · 法律实体关系网络 · 判例追溯</div>
 
-  <div class="stats-grid">
+  <div class="stats-grid" id="kg-stats-grid">
     <div class="stat-card"><div class="value">8 种</div><div class="label">实体类型</div></div>
     <div class="stat-card"><div class="value">12 种</div><div class="label">关系类型</div></div>
-    <div class="stat-card"><div class="value">15 条</div><div class="label">已导入法条</div></div>
-    <div class="stat-card"><div class="value">2 份</div><div class="label">已导入判例</div></div>
+    <div class="stat-card"><div class="value">-</div><div class="label">知识图谱节点</div></div>
+    <div class="stat-card"><div class="value">-</div><div class="label">关系总数</div></div>
+  </div>
+
+  <!-- 实时搜索区域 -->
+  <div class="card" style="margin-bottom:1rem">
+    <div style="display:flex;gap:.5rem">
+      <input class="form-input" id="kg-search-input" placeholder="输入关键词搜索法律实体（如：违约金、民法典、合同纠纷）…" style="flex:1" onkeydown="if(event.key==='Enter')searchKG()">
+      <button class="btn btn-accent" onclick="searchKG()">🔍 搜索</button>
+    </div>
+    <div id="kg-search-status" style="font-size:.78rem;color:var(--text-muted);margin-top:.4rem"></div>
+    <div id="kg-search-results" style="margin-top:.75rem"></div>
   </div>
 
   <div class="tabs">
-    <button class="tab active" data-tab="kg-search">🔎 关键词检索</button>
+    <button class="tab active" data-tab="kg-browse">📋 数据浏览</button>
     <button class="tab" data-tab="kg-structure">📋 本体结构</button>
     <button class="tab" data-tab="kg-trace">🔗 关系追溯</button>
   </div>
 
-  <div class="tab-content" data-tab="kg-search" style="display:block">
+  <div class="tab-content" data-tab="kg-browse" style="display:block">
     <div class="card">
       <div class="table-wrap"><table>
         <thead><tr><th>类型</th><th>名称</th><th>说明</th></tr></thead>
@@ -247,7 +277,6 @@
           <tr><td><span class="badge badge-blue">判例</span></td><td>(2023) 最高法民终 123 号</td><td>买卖合同纠纷 · 违约金调整</td></tr>
         </tbody>
       </table></div>
-      <p style="font-size:.8rem;color:var(--text-muted);margin-top:.75rem">实时查询请在 Neo4j Browser 中运行 Cypher 语句</p>
     </div>
   </div>
 
@@ -275,7 +304,7 @@
                       └──CITES── (2024)沪01民初1234号
                                      └──HEARD_BY──▶ 上海市第一中级人民法院
     </div>
-    <p style="font-size:.8rem;color:var(--text-muted);margin-top:.75rem">完整可视化请使用 Neo4j Browser: <code>MATCH (n)-[r]->(m) RETURN n, r, m LIMIT 50</code></p>
+    <p style="font-size:.8rem;color:var(--text-muted);margin-top:.75rem">使用上方搜索框可实时查询 Neo4j 知识图谱</p>
   </div>
 </section>
 
@@ -289,6 +318,22 @@
     <div class="stat-card"><div class="value" id="aud-cases">0</div><div class="label">覆盖案件</div></div>
     <div class="stat-card"><div class="value" id="aud-users">0</div><div class="label">活跃用户</div></div>
     <div class="stat-card"><div class="value" id="aud-errors">0%</div><div class="label">异常率</div></div>
+  </div>
+
+  <!-- 筛选栏 -->
+  <div class="card" style="margin-bottom:1rem">
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+      <select class="form-select" id="aud-filter-task" onchange="loadAudit()" style="width:160px">
+        <option value="">全部任务类型</option>
+        <option value="contract_review">合同审查</option>
+        <option value="legal_consultation">法律咨询</option>
+        <option value="rpa_data_extraction">RPA 提取</option>
+        <option value="contract_generation">合同生成</option>
+      </select>
+      <input class="form-input" id="aud-filter-search" placeholder="搜索关键词…" style="flex:1;min-width:180px" onkeydown="if(event.key==='Enter')loadAudit()">
+      <button class="btn btn-outline btn-sm" onclick="loadAudit()">🔍 筛选</button>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('aud-filter-task').value='';document.getElementById('aud-filter-search').value='';loadAudit()">🔄 重置</button>
+    </div>
   </div>
 
   <div id="audit-table" class="card" style="margin-bottom:1.5rem">
@@ -350,13 +395,15 @@
       <div class="form-group">
         <label class="form-label">提供商</label>
         <select class="form-select" id="cfg-provider">
-          <option>DeepSeek (深度求索)</option><option>Claude (Anthropic)</option><option>OpenAI (GPT)</option>
+          <option value="deepseek">DeepSeek (深度求索)</option>
+          <option value="claude">Claude (Anthropic)</option>
+          <option value="openai">OpenAI (GPT)</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">随机度 Temperature</label>
         <input type="range" class="form-input" id="cfg-temp" min="0" max="1" step="0.05" value="0.1" style="padding:.25rem 0">
-        <span style="font-size:.8rem;color:var(--text-muted);margin-left:.5rem">0.1</span>
+        <span id="cfg-temp-val" style="font-size:.8rem;color:var(--text-muted);margin-left:.5rem">0.1</span>
       </div>
     </div>
     <div class="form-row">
@@ -403,15 +450,27 @@
     <p style="color:var(--text-secondary);font-size:.85rem;margin-bottom:1.5rem">请输入账号和密码登录</p>
     <div class="form-group">
       <label class="form-label">用户名</label>
-      <input type="text" class="form-input" id="login-username" placeholder="admin" autocomplete="username">
+      <input type="text" class="form-input" id="login-username" placeholder="请输入用户名" autocomplete="username">
     </div>
     <div class="form-group">
       <label class="form-label">密码</label>
-      <input type="password" class="form-input" id="login-password" placeholder="••••••" autocomplete="current-password">
+      <input type="password" class="form-input" id="login-password" placeholder="请输入密码" autocomplete="current-password">
     </div>
     <div id="login-error" style="color:var(--danger);font-size:.82rem;margin-bottom:.5rem;display:none"></div>
     <button class="btn btn-accent btn-lg" onclick="doLogin()" style="width:100%">登 录</button>
-    <p style="font-size:.75rem;color:var(--text-muted);margin-top:1rem;text-align:center">默认管理员: admin / admin123</p>
+    <p style="font-size:.75rem;color:var(--text-muted);margin-top:1rem;text-align:center">请联系系统管理员获取账号</p>
+  </div>
+</div>
+
+<!-- ====== 自定义确认对话框 ====== -->
+<div class="modal-overlay" id="confirm-dialog-overlay" style="display:none">
+  <div class="modal-card">
+    <h3 id="confirm-dialog-title" style="font-size:1rem;margin-bottom:.75rem">确认操作</h3>
+    <p id="confirm-dialog-message" style="font-size:.9rem;color:var(--text-secondary);margin-bottom:1.25rem"></p>
+    <div style="display:flex;gap:.75rem;justify-content:flex-end">
+      <button class="btn btn-outline" id="confirm-dialog-cancel" onclick="closeConfirmDialog()">取消</button>
+      <button class="btn btn-danger" id="confirm-dialog-ok">确认</button>
+    </div>
   </div>
 </div>
 

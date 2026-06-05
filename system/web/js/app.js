@@ -7,7 +7,6 @@ const API = window.location.origin;
 gsap.registerPlugin(ScrollTrigger);
 
 const ANIM = {
-  // 无障碍：检测用户是否偏好减弱动画
   _reduced: false,
   _mm: null,
 
@@ -21,7 +20,6 @@ const ANIM = {
     this._setupScrollReveal();
   },
 
-  // 页面过渡：从当前页淡出，新页淡入
   pageTransition(fromEl, toEl) {
     if (this._reduced || !fromEl) { if (toEl) gsap.set(toEl, { autoAlpha: 1 }); return; }
     const tl = gsap.timeline({ defaults: { duration: 0.2, ease: "power2.out" } });
@@ -29,7 +27,6 @@ const ANIM = {
       .fromTo(toEl, { autoAlpha: 0, scale: 1.02 }, { autoAlpha: 1, scale: 1, duration: 0.25 }, "-=0.1");
   },
 
-  // Toast 入场/退场
   toastEnter(el) {
     if (this._reduced) { el.style.opacity = "1"; return null; }
     return gsap.fromTo(el, { x: 120, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.4, ease: "back.out(1.4)" });
@@ -39,14 +36,12 @@ const ANIM = {
     gsap.to(el, { x: 80, autoAlpha: 0, duration: 0.25, ease: "power2.in", onComplete });
   },
 
-  // 聊天消息入场
   chatMsgEnter(el, role) {
     if (this._reduced) return;
     const x = role === "user" ? 30 : -30;
     gsap.fromTo(el, { x, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.35, ease: "power2.out" });
   },
 
-  // 面板平滑展开
   expanderToggle(body, open) {
     if (this._reduced) { body.style.display = open ? "block" : "none"; return; }
     if (open) {
@@ -61,7 +56,6 @@ const ANIM = {
     }
   },
 
-  // 数字滚动计数器
   animateCounter(el, target, decimals = 0) {
     if (this._reduced) { el.textContent = target.toFixed(decimals); return; }
     const obj = { val: 0 };
@@ -73,7 +67,6 @@ const ANIM = {
     });
   },
 
-  // 审计统计卡片滚动触发
   animateAuditCounters() {
     if (this._reduced) return;
     const cards = document.querySelectorAll("#page-audit .stat-card .value");
@@ -91,7 +84,6 @@ const ANIM = {
     });
   },
 
-  // 导航项 hover 微交互
   _setupNavHover() {
     document.querySelectorAll(".nav-item").forEach(item => {
       item.addEventListener("mouseenter", () => {
@@ -105,9 +97,6 @@ const ANIM = {
     });
   },
 
-  // 展开面板动画（由 initExpanders 在各处调用时触发）
-
-  // 首页卡片 staggered 入场
   _setupHomeCards() {
     if (this._reduced) return;
     const cards = document.querySelectorAll("#page-home .stat-card");
@@ -121,7 +110,6 @@ const ANIM = {
     });
   },
 
-  // 滚动揭示元素
   _setupScrollReveal() {
     if (this._reduced) return;
     ScrollTrigger.batch(".card, .stat-card, .table-wrap", {
@@ -133,15 +121,8 @@ const ANIM = {
     });
   },
 
-  // 刷新所有滚动触发器（页面切换后）
-  refresh() {
-    ScrollTrigger.refresh();
-  },
-
-  // 清理所有滚动触发器
-  killAll() {
-    ScrollTrigger.getAll().forEach(t => t.kill());
-  }
+  refresh() { ScrollTrigger.refresh(); },
+  killAll() { ScrollTrigger.getAll().forEach(t => t.kill()); }
 };
 
 // =========== 认证管理 ===========
@@ -175,6 +156,8 @@ function initNav() {
     el.addEventListener('click', () => {
       const page = el.dataset.page;
       navigateTo(page);
+      // 移动端：导航后关闭侧边栏
+      closeSidebar();
     });
   });
 }
@@ -202,8 +185,54 @@ function navigateTo(page) {
   section.classList.add('active');
   window.location.hash = page;
 
-  // 切换页面后刷新 ScrollTrigger
   requestAnimationFrame(() => ANIM.refresh());
+}
+
+// =========== 移动端侧边栏 ===========
+function initMobileMenu() {
+  document.getElementById('hamburger-btn')?.addEventListener('click', () => {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (sidebar.classList.contains('open')) {
+      closeSidebar();
+    } else {
+      sidebar.classList.add('open');
+      overlay.classList.add('show');
+    }
+  });
+  document.getElementById('sidebar-overlay')?.addEventListener('click', closeSidebar);
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar')?.classList.remove('open');
+  document.getElementById('sidebar-overlay')?.classList.remove('show');
+}
+
+// =========== 自定义确认对话框 ===========
+let _confirmCallback = null;
+
+function confirmDialog(message, callback, title = '确认操作') {
+  _confirmCallback = callback;
+  document.getElementById('confirm-dialog-title').textContent = title;
+  document.getElementById('confirm-dialog-message').textContent = message;
+  document.getElementById('confirm-dialog-overlay').style.display = 'flex';
+  document.getElementById('confirm-dialog-ok').focus();
+}
+
+function closeConfirmDialog() {
+  document.getElementById('confirm-dialog-overlay').style.display = 'none';
+  _confirmCallback = null;
+}
+
+function initConfirmDialog() {
+  document.getElementById('confirm-dialog-ok')?.addEventListener('click', () => {
+    document.getElementById('confirm-dialog-overlay').style.display = 'none';
+    if (_confirmCallback) { _confirmCallback(); _confirmCallback = null; }
+  });
+  document.getElementById('confirm-dialog-cancel')?.addEventListener('click', closeConfirmDialog);
+  document.getElementById('confirm-dialog-overlay')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeConfirmDialog();
+  });
 }
 
 // =========== 标签页 ===========
@@ -225,7 +254,6 @@ function initTabs() {
 // =========== 展开面板 ===========
 function initExpanders() {
   document.querySelectorAll('.expander-header').forEach(header => {
-    // 移除旧监听器以避免重复（通过克隆）
     const clone = header.cloneNode(true);
     header.parentNode.replaceChild(clone, header);
     clone.addEventListener('click', () => {
@@ -315,10 +343,11 @@ async function doLogin() {
     hideLoginOverlay();
     applyRoleUI();
     showToast(`欢迎回来，${currentUser.display_name}`, 'success');
-    // 加载数据
     loadContracts();
     loadChatHistory();
     loadAudit();
+    loadSettings();
+    loadKGStats();
   } catch(e) {
     document.getElementById('login-error').style.display = 'block';
     document.getElementById('login-error').textContent = e.message;
@@ -326,8 +355,11 @@ async function doLogin() {
 }
 
 function doLogout() {
+  // 保存当前对话
+  saveChatToStorage();
   clearAuth();
   showLoginOverlay();
+  closeSidebar();
   showToast('已退出登录', 'info');
 }
 
@@ -357,7 +389,6 @@ function hideLoginOverlay() {
 function applyRoleUI() {
   if (!currentUser) return;
 
-  // 更新用户信息区域
   const userInfo = document.getElementById('user-info');
   if (userInfo) userInfo.style.display = 'block';
   const displayName = document.getElementById('user-display-name');
@@ -365,7 +396,6 @@ function applyRoleUI() {
   const roleTag = document.getElementById('user-role-tag');
   if (roleTag) roleTag.textContent = ROLE_LABELS[currentUser.role] || currentUser.role;
 
-  // 根据角色显示/隐藏导航项
   document.querySelectorAll('.nav-item[data-page]').forEach(el => {
     const page = el.dataset.page;
     const allowedRoles = ROLE_PAGE_PERMISSIONS[page] || [];
@@ -376,7 +406,6 @@ function applyRoleUI() {
     }
   });
 
-  // 如果当前页面不在权限范围内，重定向到 home
   const hashPage = window.location.hash.replace('#', '') || 'home';
   const allowed = ROLE_PAGE_PERMISSIONS[hashPage] || [];
   if (!allowed.includes(currentUser.role)) {
@@ -385,7 +414,6 @@ function applyRoleUI() {
 }
 
 function initAuth() {
-  // 登录页 Enter 发送
   document.getElementById('login-password')?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') doLogin();
   });
@@ -394,7 +422,6 @@ function initAuth() {
     showLoginOverlay();
   } else {
     applyRoleUI();
-    // 验证 token 是否仍然有效
     fetch(`${API}/api/auth/me`, {
       headers: getAuthHeaders()
     }).then(resp => {
@@ -412,12 +439,97 @@ async function checkStatus() {
       document.querySelector('#status-indicator')?.setAttribute('aria-label', '服务运行中');
       document.querySelector('#status-text') && (document.querySelector('#status-text').textContent = '服务运行中');
     }
-  } catch (e) {
-    // offline - keep default
-  }
+  } catch (e) {}
 }
 
 // =========== 合同管理 ===========
+// 文件拖拽上传
+function initContractFileUpload() {
+  const dropZone = document.getElementById('contract-file-drop');
+  const fileInput = document.getElementById('contract-file-input');
+  if (!dropZone || !fileInput) return;
+
+  dropZone.addEventListener('click', () => fileInput.click());
+
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) processContractFile(file);
+  });
+
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (file) processContractFile(file);
+  });
+}
+
+async function processContractFile(file) {
+  const fileName = document.getElementById('contract-file-name');
+  const contentArea = document.getElementById('contract-content');
+
+  // 尝试从文件名推断合同名称
+  const titleInput = document.getElementById('contract-title');
+  if (!titleInput.value.trim()) {
+    titleInput.value = file.name.replace(/\.(docx|pdf|txt)$/i, '');
+  }
+
+  fileName.style.display = 'block';
+  fileName.textContent = `正在解析文件: ${file.name}...`;
+
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const resp = await fetch(`${API}/api/rpa/extract`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: formData,
+    });
+    if (!resp.ok) throw new Error('文件解析失败');
+    const result = await resp.json();
+
+    // 从提取结果中获取信息
+    if (result.contract_title && !document.getElementById('contract-title').value.trim()) {
+      document.getElementById('contract-title').value = result.contract_title;
+    }
+    if (result.party_a) document.getElementById('contract-party-a').value = result.party_a;
+    if (result.party_b) document.getElementById('contract-party-b').value = result.party_b;
+
+    // 对于 TXT 文件，直接用提取的内容；其他格式尝试从结果重建
+    if (file.name.endsWith('.txt')) {
+      const text = await file.text();
+      contentArea.value = text;
+    } else {
+      // 重建合同文本
+      let text = '';
+      if (result.contract_title) text += `合同名称: ${result.contract_title}\n`;
+      if (result.party_a) text += `甲方: ${result.party_a}\n`;
+      if (result.party_b) text += `乙方: ${result.party_b}\n`;
+      if (result.amount) text += `金额: ${result.amount}\n`;
+      if (result.deadline) text += `期限: ${result.deadline}\n`;
+      if (result.dispute_resolution) text += `争议解决: ${result.dispute_resolution}\n`;
+      text += `\n请将完整合同文本粘贴到此处进行审查`;
+      contentArea.value = text;
+    }
+
+    fileName.textContent = `文件解析完成: ${file.name}`;
+    showToast('文件解析完成，已自动填充合同信息', 'success');
+  } catch (e) {
+    fileName.textContent = `解析失败: ${e.message}`;
+    showToast(`文件解析失败: ${e.message}`, 'error');
+    // 兜底：TXT 直接读
+    if (file.name.endsWith('.txt')) {
+      try {
+        const text = await file.text();
+        contentArea.value = text;
+        fileName.textContent = `已读取文本: ${file.name}`;
+      } catch(_) {}
+    }
+  }
+}
+
 async function uploadContract() {
   const data = {
     title: document.getElementById('contract-title').value,
@@ -426,12 +538,13 @@ async function uploadContract() {
     party_a: document.getElementById('contract-party-a').value,
     party_b: document.getElementById('contract-party-b').value,
   };
-  if (!data.content.trim()) { showToast('请输入合同正文', 'warning'); return; }
+  if (!data.content.trim()) { showToast('请输入合同正文或上传文件', 'warning'); return; }
   try {
     const result = await api('/api/contracts/upload', { method: 'POST', body: JSON.stringify(data) });
-    showToast(`上传成功 · 合同 ID: ${result.id}`, 'success');
+    showToast(`上传成功: ${data.title || result.id}`, 'success');
     document.getElementById('review-contract-id').value = result.id;
     document.getElementById('compare-contract-a-id').value = result.id;
+    loadContracts();
   } catch (e) { showToast(`上传失败: ${e.message}`, 'error'); }
 }
 
@@ -439,9 +552,24 @@ async function reviewContract() {
   const id = document.getElementById('review-contract-id').value.trim();
   if (!id) { showToast('请输入合同 ID', 'warning'); return; }
   const btn = document.getElementById('review-btn');
+  const progress = document.getElementById('review-progress');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 审查中...';
+
+  const stages = ['正在解析合同条款...', '正在检索相关法律依据...', '正在分析风险等级...', '正在生成审查意见...'];
+  let stageIdx = 0;
+  progress.style.display = 'flex';
+  progress.innerHTML = `<span class="spinner"></span> ${stages[0]}`;
+  const stageTimer = setInterval(() => {
+    stageIdx++;
+    if (stageIdx < stages.length) {
+      progress.innerHTML = `<span class="spinner"></span> ${stages[stageIdx]}`;
+    }
+  }, 3000);
+
   try {
     const result = await api(`/api/contracts/review/${id}`, { method: 'POST' });
+    clearInterval(stageTimer);
+    progress.style.display = 'none';
     document.getElementById('review-stats').innerHTML = `
       <div class="stat-card"><div class="icon">🔴</div><div class="value">${result.high_risks || 0}</div><div class="label">高风险</div></div>
       <div class="stat-card"><div class="icon">🟡</div><div class="value">${result.medium_risks || 0}</div><div class="label">中风险</div></div>
@@ -465,8 +593,13 @@ async function reviewContract() {
     }
     initExpanders();
     showToast('审查完成', 'success');
-  } catch (e) { showToast(`审查失败: ${e.message}`, 'error'); }
-  finally { btn.disabled = false; btn.innerHTML = '开始审查'; }
+    loadContracts();
+  } catch (e) {
+    clearInterval(stageTimer);
+    progress.style.display = 'none';
+    showToast(`审查失败: ${e.message}`, 'error');
+  }
+  finally { btn.disabled = false; btn.innerHTML = '🔍 开始审查'; }
 }
 
 async function compareContracts() {
@@ -508,9 +641,30 @@ async function generateContract() {
   } catch (e) { showToast(`生成失败: ${e.message}`, 'error'); }
 }
 
-// =========== 智能咨询 ===========
+// =========== 智能咨询 (含持久化 + 打字动画) ===========
+const CHAT_STORAGE_KEY = 'legal_chat_history';
 let chatHistory = [];
 let chatRendered = 0;
+
+function saveChatToStorage() {
+  if (chatHistory.length > 0) {
+    try {
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chatHistory));
+    } catch(e) {}
+  }
+}
+
+function loadChatFromStorage() {
+  try {
+    const saved = localStorage.getItem(CHAT_STORAGE_KEY);
+    if (saved) {
+      chatHistory = JSON.parse(saved);
+      chatRendered = 0;
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
 
 async function askQuestion() {
   const q = document.getElementById('chat-input').value.trim();
@@ -520,12 +674,22 @@ async function askQuestion() {
   chatHistory.push({ role: 'user', content: q });
   renderChat();
   document.getElementById('chat-input').value = '';
+  saveChatToStorage();
+
+  // 显示打字指示器
+  const typingEl = document.getElementById('typing-indicator');
+  if (typingEl) typingEl.style.display = 'flex';
+  const area = document.getElementById('chat-area');
+  if (area) area.scrollTop = area.scrollHeight;
 
   try {
     const result = await api('/api/consultation/ask', { method: 'POST', body: JSON.stringify({ question: q, source_type: scope }) });
+    if (typingEl) typingEl.style.display = 'none';
     chatHistory.push({ role: 'assistant', content: result.answer, law_basis: result.law_basis || [], search_results: result.search_results || [], disclaimer: result.disclaimer });
     renderChat();
+    saveChatToStorage();
   } catch (e) {
+    if (typingEl) typingEl.style.display = 'none';
     chatHistory.push({ role: 'assistant', content: `请求失败: ${e.message}。请确保后端服务已启动。` });
     renderChat();
   }
@@ -548,7 +712,6 @@ function renderChat() {
     return `<div class="chat-msg ${m.role}" data-chat-idx="${idx}">${m.role==='user'?'您':'AI 助手'}<div style="margin-top:.3rem">${body}</div>${extra}</div>`;
   }).join('');
 
-  // 动画：仅对新出现消息做入场
   const newStart = chatRendered;
   chatRendered = chatHistory.length;
   if (newStart < chatHistory.length) {
@@ -566,7 +729,15 @@ function renderChat() {
   area.scrollTop = area.scrollHeight;
 }
 
-function clearChat() { chatHistory = []; chatRendered = 0; renderChat(); }
+function clearChat() {
+  confirmDialog('确定要清空当前对话吗？此操作不可恢复。', () => {
+    chatHistory = [];
+    chatRendered = 0;
+    localStorage.removeItem(CHAT_STORAGE_KEY);
+    renderChat();
+    showToast('对话已清空', 'info');
+  }, '清空对话');
+}
 
 async function exportReview(contractId) {
   try {
@@ -599,40 +770,11 @@ async function downloadGenerated(filename, content) {
 }
 
 async function clearContracts() {
-  if (!confirm('确定清除所有合同吗？此操作不可恢复。')) return;
   try {
     await api('/api/contracts/clear', { method: 'DELETE' });
     document.getElementById('contract-list').innerHTML = '';
     showToast('所有合同已清除','success');
   } catch(e) { showToast('清除失败: '+e.message,'error'); }
-}
-
-async function loadAudit() {
-  try {
-    const resp = await fetch(`${API}/api/audit/logs`, { headers: getAuthHeaders() });
-    if (!resp.ok) return;
-    const data = await resp.json();
-    const logs = data.logs || [];
-    document.getElementById('aud-total').textContent = logs.length;
-    document.getElementById('aud-cases').textContent = new Set(logs.map(l=>l.case_id)).size;
-    document.getElementById('aud-users').textContent = new Set(logs.map(l=>l.user_id)).size;
-    const errs = logs.filter(l=>l.latency_ms>30000).length;
-    document.getElementById('aud-errors').textContent = logs.length ? (errs/logs.length*100).toFixed(1)+'%' : '0%';
-
-    const table = document.getElementById('audit-table');
-    if (logs.length) {
-      let html = '<div class="table-wrap"><table><thead><tr><th>时间</th><th>任务</th><th>案件</th><th>模型</th><th>延迟</th><th>审计ID</th></tr></thead><tbody>';
-      logs.slice(-30).reverse().forEach(l => {
-        html += `<tr><td>${(l.timestamp||'').substring(0,19)}</td><td>${l.task_type||'-'}</td><td>${(l.case_id||'-').substring(0,16)}</td><td>${l.model||'-'}</td><td>${((l.latency_ms||0)/1000).toFixed(1)}s</td><td>${l.audit_id||'-'}</td></tr>`;
-      });
-      html += '</tbody></table></div>';
-      table.innerHTML = html;
-    } else {
-      table.innerHTML = '<p style="font-size:.85rem;color:var(--text-secondary);text-align:center;padding:2rem">暂无审计记录。完成一次合同审查或法律咨询后，日志将在此显示。</p>';
-    }
-    // 触发计数器动画
-    setTimeout(() => ANIM.animateAuditCounters(), 100);
-  } catch(e) {}
 }
 
 async function loadContracts() {
@@ -668,12 +810,17 @@ async function loadContracts() {
 }
 
 async function loadChatHistory() {
+  // 先尝试从 localStorage 恢复
+  if (loadChatFromStorage()) {
+    renderChat();
+    return;
+  }
+  // 否则从后端加载摘要
   try {
     const resp = await fetch(`${API}/api/consultation/history`, { headers: getAuthHeaders() });
     if (!resp.ok) return;
     const data = await resp.json();
     if (!data || !data.length) return;
-    // 只恢复最近的对话摘要（完整内容太大不恢复）
     const area = document.getElementById('chat-history-list');
     if (!area) return;
     let html = '<div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.3rem">历史咨询</div>';
@@ -700,7 +847,152 @@ async function exportChat() {
   } catch(e) { showToast('导出失败: '+e.message, 'error'); }
 }
 
-// =========== 系统配置 ===========
+// =========== 知识图谱 ===========
+async function searchKG() {
+  const keyword = document.getElementById('kg-search-input').value.trim();
+  if (!keyword) { showToast('请输入搜索关键词', 'warning'); return; }
+  const statusEl = document.getElementById('kg-search-status');
+  const resultsEl = document.getElementById('kg-search-results');
+  statusEl.textContent = '搜索中...';
+  resultsEl.innerHTML = '';
+
+  try {
+    const resp = await fetch(`${API}/api/kg/search?keyword=${encodeURIComponent(keyword)}`, { headers: getAuthHeaders() });
+    const data = await resp.json();
+    if (!data.available) {
+      statusEl.textContent = 'Neo4j 知识图谱未连接，请先启动数据库服务';
+      resultsEl.innerHTML = '<div class="card" style="padding:1rem;text-align:center;color:var(--text-muted)">知识图谱服务未启动，请检查 Neo4j 连接</div>';
+      return;
+    }
+    const results = data.results || [];
+    statusEl.textContent = `找到 ${results.length} 条结果`;
+    if (!results.length) {
+      resultsEl.innerHTML = '<div class="card" style="padding:1rem;text-align:center;color:var(--text-muted)">未找到相关实体</div>';
+      return;
+    }
+    const typeLabels = {Law:'法律法规',Article:'法条',Case:'判例',Contract:'合同',Clause:'条款',RiskPoint:'风险点',LegalConcept:'法律概念',Court:'法院'};
+    const typeBadges = {Law:'badge-blue',Article:'badge-green',Case:'badge-yellow',Contract:'badge-gray',Clause:'badge-gray',RiskPoint:'badge-red',LegalConcept:'badge-blue',Court:'badge-yellow'};
+    let html = '<div class="card" style="padding:0"><div class="table-wrap"><table><thead><tr><th>类型</th><th>名称</th><th>详情</th><th>相关度</th></tr></thead><tbody>';
+    results.forEach(r => {
+      const props = r.properties || {};
+      const type = r.type || 'Unknown';
+      const name = props.name || props.article_number || props.case_number || props.title || props.risk_type || JSON.stringify(props).substring(0,60);
+      const detail = props.content || props.definition || props.description || '';
+      html += `<tr>
+        <td><span class="badge ${typeBadges[type]||'badge-gray'}">${typeLabels[type]||type}</span></td>
+        <td style="font-weight:500">${name}</td>
+        <td style="font-size:.82rem;color:var(--text-secondary);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${detail}</td>
+        <td>${r.score ? (r.score*100).toFixed(0)+'%' : '-'}</td>
+      </tr>`;
+    });
+    html += '</tbody></table></div></div>';
+    resultsEl.innerHTML = html;
+  } catch(e) {
+    statusEl.textContent = '搜索失败';
+    resultsEl.innerHTML = `<div class="card" style="padding:1rem;border-color:var(--danger)">搜索失败: ${e.message}</div>`;
+  }
+}
+
+async function loadKGStats() {
+  try {
+    const resp = await fetch(`${API}/api/kg/stats`, { headers: getAuthHeaders() });
+    const data = await resp.json();
+    if (data.available && data.stats) {
+      const cards = document.querySelectorAll('#kg-stats-grid .stat-card .value');
+      if (cards.length >= 4) {
+        cards[2].textContent = data.stats.total_nodes || 0;
+        cards[3].textContent = data.stats.relationships || 0;
+      }
+    }
+  } catch(e) {}
+}
+
+// =========== 审计日志 ===========
+async function loadAudit() {
+  try {
+    const taskType = document.getElementById('aud-filter-task')?.value || '';
+    const search = document.getElementById('aud-filter-search')?.value || '';
+    let url = `${API}/api/audit/logs?limit=200`;
+    if (taskType) url += `&task_type=${encodeURIComponent(taskType)}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+
+    const resp = await fetch(url, { headers: getAuthHeaders() });
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const logs = data.logs || [];
+    document.getElementById('aud-total').textContent = logs.length;
+    document.getElementById('aud-cases').textContent = new Set(logs.map(l=>l.case_id)).size;
+    document.getElementById('aud-users').textContent = new Set(logs.map(l=>l.user_id)).size;
+    const errs = logs.filter(l=>l.latency_ms>30000).length;
+    document.getElementById('aud-errors').textContent = logs.length ? (errs/logs.length*100).toFixed(1)+'%' : '0%';
+
+    const table = document.getElementById('audit-table');
+    if (logs.length) {
+      let html = '<div class="table-wrap"><table><thead><tr><th>时间</th><th>任务</th><th>案件</th><th>用户</th><th>模型</th><th>延迟</th><th>审计ID</th></tr></thead><tbody>';
+      logs.slice(-50).reverse().forEach(l => {
+        const taskLabels = {contract_review:'合同审查',legal_consultation:'法律咨询',rpa_data_extraction:'RPA提取',contract_generation:'合同生成'};
+        html += `<tr>
+          <td>${(l.timestamp||'').substring(0,19)}</td>
+          <td>${taskLabels[l.task_type]||l.task_type||'-'}</td>
+          <td>${(l.case_id||'-').substring(0,12)}</td>
+          <td>${l.user_id||'-'}</td>
+          <td>${l.model||'-'}</td>
+          <td style="color:${(l.latency_ms||0)>15000?'var(--warning)':'var(--text-secondary)'}">${((l.latency_ms||0)/1000).toFixed(1)}s</td>
+          <td style="font-family:monospace;font-size:.75rem">${l.audit_id||'-'}</td>
+        </tr>`;
+      });
+      html += '</tbody></table></div>';
+      table.innerHTML = html;
+    } else {
+      table.innerHTML = '<p style="font-size:.85rem;color:var(--text-secondary);text-align:center;padding:2rem">暂无审计记录。完成一次合同审查或法律咨询后，日志将在此显示。</p>';
+    }
+    setTimeout(() => ANIM.animateAuditCounters(), 100);
+  } catch(e) {}
+}
+
+// =========== 系统配置 (含预填) ===========
+async function loadSettings() {
+  try {
+    const resp = await fetch(`${API}/api/settings/`, { headers: getAuthHeaders() });
+    if (!resp.ok) return;
+    const data = await resp.json();
+
+    // 回填 LLM 配置
+    const prov = data.LLM_PROVIDER || 'deepseek';
+    const providerMap = {deepseek:0,claude:1,openai:2};
+    const sel = document.getElementById('cfg-provider');
+    if (sel) sel.selectedIndex = providerMap[prov] || 0;
+
+    const modelMap = {
+      claude: {id:'cfg-claude-model', val:data.CLAUDE_MODEL},
+      openai: {id:'cfg-openai-model', val:data.OPENAI_MODEL},
+      deepseek: {id:'cfg-deepseek-model', val:data.DEEPSEEK_MODEL},
+    };
+    Object.values(modelMap).forEach(m => {
+      const el = document.getElementById(m.id);
+      if (el && m.val) {
+        const opt = Array.from(el.options).find(o => o.value === m.val);
+        if (opt) el.value = m.val;
+      }
+    });
+
+    const tempEl = document.getElementById('cfg-temp');
+    if (tempEl && data.LLM_TEMPERATURE) { tempEl.value = data.LLM_TEMPERATURE; }
+    const tempVal = document.getElementById('cfg-temp-val');
+    if (tempVal && data.LLM_TEMPERATURE) { tempVal.textContent = data.LLM_TEMPERATURE; }
+
+    const tokensEl = document.getElementById('cfg-max-tokens');
+    if (tokensEl && data.LLM_MAX_TOKENS) { tokensEl.value = data.LLM_MAX_TOKENS; }
+
+    // 回填 API Key (脱敏后的值留空，让用户重新输入)
+    // 不自动填充 API Key，保持安全
+
+    // 回填 Neo4j
+    if (data.NEO4J_URI) { const el = document.getElementById('cfg-neo4j-uri'); if (el) el.value = data.NEO4J_URI; }
+    if (data.NEO4J_USERNAME) { const el = document.getElementById('cfg-neo4j-user'); if (el) el.value = data.NEO4J_USERNAME; }
+  } catch(e) {}
+}
+
 async function saveConfig() {
   const prov = document.getElementById('cfg-provider').value;
   const isDeepSeek = prov.includes('DeepSeek');
@@ -733,7 +1025,7 @@ async function testLLM() {
   area.innerHTML = '<div class="card" style="text-align:center;padding:1.5rem"><span class="spinner"></span> 正在测试大模型连接…</div>';
   try {
     const d = await api('/api/settings/test-connection', { method: 'POST' });
-    const labels = {embedding:'向量嵌入 (OpenAI)', chat:'对话模型 (当前提供商)'};
+    const labels = {embedding:'向量嵌入', chat:'对话模型'};
     let html = '<div class="card" style="padding:1rem"><h4 style="margin-bottom:.75rem">🔍 测试结果</h4>';
     let allOk = true;
     Object.entries(d.results||{}).forEach(([k,v]) => {
@@ -749,7 +1041,7 @@ async function testLLM() {
     html += '</div>';
     area.innerHTML = html;
   } catch (e) {
-    area.innerHTML = `<div class="card" style="padding:1rem;border-color:var(--danger)"><h4 style="color:var(--danger);margin-bottom:.5rem">❌ 测试失败</h4><p style="font-size:.88rem;color:var(--text-secondary)">${e.message}</p><p style="font-size:.8rem;color:var(--text-muted);margin-top:.5rem">请检查后端服务是否启动、API Key 是否正确</p></div>`;
+    area.innerHTML = `<div class="card" style="padding:1rem;border-color:var(--danger)"><h4 style="color:var(--danger);margin-bottom:.5rem">❌ 测试失败</h4><p style="font-size:.88rem">${e.message}</p></div>`;
   }
 }
 
@@ -762,6 +1054,47 @@ async function testNeo4j() {
     area.innerHTML = `<div class="card" style="padding:1rem;border-color:${ok?'var(--success)':'var(--warning)'}"><h4 style="margin-bottom:.5rem;color:${ok?'var(--success)':'var(--warning)'}">${ok ? '✅ 知识图谱连接正常' : '⚠️ '+d.message}</h4></div>`;
   } catch (e) {
     area.innerHTML = `<div class="card" style="padding:1rem;border-color:var(--danger)"><h4 style="color:var(--danger);margin-bottom:.5rem">❌ 测试失败</h4><p style="font-size:.88rem">${e.message}</p></div>`;
+  }
+}
+
+// =========== RPA (含格式化结果卡片) ===========
+async function extractData() {
+  const file = document.getElementById('rpa-file').files[0];
+  if (!file) { showToast('请选择文件', 'warning'); return; }
+  const area = document.getElementById('rpa-result');
+  area.innerHTML = '<div class="card" style="text-align:center;padding:1.5rem"><span class="spinner"></span> AI 正在分析文档…</div>';
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const resp = await fetch(`${API}/api/rpa/extract`, { method: 'POST', headers: getAuthHeaders(), body: formData });
+    if (!resp.ok) { const t = await resp.text(); throw new Error(t); }
+    const result = await resp.json();
+
+    // 格式化卡片展示
+    const fieldLabels = {
+      contract_title: '📄 合同标题',
+      party_a: '🏢 甲方',
+      party_b: '🏢 乙方',
+      amount: '💰 合同金额',
+      deadline: '📅 约定期限',
+      dispute_resolution: '⚖️ 争议解决',
+    };
+    let html = '<div class="card rpa-result-card"><h4 style="margin-bottom:.75rem">提取结果</h4>';
+    let hasFields = false;
+    Object.entries(fieldLabels).forEach(([key, label]) => {
+      if (result[key]) {
+        hasFields = true;
+        html += `<div class="rpa-field"><div class="rpa-field-label">${label}</div><div class="rpa-field-value">${result[key]}</div></div>`;
+      }
+    });
+    if (!hasFields) html += '<p style="color:var(--text-muted);text-align:center">未提取到关键信息</p>';
+    html += '</div>';
+    // 也保留 JSON 细节供高级用户查看
+    html += `<details style="margin-top:.5rem"><summary style="cursor:pointer;font-size:.8rem;color:var(--text-muted)">查看原始 JSON</summary><pre style="background:#f8fafc;padding:.75rem;border-radius:var(--radius-sm);font-size:.78rem;overflow-x:auto;margin-top:.25rem">${JSON.stringify(result, null, 2)}</pre></details>`;
+    area.innerHTML = html;
+    showToast('提取成功', 'success');
+  } catch (e) {
+    area.innerHTML = `<div class="card" style="padding:1rem;border-color:var(--danger)"><h4 style="color:var(--danger);margin-bottom:.5rem">❌ 提取失败</h4><p style="font-size:.88rem">${e.message}</p></div>`;
   }
 }
 
@@ -793,25 +1126,6 @@ async function batchExtract() {
   showToast(`处理完成: ${files.length} 个文件`, 'success');
 }
 
-// =========== RPA ===========
-async function extractData() {
-  const file = document.getElementById('rpa-file').files[0];
-  if (!file) { showToast('请选择文件', 'warning'); return; }
-  const area = document.getElementById('rpa-result');
-  area.innerHTML = '<div class="card" style="text-align:center;padding:1.5rem"><span class="spinner"></span> AI 正在分析文档…</div>';
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
-    const resp = await fetch(`${API}/api/rpa/extract`, { method: 'POST', headers: getAuthHeaders(), body: formData });
-    if (!resp.ok) { const t = await resp.text(); throw new Error(t); }
-    const result = await resp.json();
-    area.innerHTML = `<pre style="background:#f8fafc;padding:1rem;border-radius:var(--radius-sm);font-size:.82rem;overflow-x:auto">${JSON.stringify(result, null, 2)}</pre>`;
-    showToast('提取成功', 'success');
-  } catch (e) {
-    area.innerHTML = `<div class="card" style="padding:1rem;border-color:var(--danger)"><h4 style="color:var(--danger);margin-bottom:.5rem">❌ 提取失败</h4><p style="font-size:.88rem">${e.message}</p></div>`;
-  }
-}
-
 // =========== Markdown 渲染 ===========
 function renderMarkdown(md) {
   let html = md
@@ -825,13 +1139,45 @@ function renderMarkdown(md) {
     .replace(/^> (.+)$/gm, '<blockquote style="border-left:3px solid var(--accent);margin:.5rem 0;padding:.4rem 1rem;background:#f8fafc;border-radius:0 6px 6px 0;font-size:.85rem;color:var(--text-secondary)">$1</blockquote>')
     .replace(/`([^`]+)`/g, '<code style="background:var(--bg);padding:2px 7px;border-radius:3px;font-size:.84rem;color:var(--danger)">$1</code>');
 
-  // 把连续 <li> 包在 <ul> 里
   html = html.replace(/((?:<li[^>]*>.*?<\/li>\s*)+)/g, '<ul style="padding-left:1.2rem;margin:.5rem 0">$1</ul>');
-
-  // 空行转段落间距
   html = html.replace(/\n\n/g, '<br>');
-
   return html;
+}
+
+// =========== 键盘快捷键 ===========
+function initKeyboardShortcuts() {
+  document.addEventListener('keydown', (e) => {
+    // Ctrl+Enter: 发送咨询消息
+    if (e.ctrlKey && e.key === 'Enter') {
+      e.preventDefault();
+      const chatInput = document.getElementById('chat-input');
+      if (chatInput && document.activeElement === chatInput) {
+        askQuestion();
+      }
+    }
+    // Ctrl+K: 聚焦知识图谱搜索
+    if (e.ctrlKey && e.key === 'k') {
+      e.preventDefault();
+      navigateTo('kg');
+      setTimeout(() => {
+        document.getElementById('kg-search-input')?.focus();
+      }, 300);
+    }
+    // Escape: 关闭弹窗/侧边栏
+    if (e.key === 'Escape') {
+      closeSidebar();
+      closeConfirmDialog();
+    }
+  });
+
+  // Temperature 滑块实时显示值
+  const tempSlider = document.getElementById('cfg-temp');
+  const tempVal = document.getElementById('cfg-temp-val');
+  if (tempSlider && tempVal) {
+    tempSlider.addEventListener('input', () => {
+      tempVal.textContent = parseFloat(tempSlider.value).toFixed(2);
+    });
+  }
 }
 
 // =========== 初始化 ===========
@@ -841,14 +1187,18 @@ document.addEventListener('DOMContentLoaded', () => {
   initNav();
   initTabs();
   initExpanders();
+  initMobileMenu();
+  initConfirmDialog();
+  initContractFileUpload();
+  initKeyboardShortcuts();
 
-  // 初始页面（仅在已登录时）
   if (currentUser) {
     const hash = window.location.hash.replace('#', '') || 'home';
     navigateTo(hash);
+    // 尝试恢复对话
+    loadChatFromStorage();
   }
 
-  // 定期检测状态
   checkStatus();
   setInterval(checkStatus, 15000);
 
@@ -857,19 +1207,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askQuestion(); }
   });
 
-  // 快捷问题
+  // 快捷问题：点击后填入输入框（不直接发送）
   document.querySelectorAll('.quick-q').forEach(el => {
     el.addEventListener('click', () => {
-      document.getElementById('chat-input').value = el.dataset.q;
-      askQuestion();
+      const input = document.getElementById('chat-input');
+      input.value = el.dataset.q;
+      input.focus();
+      showToast('问题已填入，按 Enter 发送', 'info');
     });
   });
 
-  // 加载持久化数据（仅在已登录时）
+  // 加载数据（仅在已登录时）
   if (currentUser) {
     loadContracts();
     loadChatHistory();
     loadAudit();
+    loadSettings();
+    loadKGStats();
   }
 
   // 登录卡片入场动画

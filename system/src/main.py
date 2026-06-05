@@ -89,11 +89,51 @@ from src.auth_service.routes import router as auth_router
 app.include_router(auth_router)
 
 @app.get("/api/audit/logs")
-async def get_audit_logs(current_user: dict = Depends(require_role("admin","auditor"))):
-    """获取审计日志列表"""
+async def get_audit_logs(
+    task_type: str = "",
+    search: str = "",
+    limit: int = 100,
+    current_user: dict = Depends(require_role("admin","auditor")),
+):
+    """获取审计日志列表，支持按任务类型和关键词筛选"""
     from src.audit_service.logger import audit_logger
-    logs = audit_logger.get_all_logs(limit=100)
+    logs = audit_logger.get_all_logs(limit=limit)
+    if task_type:
+        logs = [l for l in logs if l.get("task_type") == task_type]
+    if search:
+        q = search.lower()
+        logs = [l for l in logs if q in l.get("task_type", "").lower()
+                or q in l.get("case_id", "").lower()
+                or q in l.get("model", "").lower()
+                or q in l.get("user_id", "").lower()]
     return {"total": len(logs), "logs": logs}
+
+
+@app.get("/api/kg/search")
+async def search_knowledge_graph(
+    keyword: str = "",
+    current_user: dict = Depends(require_role("admin", "legal")),
+):
+    """关键词搜索知识图谱实体（Neo4j 全文检索）"""
+    from src.knowledge_graph.query import kg_query
+    if not keyword.strip():
+        return {"results": [], "available": kg_query.is_available}
+    try:
+        results = kg_query.search_fulltext(keyword.strip())
+        return {"results": results, "available": True}
+    except Exception:
+        return {"results": [], "available": False}
+
+
+@app.get("/api/kg/stats")
+async def get_kg_stats(current_user: dict = Depends(require_role("admin", "legal"))):
+    """获取知识图谱统计信息"""
+    from src.knowledge_graph.builder import graph_builder
+    try:
+        stats = graph_builder.get_stats()
+        return {"stats": stats, "available": True}
+    except Exception:
+        return {"stats": {"nodes": {}, "relationships": 0, "total_nodes": 0}, "available": False}
 
 
 # ---- 首页 ----
