@@ -3,6 +3,147 @@
  */
 const API = window.location.origin;
 
+// =========== GSAP 动画系统 ===========
+gsap.registerPlugin(ScrollTrigger);
+
+const ANIM = {
+  // 无障碍：检测用户是否偏好减弱动画
+  _reduced: false,
+  _mm: null,
+
+  init() {
+    this._mm = gsap.matchMedia();
+    this._mm.add("(prefers-reduced-motion: reduce)", (ctx) => {
+      this._reduced = ctx.conditions.reduceMotion;
+    });
+    this._setupNavHover();
+    this._setupHomeCards();
+    this._setupScrollReveal();
+  },
+
+  // 页面过渡：从当前页淡出，新页淡入
+  pageTransition(fromEl, toEl) {
+    if (this._reduced || !fromEl) { if (toEl) gsap.set(toEl, { autoAlpha: 1 }); return; }
+    const tl = gsap.timeline({ defaults: { duration: 0.2, ease: "power2.out" } });
+    tl.to(fromEl, { autoAlpha: 0, scale: 0.98 })
+      .fromTo(toEl, { autoAlpha: 0, scale: 1.02 }, { autoAlpha: 1, scale: 1, duration: 0.25 }, "-=0.1");
+  },
+
+  // Toast 入场/退场
+  toastEnter(el) {
+    if (this._reduced) { el.style.opacity = "1"; return null; }
+    return gsap.fromTo(el, { x: 120, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.4, ease: "back.out(1.4)" });
+  },
+  toastExit(el, onComplete) {
+    if (this._reduced) { el.remove(); onComplete?.(); return; }
+    gsap.to(el, { x: 80, autoAlpha: 0, duration: 0.25, ease: "power2.in", onComplete });
+  },
+
+  // 聊天消息入场
+  chatMsgEnter(el, role) {
+    if (this._reduced) return;
+    const x = role === "user" ? 30 : -30;
+    gsap.fromTo(el, { x, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.35, ease: "power2.out" });
+  },
+
+  // 面板平滑展开
+  expanderToggle(body, open) {
+    if (this._reduced) { body.style.display = open ? "block" : "none"; return; }
+    if (open) {
+      body.style.display = "block";
+      const h = body.scrollHeight;
+      gsap.fromTo(body, { height: 0, autoAlpha: 0 }, { height: h, autoAlpha: 1, duration: 0.3, ease: "power2.out", onComplete: () => { body.style.height = "auto"; } });
+    } else {
+      const curH = body.scrollHeight;
+      body.style.height = curH + "px";
+      body.style.overflow = "hidden";
+      gsap.to(body, { height: 0, autoAlpha: 0, duration: 0.2, ease: "power2.in", onComplete: () => { body.style.display = "none"; body.style.height = ""; } });
+    }
+  },
+
+  // 数字滚动计数器
+  animateCounter(el, target, decimals = 0) {
+    if (this._reduced) { el.textContent = target.toFixed(decimals); return; }
+    const obj = { val: 0 };
+    gsap.to(obj, {
+      val: target,
+      duration: 0.8,
+      ease: "power2.out",
+      onUpdate: () => { el.textContent = obj.val.toFixed(decimals); }
+    });
+  },
+
+  // 审计统计卡片滚动触发
+  animateAuditCounters() {
+    if (this._reduced) return;
+    const cards = document.querySelectorAll("#page-audit .stat-card .value");
+    cards.forEach(card => {
+      const text = card.textContent;
+      const num = parseFloat(text);
+      if (isNaN(num)) return;
+      const isPercent = text.includes("%");
+      ScrollTrigger.create({
+        trigger: card,
+        start: "top 85%",
+        once: true,
+        onEnter: () => this.animateCounter(card, num, isPercent ? 1 : 0)
+      });
+    });
+  },
+
+  // 导航项 hover 微交互
+  _setupNavHover() {
+    document.querySelectorAll(".nav-item").forEach(item => {
+      item.addEventListener("mouseenter", () => {
+        if (this._reduced) return;
+        gsap.to(item, { x: 4, duration: 0.2, ease: "power2.out" });
+      });
+      item.addEventListener("mouseleave", () => {
+        if (this._reduced) return;
+        gsap.to(item, { x: 0, duration: 0.2, ease: "power2.out" });
+      });
+    });
+  },
+
+  // 展开面板动画（由 initExpanders 在各处调用时触发）
+
+  // 首页卡片 staggered 入场
+  _setupHomeCards() {
+    if (this._reduced) return;
+    const cards = document.querySelectorAll("#page-home .stat-card");
+    if (!cards.length) return;
+    ScrollTrigger.batch(cards, {
+      start: "top 85%",
+      once: true,
+      onEnter: (elements) => {
+        gsap.fromTo(elements, { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, stagger: 0.12, duration: 0.5, ease: "power2.out" });
+      }
+    });
+  },
+
+  // 滚动揭示元素
+  _setupScrollReveal() {
+    if (this._reduced) return;
+    ScrollTrigger.batch(".card, .stat-card, .table-wrap", {
+      start: "top 92%",
+      once: true,
+      onEnter: (elements) => {
+        gsap.fromTo(elements, { y: 20, autoAlpha: 0 }, { y: 0, autoAlpha: 1, stagger: 0.06, duration: 0.4, ease: "power2.out" });
+      }
+    });
+  },
+
+  // 刷新所有滚动触发器（页面切换后）
+  refresh() {
+    ScrollTrigger.refresh();
+  },
+
+  // 清理所有滚动触发器
+  killAll() {
+    ScrollTrigger.getAll().forEach(t => t.kill());
+  }
+};
+
 // =========== 认证管理 ===========
 let authToken = localStorage.getItem('legal_auth_token') || null;
 let currentUser = JSON.parse(localStorage.getItem('legal_auth_user') || 'null');
@@ -39,7 +180,6 @@ function initNav() {
 }
 
 function navigateTo(page) {
-  // 角色权限检查
   if (currentUser) {
     const allowed = ROLE_PAGE_PERMISSIONS[page] || [];
     if (!allowed.includes(currentUser.role)) {
@@ -49,10 +189,21 @@ function navigateTo(page) {
   }
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active');
-  document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+
+  const current = document.querySelector('.page-section.active');
   const section = document.getElementById(`page-${page}`);
-  if (section) section.classList.add('active');
+  if (!section) return;
+  if (current === section) return;
+
+  if (current) {
+    ANIM.pageTransition(current, section);
+    current.classList.remove('active');
+  }
+  section.classList.add('active');
   window.location.hash = page;
+
+  // 切换页面后刷新 ScrollTrigger
+  requestAnimationFrame(() => ANIM.refresh());
 }
 
 // =========== 标签页 ===========
@@ -74,8 +225,16 @@ function initTabs() {
 // =========== 展开面板 ===========
 function initExpanders() {
   document.querySelectorAll('.expander-header').forEach(header => {
-    header.addEventListener('click', () => {
-      header.parentElement.classList.toggle('open');
+    // 移除旧监听器以避免重复（通过克隆）
+    const clone = header.cloneNode(true);
+    header.parentNode.replaceChild(clone, header);
+    clone.addEventListener('click', () => {
+      const expander = clone.parentElement;
+      const body = expander.querySelector('.expander-body');
+      if (!body) return;
+      const willOpen = !expander.classList.contains('open');
+      expander.classList.toggle('open');
+      ANIM.expanderToggle(body, willOpen);
     });
   });
 }
@@ -87,7 +246,13 @@ function showToast(msg, type = 'info', duration = 4000) {
   el.className = `toast ${type}`;
   el.textContent = msg;
   container.appendChild(el);
-  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, duration);
+
+  const tween = ANIM.toastEnter(el);
+  const hide = () => {
+    ANIM.toastExit(el, () => el.remove());
+  };
+  el.addEventListener('click', () => { tween?.kill(); hide(); });
+  setTimeout(hide, duration);
 }
 
 function createToastContainer() {
@@ -244,6 +409,7 @@ async function checkStatus() {
     const resp = await fetch(`${API}/api/health`);
     if (resp.ok) {
       document.querySelector('#status-indicator')?.classList.replace('offline', 'online');
+      document.querySelector('#status-indicator')?.setAttribute('aria-label', '服务运行中');
       document.querySelector('#status-text') && (document.querySelector('#status-text').textContent = '服务运行中');
     }
   } catch (e) {
@@ -344,6 +510,7 @@ async function generateContract() {
 
 // =========== 智能咨询 ===========
 let chatHistory = [];
+let chatRendered = 0;
 
 async function askQuestion() {
   const q = document.getElementById('chat-input').value.trim();
@@ -368,21 +535,38 @@ function renderChat() {
   const area = document.getElementById('chat-area');
   if (chatHistory.length === 0) {
     area.innerHTML = `<div class="chat-empty"><div class="icon">⚖️</div><div>欢迎使用智能法律咨询</div><div style="font-size:.85rem;color:var(--text-muted)">AI 将基于法律法规知识库为您解答</div></div>`;
+    chatRendered = 0;
     return;
   }
   let exportBtn = chatHistory.length ? '<div style="text-align:right;margin-bottom:.5rem"><button class="btn btn-outline btn-sm" onclick="exportChat()">📥 导出对话为 Word</button></div>' : '';
-  area.innerHTML = exportBtn + chatHistory.map(m => {
+  area.innerHTML = exportBtn + chatHistory.map((m, idx) => {
     let body = m.role === 'assistant' ? renderMarkdown(m.content) : m.content.replace(/</g,'&lt;').replace(/>/g,'&gt;');
     let extra = '';
     if (m.law_basis?.length) extra += `<details style="margin-top:.5rem"><summary style="cursor:pointer;font-size:.82rem;color:var(--accent)">📚 法律依据 (${m.law_basis.length}条)</summary>${m.law_basis.map(b=>`<div style="font-size:.8rem;margin-top:.25rem">· ${b}</div>`).join('')}</details>`;
     if (m.search_results?.length) extra += `<details style="margin-top:.3rem"><summary style="cursor:pointer;font-size:.82rem;color:var(--accent)">🔍 检索来源 (${m.search_results.length}条)</summary>${m.search_results.map(r=>`<div style="font-size:.78rem;color:var(--text-secondary);margin-top:.25rem">${r.source||''} ${r.article||''} · 相关度:${r.relevance||'中'}</div>`).join('')}</details>`;
     if (m.disclaimer) extra += `<div style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem">${m.disclaimer}</div>`;
-    return `<div class="chat-msg ${m.role}"><strong>${m.role==='user'?'您':'AI 助手'}</strong><div style="margin-top:.3rem">${body}</div>${extra}</div>`;
+    return `<div class="chat-msg ${m.role}" data-chat-idx="${idx}">${m.role==='user'?'您':'AI 助手'}<div style="margin-top:.3rem">${body}</div>${extra}</div>`;
   }).join('');
+
+  // 动画：仅对新出现消息做入场
+  const newStart = chatRendered;
+  chatRendered = chatHistory.length;
+  if (newStart < chatHistory.length) {
+    requestAnimationFrame(() => {
+      const msgs = area.querySelectorAll('.chat-msg');
+      msgs.forEach((el) => {
+        const idx = parseInt(el.dataset.chatIdx);
+        if (idx >= newStart) {
+          ANIM.chatMsgEnter(el, chatHistory[idx].role);
+        }
+      });
+    });
+  }
+
   area.scrollTop = area.scrollHeight;
 }
 
-function clearChat() { chatHistory = []; renderChat(); }
+function clearChat() { chatHistory = []; chatRendered = 0; renderChat(); }
 
 async function exportReview(contractId) {
   try {
@@ -446,6 +630,8 @@ async function loadAudit() {
     } else {
       table.innerHTML = '<p style="font-size:.85rem;color:var(--text-secondary);text-align:center;padding:2rem">暂无审计记录。完成一次合同审查或法律咨询后，日志将在此显示。</p>';
     }
+    // 触发计数器动画
+    setTimeout(() => ANIM.animateAuditCounters(), 100);
   } catch(e) {}
 }
 
@@ -477,6 +663,7 @@ async function loadContracts() {
         </div></div>`;
     });
     area.innerHTML = html;
+    initExpanders();
   } catch(e) {}
 }
 
@@ -649,6 +836,7 @@ function renderMarkdown(md) {
 
 // =========== 初始化 ===========
 document.addEventListener('DOMContentLoaded', () => {
+  ANIM.init();
   initAuth();
   initNav();
   initTabs();
@@ -682,5 +870,11 @@ document.addEventListener('DOMContentLoaded', () => {
     loadContracts();
     loadChatHistory();
     loadAudit();
+  }
+
+  // 登录卡片入场动画
+  const loginCard = document.querySelector('.login-card');
+  if (loginCard && !ANIM._reduced) {
+    gsap.from(loginCard, { y: 40, autoAlpha: 0, duration: 0.5, ease: "back.out(1.3)" });
   }
 });

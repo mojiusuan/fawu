@@ -55,6 +55,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
   display:flex; align-items:center; gap:10px; padding:.7rem .85rem; margin-bottom:2px;
   border-radius:8px; cursor:pointer; font-size:.9rem; color:#b8c7d9;
   transition:all var(--transition); text-decoration:none; user-select:none;
+  background:none; border:none; width:100%; font-family:inherit; text-align:left;
 }
 .nav-item:hover { background:var(--sidebar-hover); color:#e2e8f0; }
 .nav-item.active { background:var(--sidebar-active); color:#fff; font-weight:600; }
@@ -73,6 +74,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
 .page-section.active { display:block; }
 
 @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+/* GSAP 接管页面过渡后，不需要 CSS fadeIn */
 
 .page-title { font-size:1.5rem; font-weight:700; color:var(--primary-dark); margin-bottom:.25rem; }
 .page-desc { font-size:.85rem; color:var(--text-secondary); margin-bottom:1.5rem; }
@@ -157,8 +159,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
   transition:background var(--transition);
 }
 .expander-header:hover { background:#e2e8f0; }
-.expander-body { display:none; padding:1rem; border-top:1px solid var(--border); }
-.expander.open .expander-body { display:block; }
+.expander-body { display:none; overflow:hidden; padding:1rem; border-top:1px solid var(--border); }
 .expander.open .expander-arrow { transform:rotate(180deg); }
 .expander-arrow { transition:transform var(--transition); font-size:.7rem; color:var(--text-muted); }
 
@@ -172,7 +173,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
 
 /* ====== Toast ====== */
 .toast-container { position:fixed; top:1rem; right:1rem; z-index:9999; display:flex; flex-direction:column; gap:.5rem; }
-.toast { padding:.75rem 1.25rem; border-radius:var(--radius-sm); font-size:.88rem; box-shadow:var(--shadow-md); animation:slideIn .3s ease; max-width:400px; }
+.toast { padding:.75rem 1.25rem; border-radius:var(--radius-sm); font-size:.88rem; box-shadow:var(--shadow-md); max-width:400px; opacity:0; }
 .toast.success { background:#d1fae5; color:#065f46; border:1px solid #6ee7b7; }
 .toast.error { background:#fde8e8; color:#991b1b; border:1px solid #fca5a5; }
 .toast.warning { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; }

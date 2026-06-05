@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>智能法务系统</title>
 <link rel="stylesheet" href="/css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 </head>
 <body>
 
@@ -18,14 +20,14 @@
     </div>
   </div>
 
-  <nav class="sidebar-nav">
-    <div class="nav-item active" data-page="home">🏠 系统首页</div>
-    <div class="nav-item" data-page="contract">📄 合同管理</div>
-    <div class="nav-item" data-page="consultation">💬 智能咨询</div>
-    <div class="nav-item" data-page="kg">🔍 知识图谱</div>
-    <div class="nav-item" data-page="audit">📊 审计报告</div>
-    <div class="nav-item" data-page="rpa">🤖 自动化工具</div>
-    <div class="nav-item" data-page="settings">⚙️ 系统配置</div>
+  <nav class="sidebar-nav" aria-label="主导航">
+    <button class="nav-item active" data-page="home">🏠 系统首页</button>
+    <button class="nav-item" data-page="contract">📄 合同管理</button>
+    <button class="nav-item" data-page="consultation">💬 智能咨询</button>
+    <button class="nav-item" data-page="kg">🔍 知识图谱</button>
+    <button class="nav-item" data-page="audit">📊 审计报告</button>
+    <button class="nav-item" data-page="rpa">🤖 自动化工具</button>
+    <button class="nav-item" data-page="settings">⚙️ 系统配置</button>
   </nav>
 
   <div class="sidebar-footer">
@@ -39,7 +41,7 @@
         <button id="logout-btn" onclick="doLogout()" style="margin-left:auto;background:none;border:1px solid #475569;color:#94a3b8;padding:2px 8px;border-radius:4px;font-size:.7rem;cursor:pointer">退出</button>
       </div>
     </div>
-    <span id="status-indicator" class="status-dot offline"></span>
+    <span id="status-indicator" class="status-dot offline" role="status" aria-label="服务状态"></span>
     <span id="status-text">服务未连接</span>
   </div>
 </aside>
@@ -197,7 +199,7 @@
 
   <div class="card" style="margin-bottom:1rem">
     <div id="chat-history-list" style="margin-bottom:.5rem"></div>
-    <div class="chat-area" id="chat-area"></div>
+    <div class="chat-area" id="chat-area" role="log" aria-live="polite" aria-label="对话记录"></div>
     <div style="display:flex;gap:.5rem">
       <input class="form-input" id="chat-input" placeholder="输入法律问题后按 Enter 发送…" style="flex:1">
       <select class="form-select" id="chat-scope" style="width:120px"><option>全部</option><option>法规</option><option>判例</option><option>合同</option></select>
