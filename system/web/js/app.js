@@ -1705,9 +1705,6 @@ function calcFee() {
     </div>`;
   }).catch(e => showToast('计算失败: '+e.message,'error'));
 }
-    }
-  }).catch(e => showToast('计算失败: '+e.message,'error'));
-}
 
 function updateCompForm() {
   const scenario = document.getElementById('comp-scenario').value;
