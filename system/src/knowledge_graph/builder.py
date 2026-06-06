@@ -63,6 +63,18 @@ class GraphBuilder:
                 except Exception as e:
                     print(f"索引创建跳过: {e}")
 
+            fulltext_index = """
+            CREATE FULLTEXT INDEX entitySearch IF NOT EXISTS
+            FOR (n:Law|Article|Case|Contract|Clause|RiskPoint|LegalConcept|Court)
+            ON EACH [n.name, n.article_number, n.content, n.case_number,
+                     n.title, n.facts, n.verdict, n.clause_number,
+                     n.risk_type, n.description, n.definition]
+            """
+            try:
+                session.run(fulltext_index)
+            except Exception as e:
+                print(f"全文索引创建跳过: {e}")
+
     def clear_all(self):
         """清空所有数据"""
         if not self._ensure_connected():

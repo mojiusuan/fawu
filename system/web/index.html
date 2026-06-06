@@ -26,9 +26,12 @@
 
   <nav class="sidebar-nav" aria-label="主导航">
     <button class="nav-item active" data-page="home">🏠 系统首页</button>
+    <button class="nav-item" data-page="case-center">📋 案件中心</button>
     <button class="nav-item" data-page="contract">📄 合同管理</button>
     <button class="nav-item" data-page="consultation">💬 智能咨询</button>
     <button class="nav-item" data-page="kg">🔍 知识图谱</button>
+    <button class="nav-item" data-page="templates">📝 文书模板</button>
+    <button class="nav-item" data-page="calculators">🧮 计算工具</button>
     <button class="nav-item" data-page="audit">📊 审计报告</button>
     <button class="nav-item" data-page="rpa">🤖 自动化工具</button>
     <button class="nav-item" data-page="settings">⚙️ 系统配置</button>
@@ -438,6 +441,194 @@
     <button class="btn btn-outline btn-lg" onclick="testNeo4j()">🗄️ 测试图谱连接</button>
   </div>
   <div id="test-result" style="margin-top:1rem"></div>
+</section>
+
+
+<!-- ====== 案件中心 ====== -->
+<section class="page-section" id="page-case-center">
+  <div class="page-title">📋 案件中心</div>
+  <div class="page-desc">统一管理您的法律案件 · 案情分析 · 证据整理 · 费用测算</div>
+
+  <div style="display:flex;gap:.75rem;margin-bottom:1rem">
+    <button class="btn btn-accent" onclick="navigateTo('case-analysis')">➕ 新建案情分析</button>
+    <select class="form-select" id="case-status-filter" onchange="loadCaseList()" style="width:150px">
+      <option value="">全部状态</option>
+      <option value="assessing">评估中</option>
+      <option value="negotiating">协商中</option>
+      <option value="litigating">诉讼中</option>
+      <option value="closed">已结案</option>
+    </select>
+  </div>
+
+  <div id="case-list" style="display:grid;gap:1rem">
+    <div class="card" style="text-align:center;padding:2rem;color:var(--text-muted)">暂无案件，点击上方按钮创建</div>
+  </div>
+</section>
+
+<!-- ====== 智能案情分析 ====== -->
+<section class="page-section" id="page-case-analysis">
+  <div class="page-title">🔬 智能案情分析</div>
+  <div class="page-desc">引导式填写案情要素 · AI 自动梳理 · 生成专业分析报告</div>
+
+  <div class="card" id="analysis-step1">
+    <h3 style="font-size:.95rem;margin-bottom:1rem">Step 1: 选择案由</h3>
+    <div id="case-type-selector" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.5rem;margin-bottom:1rem"></div>
+    <div class="form-group">
+      <label class="form-label">案件名称（可选）</label>
+      <input class="form-input" id="analysis-case-name" placeholder="为本案取个名字，如：张三劳动纠纷案">
+    </div>
+    <div class="form-group">
+      <label class="form-label">案情描述</label>
+      <textarea class="form-textarea" id="analysis-description" placeholder="请用自然语言描述您的案件情况，包括时间、人物、事件经过等。越详细分析越准确。" style="min-height:120px"></textarea>
+    </div>
+    <button class="btn btn-accent btn-lg" onclick="startAnalysis()">下一步 → 填写案件要素</button>
+  </div>
+
+  <div class="card" id="analysis-step2" style="display:none">
+    <h3 style="font-size:.95rem;margin-bottom:1rem">Step 2: 填写案件要素</h3>
+    <div id="analysis-fields"></div>
+    <div style="display:flex;gap:.75rem;margin-top:1rem">
+      <button class="btn btn-outline" onclick="backToStep1()">← 返回上一步</button>
+      <button class="btn btn-accent btn-lg" id="analysis-submit-btn" onclick="submitAnalysis()">🔬 开始智能分析</button>
+    </div>
+    <div id="analysis-progress" class="progress-card" style="display:none;margin-top:1rem"></div>
+  </div>
+
+  <div id="analysis-step3" style="display:none">
+    <div style="display:flex;gap:.75rem;margin-bottom:1rem">
+      <button class="btn btn-outline" onclick="resetAnalysis()">🔄 新建分析</button>
+      <button class="btn btn-outline" onclick="saveToCaseCenter()">💾 保存到案件中心</button>
+    </div>
+    <div id="analysis-report"></div>
+  </div>
+</section>
+
+<!-- ====== 文书模板 ====== -->
+<section class="page-section" id="page-templates">
+  <div class="page-title">📝 法律文书模板</div>
+  <div class="page-desc">常用法律文书模板库 · 智能组装 · 一键下载</div>
+
+  <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap" id="template-categories">
+    <button class="btn btn-outline btn-sm active" data-cat="all" onclick="filterTemplates('all', this)">全部</button>
+    <button class="btn btn-outline btn-sm" data-cat="起诉类" onclick="filterTemplates('起诉类', this)">起诉类</button>
+    <button class="btn btn-outline btn-sm" data-cat="申请类" onclick="filterTemplates('申请类', this)">申请类</button>
+    <button class="btn btn-outline btn-sm" data-cat="答辩类" onclick="filterTemplates('答辩类', this)">答辩类</button>
+    <button class="btn btn-outline btn-sm" data-cat="上诉类" onclick="filterTemplates('上诉类', this)">上诉类</button>
+    <button class="btn btn-outline btn-sm" data-cat="协议类" onclick="filterTemplates('协议类', this)">协议类</button>
+  </div>
+
+  <div id="template-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">
+    <div class="card" style="text-align:center;padding:2rem;color:var(--text-muted)">加载中…</div>
+  </div>
+
+  <div class="modal-overlay" id="template-wizard-overlay" style="display:none">
+    <div class="modal-card" style="max-width:800px;max-height:90vh;overflow-y:auto">
+      <h3 id="wizard-title" style="font-size:1.05rem;margin-bottom:1rem"></h3>
+      <div id="wizard-fields"></div>
+      <div style="display:flex;gap:.75rem;margin-top:1rem">
+        <button class="btn btn-outline" onclick="closeTemplateWizard()">取消</button>
+        <button class="btn btn-accent" onclick="assembleDocument()">📝 生成文书</button>
+      </div>
+      <div id="wizard-result" style="margin-top:1rem"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 计算工具 ====== -->
+<section class="page-section" id="page-calculators">
+  <div class="page-title">🧮 法律计算工具</div>
+  <div class="page-desc">诉讼费估算 · 赔偿金计算 · 诉讼时效检查</div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="calc-fee">💰 诉讼费</button>
+    <button class="tab" data-tab="calc-compensation">📊 赔偿金</button>
+    <button class="tab" data-tab="calc-limitation">⏰ 时效检查</button>
+  </div>
+
+  <div class="tab-content" data-tab="calc-fee" style="display:block">
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">案件类型</label>
+          <select class="form-select" id="fee-case-type">
+            <option value="property">财产案件</option>
+            <option value="divorce">离婚案件</option>
+            <option value="labor">劳动争议</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">诉讼标的额（元）</label>
+          <input type="number" class="form-input" id="fee-amount" placeholder="如：100000" value="100000">
+        </div>
+      </div>
+      <div style="display:flex;gap:1rem;margin-bottom:1rem">
+        <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem">
+          <input type="checkbox" id="fee-preservation" onchange="calcFee()"> 含保全费
+        </label>
+        <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem">
+          <input type="checkbox" id="fee-execution" onchange="calcFee()"> 含执行费
+        </label>
+      </div>
+      <div class="form-group" id="fee-preservation-group" style="display:none">
+        <label class="form-label">保全金额（元）</label>
+        <input type="number" class="form-input" id="fee-preservation-amount" placeholder="保全金额" onchange="calcFee()">
+      </div>
+      <button class="btn btn-accent btn-lg" onclick="calcFee()">💰 计算诉讼费</button>
+      <div id="fee-result" style="margin-top:1rem"></div>
+    </div>
+  </div>
+
+  <div class="tab-content" data-tab="calc-compensation" style="display:none">
+    <div class="card">
+      <div class="form-group">
+        <label class="form-label">赔偿场景</label>
+        <select class="form-select" id="comp-scenario" onchange="updateCompForm()">
+          <option value="">-- 请选择场景 --</option>
+          <option value="labor_illegal_dismissal">违法解除劳动合同（2N）</option>
+          <option value="labor_unpaid_salary">拖欠工资追偿</option>
+          <option value="personal_injury">人身损害赔偿</option>
+          <option value="consumer_fraud">消费欺诈（退一赔三）</option>
+        </select>
+      </div>
+      <div id="comp-params"></div>
+      <button class="btn btn-accent btn-lg" onclick="calcCompensation()">📊 计算赔偿金</button>
+      <div id="comp-result" style="margin-top:1rem"></div>
+    </div>
+  </div>
+
+  <div class="tab-content" data-tab="calc-limitation" style="display:none">
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">案件类型</label>
+          <select class="form-select" id="lim-case-type">
+            <option value="general">一般民事纠纷（3年）</option>
+            <option value="labor">劳动争议（1年仲裁时效）</option>
+            <option value="loan">民间借贷（3年）</option>
+            <option value="injury">人身损害（3年）</option>
+            <option value="contract">合同纠纷（3年）</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">权利受侵害日期</label>
+          <input type="date" class="form-input" id="lim-event-date">
+        </div>
+      </div>
+      <button class="btn btn-accent btn-lg" onclick="checkLimitation()">⏰ 检查时效</button>
+      <div id="lim-result" style="margin-top:1rem"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 证据指引 ====== -->
+<section class="page-section" id="page-evidence">
+  <div class="page-title">📎 证据指引</div>
+  <div class="page-desc">按案由生成证据清单 · 取证指引 · 证据保全建议</div>
+
+  <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap" id="evidence-case-selector"></div>
+  <div id="evidence-guide-content">
+    <div class="card" style="text-align:center;padding:2rem;color:var(--text-muted)">请选择案由查看对应证据指引</div>
+  </div>
 </section>
 
 </main>

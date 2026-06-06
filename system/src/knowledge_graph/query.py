@@ -34,8 +34,24 @@ class KGQuery:
             auth=(settings.NEO4J_USERNAME, settings.NEO4J_PASSWORD),
         )
         self.driver.verify_connectivity()
+        self._ensure_fulltext_index()
         self._available = True
         return self
+
+    def _ensure_fulltext_index(self):
+        """确保全文索引存在，用于 search_fulltext"""
+        cypher = """
+        CREATE FULLTEXT INDEX entitySearch IF NOT EXISTS
+        FOR (n:Law|Article|Case|Contract|Clause|RiskPoint|LegalConcept|Court)
+        ON EACH [n.name, n.article_number, n.content, n.case_number,
+                 n.title, n.facts, n.verdict, n.clause_number,
+                 n.risk_type, n.description, n.definition]
+        """
+        try:
+            with self.driver.session() as session:
+                session.run(cypher)
+        except Exception:
+            pass
 
     def close(self):
         if self.driver:

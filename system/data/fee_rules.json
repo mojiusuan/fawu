@@ -1,0 +1,61 @@
+{
+  "court_fee": {
+    "title": "案件受理费（财产案件）",
+    "legal_basis": "《诉讼费用交纳办法》（国务院令第481号）第十三条",
+    "description": "财产案件根据诉讼请求的金额或者价额，按比例分段累计交纳",
+    "non_property_fee": {
+      "description": "非财产案件按件收费",
+      "categories": {
+        "离婚案件": {"base": 50, "range": [50, 300], "note": "涉及财产分割超过20万元的部分按0.5%交纳"},
+        "劳动争议": {"base": 10, "note": "每件10元"},
+        "行政案件": {"base": 50, "note": "每件50元（商标/专利/海事100元）"},
+        "管辖权异议": {"base": 50, "range": [50, 100], "note": "异议不成立"}
+      }
+    },
+    "tiers": [
+      {"max": 10000, "rate": 0, "fixed": 50, "description": "不超过1万元"},
+      {"max": 100000, "rate": 0.025, "description": "超过1万元至10万元"},
+      {"max": 200000, "rate": 0.02, "description": "超过10万元至20万元"},
+      {"max": 500000, "rate": 0.015, "description": "超过20万元至50万元"},
+      {"max": 1000000, "rate": 0.01, "description": "超过50万元至100万元"},
+      {"max": 2000000, "rate": 0.009, "description": "超过100万元至200万元"},
+      {"max": 5000000, "rate": 0.008, "description": "超过200万元至500万元"},
+      {"max": 10000000, "rate": 0.007, "description": "超过500万元至1000万元"},
+      {"max": 20000000, "rate": 0.006, "description": "超过1000万元至2000万元"},
+      {"max": null, "rate": 0.005, "description": "超过2000万元"}
+    ],
+    "reduction_policy": {
+      "summary": "符合条件可申请减免",
+      "conditions": [
+        "适用简易程序审理的案件减半交纳",
+        "以调解方式结案或当事人申请撤诉的减半交纳",
+        "符合司法救助条件的可申请缓交、减交或免交"
+      ]
+    }
+  },
+  "preservation_fee": {
+    "title": "申请保全费",
+    "legal_basis": "《诉讼费用交纳办法》第十四条",
+    "description": "申请财产保全措施需交纳的费用",
+    "tiers": [
+      {"max": 1000, "fixed": 30, "description": "财产数额不超过1000元"},
+      {"max": 100000, "rate": 0.01, "description": "1000元以上至10万元（按1%交纳）"},
+      {"max": null, "rate": 0.005, "description": "超过10万元（按0.5%交纳）"}
+    ],
+    "max_fee": 5000,
+    "note": "申请保全费最多不超过5000元"
+  },
+  "execution_fee": {
+    "title": "申请执行费",
+    "legal_basis": "《诉讼费用交纳办法》第十四条",
+    "description": "申请法院强制执行需交纳的费用（由被执行人承担）",
+    "tiers": [
+      {"max": 10000, "fixed": 50, "description": "不超过1万元"},
+      {"max": 500000, "rate": 0.015, "description": "1万元以上至50万元"},
+      {"max": 5000000, "rate": 0.01, "description": "50万元以上至500万元"},
+      {"max": 10000000, "rate": 0.005, "description": "500万元以上至1000万元"},
+      {"max": null, "rate": 0.001, "description": "超过1000万元"}
+    ],
+    "note": "执行费由被执行人承担，申请人无需预交"
+  }
+}

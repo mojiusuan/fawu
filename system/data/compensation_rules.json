@@ -1,0 +1,47 @@
+{
+  "scenarios": {
+    "labor_unpaid_salary": {
+      "name": "拖欠工资追偿（劳动）",
+      "legal_basis": "《劳动合同法》第八十五条",
+      "items": [
+        {"name": "拖欠工资本金", "formula": "monthly_salary * unpaid_months", "description": "月工资 × 拖欠月数"},
+        {"name": "额外赔偿金（50%-100%）", "formula": "monthly_salary * unpaid_months * 0.5", "description": "逾期不支付的，加付应付金额的50%-100%（此处按50%估算）"}
+      ],
+      "notes": ["需先经劳动行政部门责令限期支付", "劳动关系需有劳动合同或其他证据证明"]
+    },
+    "labor_illegal_dismissal": {
+      "name": "违法解除劳动合同赔偿（2N）",
+      "legal_basis": "《劳动合同法》第四十七条、第八十七条",
+      "items": [
+        {"name": "违法解除赔偿金（2N）", "formula": "monthly_salary * years_of_service * 2", "description": "违法解除按经济补偿标准的二倍支付。N=工作年限×月工资，2N=二倍赔偿"},
+        {"name": "未提前通知代通知金（+1）", "formula": "monthly_salary", "description": "如未提前30天书面通知，额外加付1个月工资（N+1中的+1）"}
+      ],
+      "notes": ["合法解除仅需支付N，违法解除才需支付2N", "月工资超过当地社平工资3倍的，按3倍计算，年限最高12年（上限约36个月）", "工作不满半年算0.5年，满半年不满1年算1年"]
+    },
+    "personal_injury": {
+      "name": "人身损害赔偿",
+      "legal_basis": "《民法典》第一千一百七十九条、《最高人民法院关于审理人身损害赔偿案件适用法律若干问题的解释》",
+      "items": [
+        {"name": "医疗费", "formula": "medical_cost", "description": "凭票据计算，含诊疗费、医药费、住院费"},
+        {"name": "误工费", "formula": "daily_income * lost_days", "description": "日均收入 × 误工天数。有固定收入的按实际减少算，无固定收入的按近三年平均"},
+        {"name": "护理费", "formula": "daily_care * care_days", "description": "护理人员日均收入 × 护理天数，根据护理依赖程度确定"},
+        {"name": "交通费", "formula": "transport_cost", "description": "就医产生的合理交通费用"},
+        {"name": "住院伙食补助费", "formula": "food_allowance * hospital_days", "description": "当地伙食补助标准 × 住院天数（一般50-100元/天）"},
+        {"name": "营养费", "formula": "nutrition_cost", "description": "根据医嘱和伤情确定，需医疗机构出具意见"},
+        {"name": "残疾赔偿金", "formula": "annual_disability_income * 20 * disability_ratio", "description": "人均年可支配收入 × 20年 × 伤残系数（十级=0.1，一级=1.0）。60岁以上每增1岁减1年，75岁以上按5年"},
+        {"name": "精神损害抚慰金", "formula": "mental_damage", "description": "根据侵权情节、后果等因素综合判断，法院酌情确定"}
+      ],
+      "notes": ["具体数额以法院核定为准", "建议保留所有医疗票据和相关凭证", "残疾赔偿金参考：2024年全国城镇居民人均可支配收入约51,821元/年"]
+    },
+    "consumer_fraud": {
+      "name": "消费欺诈赔偿（退一赔三）",
+      "legal_basis": "《消费者权益保护法》第五十五条",
+      "items": [
+        {"name": "退还货款", "formula": "purchase_amount", "description": "退还已支付的商品或服务费用"},
+        {"name": "三倍赔偿", "formula": "purchase_amount * 3", "min": 500, "description": "经营者有欺诈行为的，按价款三倍赔偿；不足500元的按500元"},
+        {"name": "食品安全十倍赔偿", "formula": "purchase_amount * 10", "min": 1000, "description": "食品不符合安全标准的，可主张价款十倍或损失三倍的赔偿金；不足1000元按1000元"}
+      ],
+      "notes": ["三倍赔偿适用于经营者存在欺诈行为", "十倍赔偿适用于食品安全领域", "需有购物凭证和问题商品证据"]
+    }
+  }
+}

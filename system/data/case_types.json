@@ -1,0 +1,120 @@
+{
+  "case_types": {
+    "labor": {
+      "name": "劳动争议",
+      "description": "劳动合同纠纷、工资争议、解除劳动合同、工伤认定等",
+      "fields": [
+        {"key": "employment_start", "label": "入职日期", "type": "date", "required": true},
+        {"key": "employment_end", "label": "离职日期（如有）", "type": "date", "required": false},
+        {"key": "monthly_salary", "label": "月工资标准（元）", "type": "number", "required": true},
+        {"key": "dispute_type", "label": "争议类型", "type": "select", "required": true, "options": ["欠薪", "违法解除", "经济补偿", "工伤认定", "加班费", "社保争议", "竞业限制", "其他"]},
+        {"key": "has_contract", "label": "是否有书面劳动合同", "type": "boolean", "required": true},
+        {"key": "claim_amount", "label": "诉求金额（元）", "type": "number", "required": false},
+        {"key": "description", "label": "详细案情描述", "type": "textarea", "required": true}
+      ],
+      "limitation_type": "labor_arbitration",
+      "limitation_period_days": 365
+    },
+    "loan": {
+      "name": "民间借贷",
+      "description": "个人之间借款纠纷、利息争议、担保纠纷等",
+      "fields": [
+        {"key": "loan_date", "label": "借款日期", "type": "date", "required": true},
+        {"key": "loan_amount", "label": "借款金额（元）", "type": "number", "required": true},
+        {"key": "agreed_interest", "label": "约定利率（年化%，未约定填 0）", "type": "number", "required": true},
+        {"key": "repayment_deadline", "label": "约定还款日期", "type": "date", "required": false},
+        {"key": "has_io_u", "label": "是否有借条/借据", "type": "boolean", "required": true},
+        {"key": "has_transfer_record", "label": "是否有转账记录", "type": "boolean", "required": true},
+        {"key": "repaid_amount", "label": "已还金额（元）", "type": "number", "required": false},
+        {"key": "has_guarantor", "label": "是否有担保人", "type": "boolean", "required": false},
+        {"key": "description", "label": "详细案情描述", "type": "textarea", "required": true}
+      ],
+      "limitation_type": "general",
+      "limitation_period_days": 1095
+    },
+    "injury": {
+      "name": "人身损害",
+      "description": "交通事故赔偿、医疗损害、意外伤害赔偿等",
+      "fields": [
+        {"key": "incident_date", "label": "事发日期", "type": "date", "required": true},
+        {"key": "incident_location", "label": "事发地点", "type": "text", "required": true},
+        {"key": "injury_description", "label": "受伤情况", "type": "textarea", "required": true},
+        {"key": "medical_cost", "label": "已发生医疗费用（元）", "type": "number", "required": true},
+        {"key": "disability_level", "label": "伤残等级（如有鉴定）", "type": "select", "required": false, "options": ["未鉴定", "一级", "二级", "三级", "四级", "五级", "六级", "七级", "八级", "九级", "十级"]},
+        {"key": "liability_determined", "label": "责任是否已认定", "type": "boolean", "required": false},
+        {"key": "lost_income", "label": "误工损失（元）", "type": "number", "required": false},
+        {"key": "description", "label": "详细案情描述", "type": "textarea", "required": true}
+      ],
+      "limitation_type": "general",
+      "limitation_period_days": 1095
+    },
+    "marriage": {
+      "name": "婚姻家事",
+      "description": "离婚纠纷、财产分割、子女抚养权、赡养纠纷等",
+      "fields": [
+        {"key": "marriage_date", "label": "结婚日期", "type": "date", "required": true},
+        {"key": "has_children", "label": "是否有子女", "type": "boolean", "required": true},
+        {"key": "children_info", "label": "子女信息（年龄、性别）", "type": "textarea", "required": false},
+        {"key": "property_list", "label": "主要财产情况（房产、车辆、存款等）", "type": "textarea", "required": false},
+        {"key": "dispute_focus", "label": "主要争议焦点", "type": "select", "required": true, "options": ["离婚意愿", "财产分割", "子女抚养权", "子女抚养费", "赡养费", "债务承担", "其他"]},
+        {"key": "description", "label": "详细案情描述", "type": "textarea", "required": true}
+      ],
+      "limitation_type": "general",
+      "limitation_period_days": 1095
+    },
+    "consumer": {
+      "name": "消费维权",
+      "description": "商品质量问题、消费欺诈、退一赔三、食品安全等",
+      "fields": [
+        {"key": "purchase_date", "label": "购买日期", "type": "date", "required": true},
+        {"key": "purchase_amount", "label": "购买金额（元）", "type": "number", "required": true},
+        {"key": "product_type", "label": "商品/服务类型", "type": "text", "required": true},
+        {"key": "issue_type", "label": "问题类型", "type": "select", "required": true, "options": ["质量问题", "虚假宣传", "价格欺诈", "食品安全", "拒绝退换", "个人信息泄露", "其他"]},
+        {"key": "has_receipt", "label": "是否有购物凭证", "type": "boolean", "required": true},
+        {"key": "description", "label": "详细案情描述", "type": "textarea", "required": true}
+      ],
+      "limitation_type": "general",
+      "limitation_period_days": 1095
+    },
+    "property": {
+      "name": "房产纠纷",
+      "description": "房屋买卖纠纷、租赁纠纷、物业纠纷、拆迁补偿等",
+      "fields": [
+        {"key": "property_type", "label": "房产类型", "type": "select", "required": true, "options": ["商品房", "二手房", "租赁房", "商业用房", "宅基地", "其他"]},
+        {"key": "transaction_date", "label": "交易/租赁日期", "type": "date", "required": false},
+        {"key": "amount_involved", "label": "涉及金额（元）", "type": "number", "required": true},
+        {"key": "dispute_type", "label": "纠纷类型", "type": "select", "required": true, "options": ["买卖合同纠纷", "逾期交房", "房屋质量", "租赁合同纠纷", "物业纠纷", "拆迁补偿", "产权争议", "其他"]},
+        {"key": "has_contract", "label": "是否有书面合同", "type": "boolean", "required": true},
+        {"key": "description", "label": "详细案情描述", "type": "textarea", "required": true}
+      ],
+      "limitation_type": "general",
+      "limitation_period_days": 1095
+    },
+    "contract": {
+      "name": "合同纠纷",
+      "description": "买卖合同、服务合同、租赁合同等各类合同违约纠纷",
+      "fields": [
+        {"key": "contract_type", "label": "合同类型", "type": "select", "required": true, "options": ["买卖合同", "服务合同", "租赁合同", "承揽合同", "委托合同", "合伙协议", "其他"]},
+        {"key": "sign_date", "label": "合同签署日期", "type": "date", "required": true},
+        {"key": "contract_amount", "label": "合同金额（元）", "type": "number", "required": true},
+        {"key": "breach_description", "label": "违约情况描述", "type": "textarea", "required": true},
+        {"key": "loss_amount", "label": "损失金额（元）", "type": "number", "required": false},
+        {"key": "has_written_contract", "label": "是否有书面合同", "type": "boolean", "required": true},
+        {"key": "dispute_resolution", "label": "合同约定的争议解决方式", "type": "select", "required": false, "options": ["未约定", "协商", "仲裁", "诉讼", "仲裁或诉讼"]},
+        {"key": "description", "label": "详细案情描述", "type": "textarea", "required": true}
+      ],
+      "limitation_type": "general",
+      "limitation_period_days": 1095
+    },
+    "other": {
+      "name": "其他",
+      "description": "其他类型法律问题",
+      "fields": [
+        {"key": "case_subject", "label": "案件主题", "type": "text", "required": true},
+        {"key": "description", "label": "详细案情描述", "type": "textarea", "required": true}
+      ],
+      "limitation_type": "general",
+      "limitation_period_days": 1095
+    }
+  }
+}
