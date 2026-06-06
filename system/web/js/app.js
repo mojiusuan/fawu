@@ -1,17 +1,99 @@
 /**
  * 智能法务系统 · 前端应用逻辑
+ *
+ * 注意：登录等核心认证功能定义在最顶部，确保后续任何代码错误都不会导致登录按钮失效。
  */
 const API = window.location.origin;
 
+// =========== 认证管理（最高优先级） ===========
+let authToken = localStorage.getItem('legal_auth_token') || null;
+let currentUser = JSON.parse(localStorage.getItem('legal_auth_user') || 'null');
+
+const ROLE_LABELS = { admin:'系统管理员', legal:'法务人员', business:'业务人员', auditor:'审计员' };
+
+function getAuthHeaders() {
+  return authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
+}
+
+function clearAuth() {
+  authToken = null;
+  currentUser = null;
+  localStorage.removeItem('legal_auth_token');
+  localStorage.removeItem('legal_auth_user');
+}
+
+function showLoginOverlay(msg) {
+  const overlay = document.getElementById('login-overlay');
+  if (overlay) overlay.style.display = 'flex';
+  if (msg) {
+    const err = document.getElementById('login-error');
+    if (err) { err.style.display = 'block'; err.textContent = msg; }
+  }
+}
+
+function hideLoginOverlay() {
+  const overlay = document.getElementById('login-overlay');
+  if (overlay) overlay.style.display = 'none';
+  const err = document.getElementById('login-error');
+  if (err) err.style.display = 'none';
+}
+
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!username || !password) {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('login-error').textContent = '请输入用户名和密码';
+    return;
+  }
+  try {
+    const resp = await fetch(`${API}/api/auth/login`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username, password}),
+    });
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.detail || '登录失败');
+    }
+    const data = await resp.json();
+    authToken = data.access_token;
+    currentUser = data.user;
+    localStorage.setItem('legal_auth_token', authToken);
+    localStorage.setItem('legal_auth_user', JSON.stringify(currentUser));
+    hideLoginOverlay();
+    if (typeof applyRoleUI === 'function') applyRoleUI();
+    if (typeof showToast === 'function') showToast('欢迎回来，'+currentUser.display_name, 'success');
+    if (typeof loadContracts === 'function') loadContracts();
+    if (typeof loadChatHistory === 'function') loadChatHistory();
+    if (typeof loadAudit === 'function') loadAudit();
+    if (typeof loadSettings === 'function') loadSettings();
+    if (typeof loadKGStats === 'function') loadKGStats();
+  } catch(e) {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('login-error').textContent = e.message;
+  }
+}
+
+function doLogout() {
+  if (typeof saveChatToStorage === 'function') saveChatToStorage();
+  clearAuth();
+  showLoginOverlay();
+  if (typeof closeSidebar === 'function') closeSidebar();
+  if (typeof showToast === 'function') showToast('已退出登录', 'info');
+}
+
 // =========== GSAP 动画系统（安全回退） ===========
 // CDN 可能加载失败（尤其国内网络），回退为无动画模式以保证核心功能可用
-const _gsapOk = typeof gsap !== 'undefined';
+(function() {
+var _gsapOk = typeof gsap !== 'undefined';
 if (!_gsapOk) {
-  const _noop = () => {};
-  window.gsap = { registerPlugin: _noop, matchMedia: () => ({ add: _noop }), set: _noop, from: _noop, fromTo: _noop, to: _noop, timeline: () => ({ to: _noop, fromTo: _noop }) };
-  window.ScrollTrigger = { create: _noop, batch: _noop, refresh: _noop, getAll: () => [] };
+  var _noop = function(){};
+  window.gsap = { registerPlugin:_noop, matchMedia:function(){ return {add:_noop}; }, set:_noop, from:_noop, fromTo:_noop, to:_noop, timeline:function(){ return {to:_noop, fromTo:_noop}; } };
+  window.ScrollTrigger = { create:_noop, batch:_noop, refresh:_noop, getAll:function(){ return []; } };
 }
 try { gsap.registerPlugin(ScrollTrigger); } catch(e) { console.warn('GSAP plugin registration failed, animations disabled'); }
+})();
 
 const ANIM = {
   _reduced: false,
@@ -133,9 +215,6 @@ const ANIM = {
 };
 
 // =========== 认证管理 ===========
-let authToken = localStorage.getItem('legal_auth_token') || null;
-let currentUser = JSON.parse(localStorage.getItem('legal_auth_user') || 'null');
-
 const ROLE_PAGE_PERMISSIONS = {
   home: ['admin','legal','business','auditor'],
   'case-center': ['admin','legal','business','auditor'],
@@ -150,17 +229,6 @@ const ROLE_PAGE_PERMISSIONS = {
   rpa: ['admin','legal'],
   settings: ['admin'],
 };
-
-const ROLE_LABELS = {
-  admin: '系统管理员',
-  legal: '法务人员',
-  business: '业务人员',
-  auditor: '审计员',
-};
-
-function getAuthHeaders() {
-  return authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
-}
 
 // =========== 导航 ===========
 function initNav() {
@@ -328,75 +396,8 @@ async function api(path, options = {}) {
   return resp.json();
 }
 
-// =========== 认证操作 ===========
-async function doLogin() {
-  const username = document.getElementById('login-username').value.trim();
-  const password = document.getElementById('login-password').value;
-  if (!username || !password) {
-    document.getElementById('login-error').style.display = 'block';
-    document.getElementById('login-error').textContent = '请输入用户名和密码';
-    return;
-  }
-  try {
-    const resp = await fetch(`${API}/api/auth/login`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({username, password}),
-    });
-    if (!resp.ok) {
-      const err = await resp.json();
-      throw new Error(err.detail || '登录失败');
-    }
-    const data = await resp.json();
-    authToken = data.access_token;
-    currentUser = data.user;
-    localStorage.setItem('legal_auth_token', authToken);
-    localStorage.setItem('legal_auth_user', JSON.stringify(currentUser));
-    hideLoginOverlay();
-    applyRoleUI();
-    showToast(`欢迎回来，${currentUser.display_name}`, 'success');
-    loadContracts();
-    loadChatHistory();
-    loadAudit();
-    loadSettings();
-    loadKGStats();
-  } catch(e) {
-    document.getElementById('login-error').style.display = 'block';
-    document.getElementById('login-error').textContent = e.message;
-  }
-}
-
-function doLogout() {
-  // 保存当前对话
-  saveChatToStorage();
-  clearAuth();
-  showLoginOverlay();
-  closeSidebar();
-  showToast('已退出登录', 'info');
-}
-
-function clearAuth() {
-  authToken = null;
-  currentUser = null;
-  localStorage.removeItem('legal_auth_token');
-  localStorage.removeItem('legal_auth_user');
-}
-
-function showLoginOverlay(msg) {
-  const overlay = document.getElementById('login-overlay');
-  if (overlay) overlay.style.display = 'flex';
-  if (msg) {
-    const err = document.getElementById('login-error');
-    if (err) { err.style.display = 'block'; err.textContent = msg; }
-  }
-}
-
-function hideLoginOverlay() {
-  const overlay = document.getElementById('login-overlay');
-  if (overlay) overlay.style.display = 'none';
-  const err = document.getElementById('login-error');
-  if (err) err.style.display = 'none';
-}
+// =========== 认证操作（续） ===========
+// 注意：doLogin / doLogout / clearAuth / showLoginOverlay / hideLoginOverlay 已在文件顶部定义
 
 function applyRoleUI() {
   if (!currentUser) return;
