@@ -3,8 +3,15 @@
  */
 const API = window.location.origin;
 
-// =========== GSAP 动画系统 ===========
-gsap.registerPlugin(ScrollTrigger);
+// =========== GSAP 动画系统（安全回退） ===========
+// CDN 可能加载失败（尤其国内网络），回退为无动画模式以保证核心功能可用
+const _gsapOk = typeof gsap !== 'undefined';
+if (!_gsapOk) {
+  const _noop = () => {};
+  window.gsap = { registerPlugin: _noop, matchMedia: () => ({ add: _noop }), set: _noop, from: _noop, fromTo: _noop, to: _noop, timeline: () => ({ to: _noop, fromTo: _noop }) };
+  window.ScrollTrigger = { create: _noop, batch: _noop, refresh: _noop, getAll: () => [] };
+}
+try { gsap.registerPlugin(ScrollTrigger); } catch(e) { console.warn('GSAP plugin registration failed, animations disabled'); }
 
 const ANIM = {
   _reduced: false,
