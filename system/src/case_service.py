@@ -61,6 +61,14 @@ class CaseService:
         cases.sort(key=lambda x: x.get("updated_at", ""), reverse=True)
         return cases
 
+    def list_all(self, status: str = "") -> list[dict]:
+        data = self._load()
+        cases = [c for c in data]
+        if status:
+            cases = [c for c in cases if c.get("status") == status]
+        cases.sort(key=lambda x: x.get("updated_at", ""), reverse=True)
+        return cases
+
     def get(self, case_id: str) -> dict | None:
         data = self._load()
         for c in data:
