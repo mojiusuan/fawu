@@ -1038,6 +1038,20 @@ async function loadAudit() {
   } catch(e) {}
 }
 
+async function exportAudit() {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '⏳ 生成中...';
+  try {
+    const d = await api('/api/audit/export', { method: 'POST', body: JSON.stringify({ format: 'md' }) });
+    showToast(d.status === 'ok' ? `报告已导出: ${d.path}` : `导出失败: ${d.message}`, d.status === 'ok' ? 'success' : 'error');
+  } catch (e) {
+    showToast('导出失败: ' + e.message, 'error');
+  }
+  btn.disabled = false;
+  btn.textContent = '📥 导出审计报告';
+}
+
 // =========== 系统配置 (含预填) ===========
 async function loadSettings() {
   try {

@@ -131,6 +131,20 @@ async def get_audit_logs(
     return {"total": len(logs), "logs": logs}
 
 
+@app.post("/api/audit/export")
+async def export_audit_report(
+    format: str = "md",
+    current_user: dict = Depends(require_role("admin", "auditor")),
+):
+    """导出审计报告（仅管理员和审计员）"""
+    from src.audit_service.reporter import audit_reporter
+    try:
+        path = audit_reporter.export(format)
+        return {"status": "ok", "path": str(path), "format": format}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
 @app.get("/api/kg/search")
 async def search_knowledge_graph(
     keyword: str = "",
