@@ -265,6 +265,9 @@ function navigateTo(page) {
   section.classList.add('active');
   window.location.hash = page;
 
+  // 设置页自动加载
+  if (page === 'settings') { loadSettings(); loadUsers(); loadKBStatus(); }
+
   requestAnimationFrame(() => ANIM.refresh());
 }
 
@@ -1075,6 +1078,12 @@ async function loadSettings() {
     // 回填 Neo4j
     if (data.NEO4J_URI) { const el = document.getElementById('cfg-neo4j-uri'); if (el) el.value = data.NEO4J_URI; }
     if (data.NEO4J_USERNAME) { const el = document.getElementById('cfg-neo4j-user'); if (el) el.value = data.NEO4J_USERNAME; }
+
+    // 回填系统参数
+    if (data.PORT) { const el = document.getElementById('cfg-port'); if (el) el.value = data.PORT; }
+    if (data.ACCESS_TOKEN_EXPIRE_MINUTES) { const el = document.getElementById('cfg-jwt-expire'); if (el) el.value = data.ACCESS_TOKEN_EXPIRE_MINUTES; }
+    if (data.LOG_LEVEL) { const el = document.getElementById('cfg-log-level'); if (el) el.value = data.LOG_LEVEL; }
+    if (data.EMBEDDING_PROVIDER) { const el = document.getElementById('cfg-embedding-provider'); if (el) el.value = data.EMBEDDING_PROVIDER; }
   } catch(e) {}
 }
 
@@ -1092,7 +1101,14 @@ async function saveConfig() {
     neo4j_uri: document.getElementById('cfg-neo4j-uri').value,
     neo4j_username: document.getElementById('cfg-neo4j-user').value,
     neo4j_password: document.getElementById('cfg-neo4j-pass').value,
+    port: parseInt(document.getElementById('cfg-port').value) || 8000,
+    log_level: document.getElementById('cfg-log-level').value,
+    embedding_provider: document.getElementById('cfg-embedding-provider').value,
   };
+  const jwtKey = document.getElementById('cfg-jwt-key').value.trim();
+  if (jwtKey) data.jwt_secret_key = jwtKey;
+  const jwtExpire = document.getElementById('cfg-jwt-expire').value.trim();
+  if (jwtExpire) data.access_token_expire_minutes = parseInt(jwtExpire);
   const ak = document.getElementById('cfg-ak').value.trim();
   const ok = document.getElementById('cfg-ok').value.trim();
   const dk = document.getElementById('cfg-dk').value.trim();
@@ -1140,6 +1156,86 @@ async function testNeo4j() {
   } catch (e) {
     area.innerHTML = `<div class="card" style="padding:1rem;border-color:var(--danger)"><h4 style="color:var(--danger);margin-bottom:.5rem">❌ 测试失败</h4><p style="font-size:.88rem">${e.message}</p></div>`;
   }
+}
+
+// =========== 用户管理 ===========
+async function loadUsers() {
+  try {
+    const users = await api('/api/auth/users');
+    const el = document.getElementById('user-list');
+    if (!users.length) { el.innerHTML = '<div style="color:var(--text-muted);padding:.5rem 0">暂无用户</div>'; return; }
+    el.innerHTML = users.map(u => `
+      <div style="display:flex;align-items:center;gap:.5rem;padding:.4rem 0;border-bottom:1px solid var(--border)">
+        <span style="flex:1;font-weight:500">${u.display_name}</span>
+        <span style="color:var(--text-muted);font-size:.82rem">${u.username}</span>
+        <span class="badge" style="font-size:.72rem">${ROLE_LABELS[u.role]||u.role}</span>
+        <select onchange="updateUserRole('${u.id}', this.value)" style="font-size:.75rem;padding:.15rem .35rem;border:1px solid var(--border);border-radius:4px">
+          <option value="business" ${u.role==='business'?'selected':''}>业务人员</option>
+          <option value="legal" ${u.role==='legal'?'selected':''}>法务人员</option>
+          <option value="auditor" ${u.role==='auditor'?'selected':''}>审计员</option>
+          <option value="admin" ${u.role==='admin'?'selected':''}>管理员</option>
+        </select>
+        <button onclick="deleteUser('${u.id}','${u.username}')" style="font-size:.75rem;padding:.15rem .5rem;border:1px solid var(--danger);border-radius:4px;background:transparent;color:var(--danger);cursor:pointer">删除</button>
+      </div>`).join('');
+  } catch (e) { showToast('加载用户失败: ' + e.message, 'error'); }
+}
+
+async function createUser() {
+  const username = document.getElementById('new-user-name').value.trim();
+  const display = document.getElementById('new-user-display').value.trim();
+  const password = document.getElementById('new-user-pass').value;
+  const role = document.getElementById('new-user-role').value;
+  if (!username || !display || !password) { showToast('请填写完整的用户信息', 'warning'); return; }
+  if (password.length < 6) { showToast('密码至少6位', 'warning'); return; }
+  try {
+    await api('/api/auth/users', { method: 'POST', body: JSON.stringify({ username, password, display_name: display, role }) });
+    showToast('用户创建成功', 'success');
+    document.getElementById('new-user-name').value = '';
+    document.getElementById('new-user-display').value = '';
+    document.getElementById('new-user-pass').value = '';
+    loadUsers();
+  } catch (e) { showToast('创建失败: ' + e.message, 'error'); }
+}
+
+async function updateUserRole(userId, newRole) {
+  try {
+    await api(`/api/auth/users/${userId}`, { method: 'PUT', body: JSON.stringify({ role: newRole }) });
+    showToast('角色已更新', 'success');
+  } catch (e) { showToast('更新失败: ' + e.message, 'error'); }
+}
+
+async function deleteUser(userId, username) {
+  if (!confirm(`确定删除用户「${username}」吗？此操作不可撤销。`)) return;
+  try {
+    await api(`/api/auth/users/${userId}`, { method: 'DELETE' });
+    showToast('用户已删除', 'success');
+    loadUsers();
+  } catch (e) { showToast('删除失败: ' + e.message, 'error'); }
+}
+
+// =========== 知识库管理 ===========
+async function loadKBStatus() {
+  const el = document.getElementById('kb-status');
+  el.innerHTML = '加载中...';
+  try {
+    const d = await api('/api/knowledge/status');
+    el.innerHTML = `ChromaDB: ${d.chromadb.available ? '✅ 已就绪 (' + d.chromadb.count + ' 条)' : '❌ 未初始化'} &nbsp;|&nbsp; Whoosh: ${d.whoosh.available ? '✅ 已就绪' : '❌ 未初始化'} &nbsp;|&nbsp; 知识源: ${d.knowledge_files.count} 个文件`;
+  } catch (e) { el.innerHTML = `加载失败: ${e.message}`; }
+}
+
+async function initKB() {
+  if (!confirm('初始化将重建整个知识库索引，可能需要几分钟。确认继续？')) return;
+  const el = document.getElementById('kb-result');
+  el.innerHTML = '<span class="spinner"></span> 正在初始化知识库，请稍候...';
+  try {
+    const d = await api('/api/knowledge/init', { method: 'POST' });
+    if (d.status === 'ok') {
+      el.innerHTML = `✅ ${d.message}（处理 ${d.files_processed} 个文件，${d.chunks_indexed} 个文档块）`;
+      loadKBStatus();
+    } else {
+      el.innerHTML = `❌ ${d.message}`;
+    }
+  } catch (e) { el.innerHTML = `❌ 初始化失败: ${e.message}`; }
 }
 
 // =========== RPA (含格式化结果卡片) ===========

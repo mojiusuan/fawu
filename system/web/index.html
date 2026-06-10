@@ -435,6 +435,41 @@
     </div>
   </div>
 
+  <div class="card" style="margin-bottom:1rem">
+    <h3 style="font-size:.95rem;margin-bottom:1rem">⚙️ 系统参数</h3>
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="form-group"><label class="form-label">服务端口号</label><input class="form-input" id="cfg-port" value="8000" type="number"></div>
+      <div class="form-group"><label class="form-label">JWT 密钥</label><input class="form-input" id="cfg-jwt-key" placeholder="留空不修改"></div>
+      <div class="form-group"><label class="form-label">令牌过期(分钟)</label><input class="form-input" id="cfg-jwt-expire" value="480" type="number"></div>
+    </div>
+    <div class="form-row" style="grid-template-columns:1fr 1fr">
+      <div class="form-group"><label class="form-label">日志级别</label><select class="form-select" id="cfg-log-level"><option>INFO</option><option>DEBUG</option><option>WARNING</option><option>ERROR</option></select></div>
+      <div class="form-group"><label class="form-label">嵌入模型提供商</label><select class="form-select" id="cfg-embedding-provider"><option value="local">local (BGE本地)</option><option value="openai">openai</option></select></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <h3 style="font-size:.95rem;margin-bottom:1rem">📚 知识库管理</h3>
+    <div id="kb-status" style="margin-bottom:.75rem;font-size:.85rem;color:var(--text-muted)">加载中...</div>
+    <div style="display:flex;gap:.5rem">
+      <button class="btn btn-outline btn-sm" onclick="loadKBStatus()">🔄 刷新状态</button>
+      <button class="btn btn-accent btn-sm" onclick="initKB()">🏗️ 初始化/重建知识库</button>
+    </div>
+    <div id="kb-result" style="margin-top:.75rem;font-size:.85rem"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <h3 style="font-size:.95rem;margin-bottom:1rem">👥 用户管理</h3>
+    <div style="display:flex;gap:.5rem;margin-bottom:.75rem">
+      <input class="form-input" id="new-user-name" placeholder="用户名" style="flex:1">
+      <input class="form-input" id="new-user-display" placeholder="显示名" style="flex:1">
+      <input type="password" class="form-input" id="new-user-pass" placeholder="密码" style="flex:1">
+      <select class="form-select" id="new-user-role" style="width:120px"><option value="business">业务人员</option><option value="legal">法务人员</option><option value="auditor">审计员</option><option value="admin">管理员</option></select>
+      <button class="btn btn-accent btn-sm" onclick="createUser()" style="white-space:nowrap">➕ 创建</button>
+    </div>
+    <div id="user-list" style="font-size:.85rem">加载中...</div>
+  </div>
+
   <div style="display:flex;gap:.75rem">
     <button class="btn btn-accent btn-lg" onclick="saveConfig()">💾 保存配置</button>
     <button class="btn btn-outline btn-lg" onclick="testLLM()">🔍 测试大模型连接</button>
