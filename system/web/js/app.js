@@ -266,7 +266,7 @@ function navigateTo(page) {
   window.location.hash = page;
 
   // 设置页自动加载
-  if (page === 'settings') { loadSettings(); loadUsers().catch(()=>{}); loadKBStatus().catch(()=>{}); }
+  if (page === 'settings') { loadSettings(); }
 
   requestAnimationFrame(() => ANIM.refresh());
 }

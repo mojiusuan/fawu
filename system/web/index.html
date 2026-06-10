@@ -476,6 +476,25 @@
     <button class="btn btn-outline btn-lg" onclick="testNeo4j()">🗄️ 测试图谱连接</button>
   </div>
   <div id="test-result" style="margin-top:1rem"></div>
+  <script>
+    // 设置页可见时自动加载用户列表和知识库状态
+    (function() {
+      var section = document.getElementById('page-settings');
+      var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(m) {
+          if (m.target.classList.contains('active')) {
+            setTimeout(function() { if (typeof loadUsers==='function') loadUsers(); }, 200);
+            setTimeout(function() { if (typeof loadKBStatus==='function') loadKBStatus(); }, 400);
+          }
+        });
+      });
+      observer.observe(section, { attributes: true, attributeFilter: ['class'] });
+      if (section.classList.contains('active')) {
+        setTimeout(function() { if (typeof loadUsers==='function') loadUsers(); }, 100);
+        setTimeout(function() { if (typeof loadKBStatus==='function') loadKBStatus(); }, 300);
+      }
+    })();
+  </script>
 </section>
 
 
