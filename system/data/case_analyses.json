@@ -1,0 +1,139 @@
+[
+  {
+    "analysis_id": "a001",
+    "case_id": "c001",
+    "case_type": "labor",
+    "created_at": "2026-06-03T15:30:00",
+    "summary": "本案属于典型的违法解除劳动合同纠纷。用人单位以\"业务调整\"为由单方解除，但未提供充分证据证明属于经济性裁员的法定情形。根据《劳动合同法》第47条、第87条，应支付经济补偿标准二倍的赔偿金。",
+    "legal_basis": [
+      {
+        "law": "劳动合同法",
+        "article": "第47条",
+        "content": "经济补偿按劳动者在本单位工作的年限，每满一年支付一个月工资的标准支付"
+      },
+      {
+        "law": "劳动合同法",
+        "article": "第87条",
+        "content": "用人单位违反本法规定解除或者终止劳动合同的，应支付经济补偿标准二倍的赔偿金"
+      }
+    ],
+    "risk_assessment": {
+      "overall_risk": "high",
+      "verdict": "用人单位面临支付违法解除赔偿金约3万元"
+    },
+    "similar_cases": [
+      {
+        "title": "张某诉某科技公司劳动争议案",
+        "case_number": "（2025）京0105民初12345号"
+      }
+    ],
+    "evidence_checklist": [
+      {
+        "item": "劳动合同原件",
+        "status": "required"
+      },
+      {
+        "item": "解除通知书",
+        "status": "required"
+      },
+      {
+        "item": "工资银行流水",
+        "status": "required"
+      }
+    ],
+    "fee_estimate": {
+      "court_fee": 10,
+      "note": "劳动争议案件受理费10元"
+    },
+    "limitation_check": {
+      "type": "劳动争议",
+      "period": "1年",
+      "deadline": "2027-03-15",
+      "is_expired": false
+    },
+    "disclaimer": "本分析由AI生成，不构成正式法律意见。"
+  },
+  {
+    "analysis_id": "a002",
+    "case_id": "c003",
+    "case_type": "contract",
+    "created_at": "2026-05-21T09:00:00",
+    "summary": "供应商逾期15天交付，构成违约。根据《民法典》第577条，应承担赔偿损失等违约责任。停工3天直接损失8万元应由违约方承担。",
+    "legal_basis": [
+      {
+        "law": "民法典",
+        "article": "第577条",
+        "content": "当事人一方不履行合同义务或履行不符合约定的，应承担继续履行、赔偿损失等违约责任"
+      }
+    ],
+    "risk_assessment": {
+      "overall_risk": "medium",
+      "verdict": "违约事实清楚，损失计算明确"
+    },
+    "similar_cases": [],
+    "evidence_checklist": [
+      {
+        "item": "采购合同原件",
+        "status": "required"
+      },
+      {
+        "item": "催告函",
+        "status": "required"
+      },
+      {
+        "item": "停工损失明细",
+        "status": "required"
+      }
+    ],
+    "fee_estimate": {
+      "court_fee": 2200,
+      "note": "按8万元标的额"
+    },
+    "limitation_check": {
+      "type": "合同纠纷",
+      "period": "3年",
+      "deadline": "2029-05-01",
+      "is_expired": false
+    },
+    "disclaimer": "本分析由AI生成，不构成正式法律意见。"
+  },
+  {
+    "analysis_id": "a003",
+    "case_id": "c005",
+    "case_type": "consumer",
+    "created_at": "2026-05-12T10:00:00",
+    "summary": "商家销售翻新机冒充新机，构成欺诈。根据《消费者权益保护法》第55条，消费者有权要求三倍赔偿。经调解已达成和解。",
+    "legal_basis": [
+      {
+        "law": "消费者权益保护法",
+        "article": "第55条",
+        "content": "经营者提供商品有欺诈行为的，应按消费者要求增加赔偿其受到的损失，金额为商品价款的三倍"
+      }
+    ],
+    "risk_assessment": {
+      "overall_risk": "low",
+      "verdict": "案件已通过调解解决"
+    },
+    "similar_cases": [],
+    "evidence_checklist": [
+      {
+        "item": "购买凭证",
+        "status": "required"
+      },
+      {
+        "item": "商品检测报告",
+        "status": "required"
+      }
+    ],
+    "fee_estimate": {
+      "court_fee": 50
+    },
+    "limitation_check": {
+      "type": "消费者权益",
+      "period": "3年",
+      "deadline": "2029-05-10",
+      "is_expired": false
+    },
+    "disclaimer": "本分析由AI生成，不构成正式法律意见。"
+  }
+]

@@ -1,0 +1,121 @@
+[
+  {
+    "case_id": "c001",
+    "user_id": "5cde3633",
+    "case_name": "张某某劳动纠纷案",
+    "case_type": "labor",
+    "case_type_name": "劳动争议",
+    "status": "litigating",
+    "description": "张某某于2026年3月被公司单方面解除劳动合同，未支付经济补偿金。要求公司支付违法解除赔偿金及未结工资共计12万元。",
+    "structured_facts": {
+      "employee_name": "张某某",
+      "employer": "某某科技有限公司",
+      "employment_start": "2024-06-01",
+      "termination_date": "2026-03-15",
+      "monthly_salary": 15000
+    },
+    "analysis_ids": [
+      "a001"
+    ],
+    "created_at": "2026-06-01T10:00:00",
+    "updated_at": "2026-06-03T15:30:00"
+  },
+  {
+    "case_id": "c002",
+    "user_id": "5cde3633",
+    "case_name": "李某民间借贷案",
+    "case_type": "loan",
+    "case_type_name": "民间借贷",
+    "status": "assessing",
+    "description": "李某于2025年8月借给朋友王某20万元，约定年利率12%，借期一年。王某至今未还本金，仅支付前三个月利息。",
+    "structured_facts": {
+      "lender": "李某",
+      "borrower": "王某",
+      "loan_amount": 200000,
+      "interest_rate": 12,
+      "loan_date": "2025-08-01"
+    },
+    "analysis_ids": [],
+    "created_at": "2026-06-02T09:00:00",
+    "updated_at": "2026-06-02T09:00:00"
+  },
+  {
+    "case_id": "c003",
+    "user_id": "109a19cc",
+    "case_name": "王业务合同违约案",
+    "case_type": "contract",
+    "case_type_name": "合同纠纷",
+    "status": "negotiating",
+    "description": "供应商未按合同约定时间交付货物，导致生产线停工3天，直接损失约8万元。",
+    "structured_facts": {
+      "plaintiff": "我方公司",
+      "defendant": "某某供应商",
+      "contract_date": "2026-01-10",
+      "delivery_deadline": "2026-05-01",
+      "loss_amount": 80000
+    },
+    "analysis_ids": [
+      "a002"
+    ],
+    "created_at": "2026-05-20T14:00:00",
+    "updated_at": "2026-06-05T11:00:00"
+  },
+  {
+    "case_id": "c004",
+    "user_id": "5cde3633",
+    "case_name": "赵某人身损害赔偿案",
+    "case_type": "injury",
+    "case_type_name": "人身损害赔偿",
+    "status": "assessing",
+    "description": "赵某在商场内因地面湿滑摔伤，造成右腿骨折，医疗费已花费3.5万元，要求商场承担赔偿责任。",
+    "structured_facts": {
+      "victim": "赵某",
+      "location": "某某购物中心",
+      "incident_date": "2026-04-20",
+      "injury": "右腿胫骨骨折",
+      "medical_cost": 35000
+    },
+    "analysis_ids": [],
+    "created_at": "2026-06-04T08:00:00",
+    "updated_at": "2026-06-04T08:00:00"
+  },
+  {
+    "case_id": "c005",
+    "user_id": "109a19cc",
+    "case_name": "陈某某消费维权案",
+    "case_type": "consumer",
+    "case_type_name": "消费维权",
+    "status": "closed",
+    "description": "陈某某在某电商平台购买手机后发现为翻新机，商家拒绝退货。经调解后商家同意退还货款并赔偿。",
+    "structured_facts": {
+      "consumer": "陈某某",
+      "merchant": "某电商商家",
+      "product": "手机",
+      "price": 4999,
+      "issue": "翻新机冒充新机"
+    },
+    "analysis_ids": [
+      "a003"
+    ],
+    "created_at": "2026-05-10T12:00:00",
+    "updated_at": "2026-06-06T16:00:00"
+  },
+  {
+    "case_id": "c006",
+    "user_id": "c7b62f59",
+    "case_name": "刘某陈某离婚财产纠纷",
+    "case_type": "marriage",
+    "case_type_name": "婚姻家庭",
+    "status": "assessing",
+    "description": "夫妻感情破裂，就子女抚养权和财产分割产生争议。婚后共同购置房产一套、车辆一辆。",
+    "structured_facts": {
+      "parties": "刘某与陈某",
+      "children": "女儿5岁",
+      "property": "房产估值300万、车辆估值20万",
+      "marriage_date": "2021-05-01"
+    },
+    "analysis_ids": [],
+    "created_at": "2026-06-08T10:00:00",
+    "updated_at": "2026-06-08T10:00:00"
+  }
+]
