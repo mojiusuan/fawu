@@ -1,0 +1,561 @@
+@startuml classes_智能法务系统
+set namespaceSeparator none
+class "AgentOrchestrator" as src.agent_service.orchestrator.AgentOrchestrator {
+  client
+  graph
+  run(user_input: str) -> dict
+}
+class "AgentState" as src.agent_service.state.AgentState {
+  context : dict[str, Any]
+  finished : bool
+  messages : Annotated[list, add_messages]
+  next_agent : str
+  result : str
+  task_type : str
+  user_input : str
+}
+class "AnalysisRequest" as src.case_analysis_service.models.AnalysisRequest {
+  case_type : str
+  structured_facts : dict
+}
+class "AnalysisResponse" as src.case_analysis_service.models.AnalysisResponse {
+  analysis_id : str
+  case_id : str
+  disclaimer : str
+  evidence_checklist : list[dict]
+  fee_estimate : dict
+  legal_basis : list[dict]
+  limitation_check : dict
+  risk_assessment : dict
+  similar_cases : list[dict]
+  summary : str
+}
+class "Article" as src.knowledge_graph.models.Article {
+  article_number : str
+  chapter : str
+  content : str
+  law_name : str
+}
+class "AskRequest" as src.consultation_service.models.AskRequest {
+  question : str
+  source_type
+}
+class "AskResponse" as src.consultation_service.models.AskResponse {
+  answer : str
+  audit_id : str
+  disclaimer : str
+  law_basis : list[str]
+  question : str
+  search_results : list[SearchResult]
+}
+class "AuditLogger" as src.audit_service.logger.AuditLogger {
+  audit_file
+  prompt_file
+  rag_file
+  get_all_logs(limit: int) -> list[dict]
+  get_stats(start: str | None, end: str | None) -> dict
+  log(user_id: str, case_id: str, task_type: str, prompt_version: str, model: str, model_params: dict, input_text: str, rag_queries: list[str], rag_results: list[dict], output_text: str, latency_ms: int, token_usage: dict) -> str
+  log_prompt_usage(task: str, template_version: str, input_hash: str, model: str, temperature: float)
+  log_rag_query(query: str, source_type: str, result_count: int)
+  query(condition: str | None, limit: int) -> list[dict]
+}
+class "AuditReporter" as src.audit_service.reporter.AuditReporter {
+  export_dir : Path
+  export(format: str) -> str
+  generate_report() -> str
+}
+class "CalculatorService" as src.calculator_service.CalculatorService {
+  calc_compensation(scenario: str, params: dict) -> dict
+  calc_court_fee(case_type: str, claim_amount: float, include_preservation: bool, include_execution: bool, preservation_amount: float) -> dict
+  check_limitation(case_type: str, event_date: str) -> dict
+}
+class "Case" as src.knowledge_graph.models.Case {
+  case_date : str
+  case_number : str
+  case_type : str
+  court : str
+  facts : str
+  key_points : list[str]
+  parties : list[str]
+  title : str
+  verdict : str
+}
+class "CaseAnalyzer" as src.case_analysis_service.analyzer.CaseAnalyzer {
+  analyze(case_type: str, structured_facts: dict, case_id: str, user_id: str) -> dict
+  get_analysis(analysis_id: str) -> dict | None
+  get_case_type_fields(case_type: str) -> list[dict]
+  get_case_types() -> list[dict]
+}
+class "CaseMatcher" as src.case_analysis_service.matcher.CaseMatcher {
+  match_by_case_type(case_type: str, facts: dict) -> list[dict]
+  rerank_cases(query: str, rag_results: list[dict], kg_results: list[dict]) -> list[dict]
+}
+class "CaseProfileCreate" as src.case_analysis_service.models.CaseProfileCreate {
+  case_name : str
+  case_type : str
+  description : str
+}
+class "CaseProfileInfo" as src.case_analysis_service.models.CaseProfileInfo {
+  case_id : str
+  case_name : str
+  case_type : str
+  case_type_name : str
+  created_at : str
+  description : str
+  status : str
+  structured_facts : dict
+  updated_at : str
+  user_id : str
+}
+class "CaseProfileUpdate" as src.case_analysis_service.models.CaseProfileUpdate {
+  case_name : Optional[str]
+  status : Optional[str]
+}
+class "CaseService" as src.case_service.CaseService {
+  create(user_id: str, case_name: str, case_type: str, description: str) -> dict
+  delete(case_id: str) -> bool
+  get(case_id: str) -> dict | None
+  link_analysis(case_id: str, analysis_id: str)
+  list_by_user(user_id: str, status: str) -> list[dict]
+  update(case_id: str) -> dict | None
+}
+class "CitationFormatter" as src.rag_service.citation.CitationFormatter {
+  format_case_citation(result: dict) -> str
+  format_law_citation(result: dict) -> str
+  format_search_result(result: dict) -> dict
+}
+class "Clause" as src.knowledge_graph.models.Clause {
+  clause_number : str
+  content : str
+  contract_title : str
+  risk_level : str
+}
+class "ClauseInfo" as src.contract_service.models.ClauseInfo {
+  clause_number : str
+  content : str
+  law_basis : Optional[str]
+  risk_analysis : Optional[str]
+  risk_level : Optional[RiskLevel]
+  suggestion : Optional[str]
+}
+class "CompensationRequest" as src.case_analysis_service.models.CompensationRequest {
+  params : dict
+  scenario : str
+}
+class "CompensationResponse" as src.case_analysis_service.models.CompensationResponse {
+  items : list[dict]
+  legal_basis : str
+  notes : list[str]
+  scenario : str
+  scenario_name : str
+  total_max : float
+  total_min : float
+}
+class "ConsultationAgent" as src.consultation_service.agent.ConsultationAgent {
+  client
+  ask(question: str, source_type: str, user_id: str) -> tuple[str, list[SearchResult], list[str], str]
+}
+class "ConsultationHistory" as src.consultation_service.models.ConsultationHistory {
+  answer_summary : str
+  id : str
+  question : str
+  timestamp : str
+}
+class "ConsultationService" as src.consultation_service.service.ConsultationService {
+  add_history(question: str, answer_summary: str) -> ConsultationHistory
+  get_history() -> list[ConsultationHistory]
+  search(req: SearchRequest) -> SearchResponse
+}
+class "Contract" as src.knowledge_graph.models.Contract {
+  contract_type : str
+  file_path : str
+  party_a : str
+  party_b : str
+  sign_date : str
+  title : str
+}
+class "ContractAgent" as src.contract_service.agent.ContractAgent {
+  client
+  compare_contracts(title_a: str, clauses_a: list[ClauseInfo], title_b: str, clauses_b: list[ClauseInfo]) -> list[dict]
+  generate_contract(contract_type: str, party_a: str, party_b: str, key_terms: str) -> str
+  review_contract(contract_id: str, title: str, contract_type: str, clauses: list[ClauseInfo], user_id: str) -> tuple[list[ClauseInfo], str]
+}
+class "ContractCompareRequest" as src.contract_service.models.ContractCompareRequest {
+  contract_a_id : str
+  contract_b_id : str
+}
+class "ContractCompareResult" as src.contract_service.models.ContractCompareResult {
+  contract_a_title : str
+  contract_b_title : str
+  differences : list[dict]
+  formal_diff : int
+  identical : int
+  substantive_diff : int
+  total_clauses : int
+}
+class "ContractGenerateRequest" as src.contract_service.models.ContractGenerateRequest {
+  contract_type
+  key_terms : str
+  party_a : str
+  party_b : str
+}
+class "ContractGenerateResult" as src.contract_service.models.ContractGenerateResult {
+  content : str
+  title : str
+  warnings : list[str]
+}
+class "ContractInfo" as src.contract_service.models.ContractInfo {
+  clauses : list[ClauseInfo]
+  content : str
+  contract_type : str
+  created_at : str
+  id : str
+  party_a : str
+  party_b : str
+  review_status : str
+  title : str
+}
+class "ContractReviewRequest" as src.contract_service.models.ContractReviewRequest {
+  contract_id : str
+  review_scope : str
+}
+class "ContractReviewResult" as src.contract_service.models.ContractReviewResult {
+  audit_id : str
+  clauses : list[ClauseInfo]
+  contract_id : str
+  high_risks : int
+  low_risks : int
+  medium_risks : int
+  review_summary : str
+  suggestions : str
+}
+class "ContractService" as src.contract_service.service.ContractService {
+  build_compare_result(title_a: str, title_b: str, diffs: list[dict]) -> ContractCompareResult
+  build_review_result(contract_id: str, clauses: list[ClauseInfo], suggestions: str, audit_id: str) -> ContractReviewResult
+  create_contract(title: str, contract_type: str, content: str, party_a: str, party_b: str) -> ContractInfo
+  get_contract(contract_id: str) -> ContractInfo | None
+  list_contracts() -> list[ContractInfo]
+  parse_clauses(content: str) -> list[ClauseInfo]
+  update_contract(contract: ContractInfo)
+}
+class "ContractType" as src.contract_service.models.ContractType {
+  name
+}
+class "ContractUploadRequest" as src.contract_service.models.ContractUploadRequest {
+  content : str
+  contract_type
+  party_a : str
+  party_b : str
+  title : str
+}
+class "Court" as src.knowledge_graph.models.Court {
+  jurisdiction : str
+  level : str
+  name : str
+}
+class "DocumentService" as src.document_service.DocumentService {
+  assemble(template_id: str, fields: dict) -> dict | None
+  get_template(template_id: str) -> dict | None
+  get_template_download(template_id: str) -> Path | None
+  list_templates() -> list[dict]
+}
+class "EmbeddingService" as src.rag_service.embedder.EmbeddingService {
+  client
+  embed_chunks(chunks: list[dict]) -> list[list[float]]
+  embed_query(query: str) -> list[float]
+  get_chunks() -> list[dict]
+  get_vectors() -> list[list[float]]
+}
+class "EntityDetail" as src.knowledge_graph.models.EntityDetail {
+  entity_id : str
+  entity_type : str
+  properties : dict
+}
+class "EvidenceService" as src.evidence_service.EvidenceService {
+  get_guide(case_type: str) -> dict | None
+  list_case_types_with_guides() -> list[dict]
+}
+class "ExportChatRequest" as src.export_routes.ExportChatRequest {
+  messages : list[dict]
+}
+class "ExportTextRequest" as src.export_routes.ExportTextRequest {
+  content : str
+  title : str
+}
+class "FeeCalcRequest" as src.case_analysis_service.models.FeeCalcRequest {
+  case_type : str
+  claim_amount : float
+  include_execution : bool
+  include_preservation : bool
+  preservation_amount : float
+}
+class "FeeCalcResponse" as src.case_analysis_service.models.FeeCalcResponse {
+  breakdown : list[dict]
+  claim_amount : float
+  court_fee : float
+  execution_fee : float
+  preservation_fee : float
+  reduction_note : str
+  total : float
+}
+class "GraphBuilder" as src.knowledge_graph.builder.GraphBuilder {
+  driver : BoltDriver, Neo4jDriver, NoneType
+  build_from_case_data(case_data: dict) -> int
+  build_from_contract(title: str, clauses: list[dict]) -> int
+  build_from_extraction(extracted: dict) -> int
+  build_from_law_document(law_chunks: list[dict]) -> int
+  clear_all()
+  close()
+  connect()
+  create_entity(entity_type: str, properties: dict) -> str
+  create_relationship(source_type: str, source_name: str, relation: str, target_type: str, target_name: str)
+  get_stats() -> dict
+}
+class "GraphQueryResult" as src.knowledge_graph.models.GraphQueryResult {
+  entities : list[EntityDetail]
+  relationships : list[RelationshipDetail]
+}
+class "HybridRetriever" as src.rag_service.retriever.HybridRetriever {
+  chroma_client
+  collection
+  whoosh_index
+  index_documents(chunks: list[dict])
+  is_initialized() -> bool
+  search(query: str, source_type: str, top_k: int, hybrid_weight: float) -> list[dict]
+  search_cases(query: str, top_k: int) -> list[dict]
+  search_laws(query: str, top_k: int) -> list[dict]
+}
+class "KGQuery" as src.knowledge_graph.query.KGQuery {
+  driver : BoltDriver, Neo4jDriver, NoneType
+  is_available : bool
+  close()
+  connect()
+  find_case_precedents(article_number: str) -> list[dict]
+  find_related_articles(concept: str) -> list[dict]
+  get_subgraph(entity_type: str, entity_id: str, depth: int) -> GraphQueryResult
+  query_entity(entity_type: str, entity_id: str) -> EntityDetail | None
+  query_relations(entity_type: str, entity_id: str) -> list[RelationshipDetail]
+  query_risks_for_contract(contract_title: str) -> list[dict]
+  search_fulltext(keyword: str) -> list[dict]
+  search_law_articles(law_name: str) -> list[dict]
+}
+class "KnowledgeExtractor" as src.knowledge_graph.extractor.KnowledgeExtractor {
+  client
+  extract_from_case(case_data: dict) -> dict
+  extract_from_contract(contract_title: str, clauses: list[dict]) -> dict
+  extract_from_law_document(laws: list[dict]) -> dict
+  extract_from_text(text: str) -> dict
+}
+class "LLMClient" as src.utils.llm_client.LLMClient {
+  chat
+  embeddings
+  embeddings_source : str
+  provider : NoneType
+  embed_query(query: str) -> list[float]
+  embed_texts(texts: list[str]) -> list[list[float]]
+  generate(system_prompt: str, user_prompt: str, temperature: float | None, max_tokens: int | None) -> tuple[str, dict]
+}
+class "Law" as src.knowledge_graph.models.Law {
+  effective_date : str
+  issuing_body : str
+  law_type : str
+  name : str
+  status : str
+}
+class "LegalConcept" as src.knowledge_graph.models.LegalConcept {
+  definition : str
+  name : str
+  related_laws : list[str]
+}
+class "LegalDocumentParser" as src.rag_service.parser.LegalDocumentParser {
+  parse(file_path: str) -> list[dict]
+  parse_to_documents(file_path: str) -> list[dict]
+}
+class "LimitationRequest" as src.case_analysis_service.models.LimitationRequest {
+  case_type : str
+  event_date : str
+}
+class "LimitationResponse" as src.case_analysis_service.models.LimitationResponse {
+  days_remaining : int
+  deadline_date : str
+  event_date : str
+  interruption_reasons : list[str]
+  is_expired : bool
+  legal_basis : str
+  limitation_name : str
+  limitation_type : str
+  period_text : str
+  special_rules : list[str]
+  status_text : str
+}
+class "LocalEmbedding" as src.utils.llm_client.LocalEmbedding {
+  aembed_documents(texts: list[str]) -> list[list[float]]
+  aembed_query(text: str) -> list[float]
+  embed_documents(texts: list[str]) -> list[list[float]]
+  embed_query(text: str) -> list[float]
+}
+class "LoginRequest" as src.auth_service.models.LoginRequest {
+  password : str
+  username : str
+}
+class "LoginResponse" as src.auth_service.models.LoginResponse {
+  access_token : str
+  token_type : str
+  user
+}
+class "RPAAgent" as src.agent_service.rpa_agent.RPAAgent {
+  client
+  batch_extract_key_clauses(file_paths: list[str]) -> list[dict]
+  extract_contract_data(file_path: str, user_id: str) -> dict
+  fill_form(template_fields: dict, data: dict) -> dict
+}
+class "RelationType" as src.knowledge_graph.models.RelationType {
+  APPLIES : str
+  BASED_ON : str
+  BELONGS_TO : str
+  CITES : str
+  CONTAINS : str
+  DEFINED_IN : str
+  HAS_RISK : str
+  HEARD_BY : str
+  PRECEDENT_FOR : str
+  REFERENCES : str
+  RELATED_TO : str
+  SIMILAR_TO : str
+}
+class "RelationshipDetail" as src.knowledge_graph.models.RelationshipDetail {
+  relation : str
+  source_id : str
+  source_type : str
+  target_id : str
+  target_type : str
+}
+class "RiskLevel" as src.contract_service.models.RiskLevel {
+  name
+}
+class "RiskPoint" as src.knowledge_graph.models.RiskPoint {
+  description : str
+  law_basis : str
+  level : str
+  risk_type : str
+  suggestion : str
+}
+class "Role" as src.auth_service.models.Role {
+  name
+}
+class "SearchRequest" as src.consultation_service.models.SearchRequest {
+  query : str
+  source_type
+  top_k : int
+}
+class "SearchResponse" as src.consultation_service.models.SearchResponse {
+  query : str
+  results : list[SearchResult]
+  source_type : str
+  total : int
+}
+class "SearchResult" as src.consultation_service.models.SearchResult {
+  article : str
+  date : str
+  excerpt : str
+  full_content : str
+  relevance : str
+  source : str
+}
+class "Settings" as src.config.Settings {
+  ACCESS_TOKEN_EXPIRE_MINUTES : int
+  ANTHROPIC_API_KEY : str
+  APP_NAME : str
+  APP_VERSION : str
+  AUDIT_LOG_DIR : str
+  BASE_DIR : Path
+  CHROMA_PERSIST_DIR : str
+  CLAUDE_MODEL : str
+  DEBUG : bool
+  DEEPSEEK_API_KEY : str
+  DEEPSEEK_MODEL : str
+  EMBEDDING_MODEL : str
+  EMBEDDING_PROVIDER : str
+  EXPORT_DIR : str
+  HF_ENDPOINT : str
+  HOST : str
+  JWT_ALGORITHM : str
+  JWT_SECRET_KEY : str
+  KNOWLEDGE_BASE_DIR : str
+  LLM_MAX_TOKENS : int
+  LLM_PROVIDER : str
+  LLM_TEMPERATURE : float
+  LOG_LEVEL : str
+  NEO4J_PASSWORD : str
+  NEO4J_URI : str
+  NEO4J_USERNAME : str
+  OPENAI_API_KEY : str
+  OPENAI_MODEL : str
+  PORT : int
+  PROMPTS_DIR : str
+  llm_model : str
+  ensure_directories()
+}
+class "SettingsUpdate" as src.settings_routes.SettingsUpdate {
+  anthropic_api_key : str | None
+  claude_model : str | None
+  deepseek_api_key : str | None
+  deepseek_model : str | None
+  embedding_model : str | None
+  llm_max_tokens : int | None
+  llm_provider : str | None
+  llm_temperature : float | None
+  neo4j_password : str | None
+  neo4j_uri : str | None
+  neo4j_username : str | None
+  openai_api_key : str | None
+  openai_model : str | None
+}
+class "SourceType" as src.consultation_service.models.SourceType {
+  name
+}
+class "TopicService" as src.topic_service.TopicService {
+  get_topic(topic_id: str) -> dict | None
+  list_topics() -> list[dict]
+  search(keyword: str) -> list[dict]
+}
+class "UserCreateRequest" as src.auth_service.models.UserCreateRequest {
+  display_name : str
+  password : str
+  role
+  username : str
+}
+class "UserInfo" as src.auth_service.models.UserInfo {
+  created_at : str
+  display_name : str
+  id : str
+  role
+  username : str
+}
+class "UserStore" as src.auth_service.user_store.UserStore {
+  create_user(username: str, hashed_password: str, display_name: str, role: str) -> UserInfo
+  delete_user(user_id: str) -> bool
+  get_by_id(user_id: str) -> UserInfo | None
+  get_by_username(username: str) -> dict | None
+  list_users() -> list[UserInfo]
+  update_user(user_id: str) -> UserInfo | None
+}
+class "UserUpdateRequest" as src.auth_service.models.UserUpdateRequest {
+  display_name : str | None
+  password : str | None
+  role : Role | None
+}
+src.auth_service.models.UserCreateRequest --> src.auth_service.models.Role : role
+src.auth_service.models.UserInfo --> src.auth_service.models.Role : role
+src.auth_service.models.LoginResponse --> src.auth_service.models.UserInfo : user
+src.consultation_service.models.AskRequest --> src.consultation_service.models.SourceType : source_type
+src.consultation_service.models.SearchRequest --> src.consultation_service.models.SourceType : source_type
+src.contract_service.models.ContractGenerateRequest --> src.contract_service.models.ContractType : contract_type
+src.contract_service.models.ContractUploadRequest --> src.contract_service.models.ContractType : contract_type
+src.utils.llm_client.LLMClient --o src.agent_service.orchestrator.AgentOrchestrator : client
+src.utils.llm_client.LLMClient --o src.agent_service.rpa_agent.RPAAgent : client
+src.utils.llm_client.LLMClient --o src.consultation_service.agent.ConsultationAgent : client
+src.utils.llm_client.LLMClient --o src.contract_service.agent.ContractAgent : client
+src.utils.llm_client.LLMClient --o src.knowledge_graph.extractor.KnowledgeExtractor : client
+src.utils.llm_client.LLMClient --o src.rag_service.embedder.EmbeddingService : client
+@enduml

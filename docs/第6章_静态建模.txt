@@ -1,0 +1,114 @@
+6.1 识别对象类
+
+对象类的识别是面向对象分析的核心环节。通过对智能法务系统的需求分析和用例建模，结合问题域中反复出现的核心概念及其职责边界，本节从系统整体架构中抽象出三类对象：实体类、控制类和边界类。以下按类别逐一阐述。
+
+
+6.1.1 实体类
+
+实体类用于描述系统中需要持久化存储的核心业务数据，通常对应问题域中具有明确生命周期和唯一标识的现实世界事物。
+
+（1）用户信息类（UserInfo）。用户是系统的直接参与者。UserInfo 类封装了用户的基本身份信息，包括用户标识、登录用户名、显示名称和所属角色等字段。每个用户拥有唯一的用户编号（id），系统通过角色枚举（Role）区分业务人员、法务人员、管理员和审计员四类用户。
+
+（2）合同信息类（ContractInfo）。合同是系统的核心业务对象。ContractInfo 类描述一份合同从上传到审查完成的完整生命周期数据，包括合同编号、标题、合同类型、甲乙方信息、合同全文以及审查状态等属性。合同类型通过 ContractType 枚举约束为买卖合同、租赁合同、服务合同、劳动合同、借款合同和其他六种。审查状态字段标识合同当前所处的处理阶段（未审查或已审查）。
+
+（3）合同条款类（ClauseInfo）。ClauseInfo 类描述合同经结构解析后的单个条款，作为 ContractInfo 的组成类存在。除条款编号和条款原文外，该类还承载 AI 审查的结果数据，包括风险等级（RiskLevel 枚举：high、medium、low、none）、风险分析说明、所引用的法律依据和具体的修改建议。
+
+（4）咨询历史类（ConsultationHistory）。ConsultationHistory 类记录了用户每一次法律咨询的基本信息，包括咨询编号、原始问题文本、AI 回答的摘要以及咨询时间戳。完整的 AI 回答可通过审计追溯号关联至审计日志详查。
+
+（5）案件档案类（CaseProfileInfo）。CaseProfileInfo 类描述一个法律案件的基本档案信息，包括案件编号、案件名称、案件类型、案情描述、结构化事实字段、当前处理状态、关联用户以及创建和更新时间。
+
+（6）知识图谱领域类。系统在知识图谱模块中定义了 Law（法律）、Case（判例）、LegalConcept（法律概念）、Court（法院）、RiskPoint（风险点）和 Contract（合同实体）六类领域实体，用于在 Neo4j 图数据库中表示法律知识网络中的节点。每类实体具有各自的属性集合，例如 Law 包含法律名称、发布机构、生效日期和法律类型等信息，Case 包含案件标题、案号、审理法院、当事人、案情摘要和判决结果等信息。
+
+（7）搜索结果类（SearchResult）。SearchResult 类封装了 RAG 混合检索返回的单条结果信息，包括法条编号、内容摘要、来源标识、发布日期和相关度评分等字段，用于在咨询界面中向用户展示检索依据。
+
+（8）审查报告类（ContractReviewResult）。ContractReviewResult 类表示一次合同审查完成后生成的审查报告，包含合同编号、高/中/低风险条款数量的统计汇总、带风险标签的条款列表、总体修改建议以及审计追溯号。
+
+（9）比对结果类（ContractCompareResult）。ContractCompareResult 类封装两份合同比对分析的结果，包括比对双方的标题、条款总数、完全一致条款数、形式差异条款数、实质差异条款数以及逐项差异清单。
+
+（10）生成结果类（ContractGenerateResult）。ContractGenerateResult 类封装 AI 合同生成的输出，包含生成的合同标题、合同草案全文以及使用注意事项列表。
+
+（11）分析响应类（AnalysisResponse）。AnalysisResponse 类封装案件分析的结果数据，包含分析编号、案情摘要、法律依据列表、风险评估、相似案例清单、证据收集建议、费用估算和诉讼时效检查等综合信息。
+
+
+6.1.2 控制类
+
+控制类负责协调实体类之间的交互，封装核心业务逻辑和算法，是连接界面与数据的桥梁。
+
+（1）合同服务类（ContractService）与合同代理类（ContractAgent）。ContractService 负责合同的 CRUD 操作、条款解析和审查报告的组装，是合同管理模块的核心协调者。ContractAgent 封装与大语言模型的交互逻辑，负责将条款数据组装为审查 Prompt、调用 LLM API 并解析返回的 JSON 格式审查结果。两者协同完成从合同上传到 AI 审查的完整业务链路。
+
+（2）咨询服务类（ConsultationService）与咨询代理类（ConsultationAgent）。ConsultationService 负责咨询历史的管理。ConsultationAgent 是法律咨询的核心调度者，它协调 RAG 检索与 LLM 生成两个环节：先调用 HybridRetriever 从知识库中检索相关法条和判例，将检索结果作为知识上下文注入 LLM 的 Prompt，再将生成的结构化法律意见返回给用户。
+
+（3）案件服务类（CaseService）、案件分析器类（CaseAnalyzer）与案件匹配器类（CaseMatcher）。CaseService 负责案件档案的 CRUD 操作。CaseAnalyzer 封装案件分析的核心逻辑，调用 LLM 进行案情要素提取、法律适用分析和判例匹配。CaseMatcher 提供基于案件类型和案情事实的相似案例检索与重排序功能。
+
+（4）Agent 编排器类（AgentOrchestrator）与 RPA 代理类（RPAAgent）。AgentOrchestrator 基于 LangGraph 的 Supervisor 模式实现多 Agent 协作调度。它构建包含 Supervisor 节点和四个专业 Agent 节点的有向状态图，通过 LLM 进行意图识别和任务路由。RPAAgent 提供文档数据提取、表格填写和批量关键条款挖掘等自动化处理功能。
+
+（5）混合检索器类（HybridRetriever）、嵌入服务类（EmbeddingService）、引文格式化器类（CitationFormatter）与文档解析器类（LegalDocumentParser）。HybridRetriever 是 RAG 检索引擎的核心，同时管理 ChromaDB 语义向量检索通道和 Whoosh BM25 关键词检索通道，对两通道结果进行加权合并与去重排序。EmbeddingService 负责将法律文档和用户查询转换为高维向量表示。CitationFormatter 负责检索结果的引用格式标准化。LegalDocumentParser 负责将原始法律文档解析为可供索引的结构化文本块。
+
+（6）知识图谱构建器类（GraphBuilder）、知识抽取器类（KnowledgeExtractor）与图谱查询类（KGQuery）。GraphBuilder 负责在 Neo4j 中创建法律实体节点和关系边，支持从法律条文、判例数据和合同数据等多个来源构建知识图谱。KnowledgeExtractor 通过 LLM 从非结构化法律文本中抽取实体和关系。KGQuery 封装 Cypher 图查询逻辑，提供全文搜索、实体查询、关系探索和判例追溯等接口。
+
+（7）用户存储类（UserStore）。UserStore 负责用户数据的持久化管理，提供用户的创建、查询、更新和删除操作，所有用户数据以 JSON 格式存储于 users_store.json 文件中。
+
+（8）审计日志类（AuditLogger）与审计报告类（AuditReporter）。AuditLogger 以追加写入模式记录每次 AI 操作的完整上下文，包括操作时间、用户标识、任务类型、使用的模型、输入输出摘要、Token 消耗量和响应延迟。AuditReporter 负责聚合审计数据并生成结构化的合规报告。
+
+（9）计算服务类（CalculatorService）。CalculatorService 提供诉讼费用计算、赔偿金估算和诉讼时效检查三项法律计算功能，从预设的 JSON 规则文件中读取计算参数。
+
+（10）文书服务类（DocumentService）、证据服务类（EvidenceService）与专题服务类（TopicService）。DocumentService 负责法律文书模板的管理和动态填充。EvidenceService 提供按案件类型的证据收集指引查询。TopicService 管理法律专题知识库的浏览与搜索。
+
+（11）LLM 客户端类（LLMClient）与本地嵌入类（LocalEmbedding）。LLMClient 是系统与大语言模型交互的统一封装层，支持 DeepSeek、Claude 和 OpenAI 三家提供商的动态切换。LocalEmbedding 封装本地 BGE-large-zh-v1.5 嵌入模型的加载与推理，为 RAG 检索提供向量化能力。
+
+（12）全局配置类（Settings）。Settings 作为全局单例，集中管理系统的所有配置参数，包括 LLM 提供商选择、模型版本、API 密钥、数据库连接信息、JWT 密钥和文件路径等。
+
+
+6.1.3 边界类
+
+边界类负责系统与外部参与者之间的交互，在智能法务系统中主要表现为前端用户界面和 REST API 接口。
+
+（1）Web 前端界面（WebUI）。系统前端采用零依赖的单页应用（SPA）架构，由 index.html、css/style.css 和 js/app.js 三个文件构成。界面按功能划分为首页仪表盘、合同管理、法律咨询、案件中心、知识图谱、文书模板、计算工具、证据管理、专题库、审计日志、RPA 自动化和系统设置等十二个功能页面。
+
+（2）REST API 接口层。系统通过 FastAPI 框架对外暴露十组 RESTful API 端点，包括合同管理接口（/api/contracts/*）、法律咨询接口（/api/consultation/*）、案件中心接口（/api/cases/*）、知识图谱接口（/api/kg/*）、认证授权接口（/api/auth/*）、导出服务接口（/api/export/*）、系统配置接口（/api/settings/*）等。所有接口通过 JWT 令牌进行无状态认证，通过 APIRouter 机制实现模块化注册。
+
+（3）请求/响应数据传输类。系统为每个 API 端点定义了对应的 Pydantic 数据模型类，用于请求参数的自动校验和响应数据的结构化序列化。主要包括：用户注册请求类（UserCreateRequest）、登录请求类（LoginRequest）、登录响应类（LoginResponse）、合同上传请求类（ContractUploadRequest）、合同审查请求类（ContractReviewRequest）、合同比对请求类（ContractCompareRequest）、合同生成请求类（ContractGenerateRequest）、咨询请求类（AskRequest）、咨询响应类（AskResponse）、检索请求类（SearchRequest）、检索响应类（SearchResponse）、案件创建请求类（CaseProfileCreate）、分析请求类（AnalysisRequest）、费用计算请求类（FeeCalcRequest）、赔偿计算请求类（CompensationRequest）、时效检查请求类（LimitationRequest）、系统设置更新类（SettingsUpdate）、导出文本请求类（ExportTextRequest）以及导出对话请求类（ExportChatRequest）等。这些类利用 Pydantic 的 Field 声明实现输入验证规则（如最小长度、默认值等），并自动生成 OpenAPI 交互式文档的数据模型描述。
+
+
+6.2 识别属性
+
+属性的识别遵循"封装对象状态、支持业务逻辑"的原则。每个属性描述对象某一方面的特征，属性的数据类型和约束条件应与业务规则保持一致。以下按核心实体类逐一列出关键属性及其设计考量。
+
+（1）UserInfo（用户信息类）。用户编号（id，VARCHAR(8)）是用户的唯一标识，采用 UUID 前八位确保全局唯一性。用户名（username，VARCHAR(32)）是登录凭证，系统在注册时校验其唯一性。显示名称（display_name，VARCHAR(64)）用于界面展示，支持中文。密码哈希（hashed_password，VARCHAR(256)）采用 BCrypt 算法加密存储，原始密码不落盘。角色（role）为 Role 枚举类型，约束取值范围为 admin、legal、business 或 auditor，决定用户的功能权限边界。创建时间（created_at）为 DATETIME 类型，记录账号的注册时间戳。
+
+（2）ContractInfo（合同信息类）。合同编号（id，VARCHAR(8)）为唯一标识。标题（title，VARCHAR(256)）为合同名称。合同类型（contract_type）为 ContractType 枚举，约束为六种法定合同类型之一。甲方（party_a，VARCHAR(128)）和乙方（party_b，VARCHAR(128)）记录合同当事方名称。合同全文（content，TEXT）存储完整的合同文本。审查状态（review_status，VARCHAR(16)）标识合同当前处于"未审查"或"已审查"阶段。条款列表（clauses，JSON 数组）存储解析后的结构化条款对象，每条记录遵循 ClauseInfo 结构。创建时间（created_at）记录合同上传时间。
+
+（3）ClauseInfo（合同条款类）。条款编号（clause_number，VARCHAR(16)）标识条款在合同中的位置。条款内容（content，TEXT）存储条款原文。风险等级（risk_level）为 RiskLevel 枚举，取值范围为 high（高风险，违反强制性法律规定）、medium（中风险，存在争议或模糊表述）、low（低风险，轻微瑕疵）或 none（无风险）。风险分析（risk_analysis，TEXT）描述风险的具体说明。法律依据（law_basis，VARCHAR(512)）引用相关的法律法规条文。修改建议（suggestion，TEXT）由 AI 生成的条款改进建议文本。
+
+（4）ConsultationHistory（咨询历史类）。咨询编号（id，VARCHAR(8)）为唯一标识。问题文本（question，TEXT）记录用户原始输入的法律问题。回答摘要（answer_summary，TEXT）存储 AI 回答的前两百字摘要，用于历史列表展示。时间戳（timestamp，DATETIME）记录咨询发生的精确时间。
+
+（5）CaseProfileInfo（案件档案类）。案件编号（case_id，VARCHAR(8)）为唯一标识。案件名称（case_name）由用户自定义。案件类型（case_type，VARCHAR(32)）与 case_types.json 中定义的分类对应。案情描述（description，TEXT）记录用户输入的案件事实。结构化事实（structured_facts，JSON 对象）为 LLM 提取后的结构化要素数据。状态（status，VARCHAR(16)）标识案件当前的处理进度。用户编号（user_id）关联创建该案件的用户。创建时间（created_at）和更新时间（updated_at）记录档案的生命周期。
+
+（6）ContractReviewResult（审查报告类）。合同编号（contract_id）关联被审查的合同。高风险数量（high_risks，INT）、中风险数量（medium_risks，INT）和低风险数量（low_risks，INT）提供审查结果的风险分布统计。审查摘要（review_summary，TEXT）概述整体审查结论。条款列表（clauses）携带审查后的 ClauseInfo 数组。总体建议（suggestions，TEXT）为综述性的修改建议。审计追溯号（audit_id）可关联至 AuditLogger 中的详细操作记录。
+
+（7）ContractCompareResult（比对结果类）。合同 A 标题（contract_a_title）和合同 B 标题（contract_b_title）标识比对双方。条款总数（total_clauses，INT）为比对的总条款数。完全一致数（identical，INT）统计内容完全相同的条款。形式差异数（formal_diff，INT）统计仅存在措辞或格式差异的条款。实质差异数（substantive_diff，INT）统计涉及权利义务变更的条款。差异清单（differences，JSON 数组）逐项列出每个差异的具体位置和内容。
+
+（8）AnalysisResponse（案件分析响应类）。分析编号（analysis_id）为唯一标识。案件编号（case_id）关联被分析的案件。案情摘要（summary，TEXT）为 LLM 生成的事实概述。法律依据列表（legal_basis，JSON 数组）列出适用的法律法规及具体条文。风险评估（risk_assessment，JSON 对象）包含案件的综合风险评级和分项分析。相似案例清单（similar_cases，JSON 数组）列出匹配的参考判例及相关度评分。证据收集建议（evidence_checklist，JSON 数组）按案件类型提供证据清单。费用估算（fee_estimate，JSON 对象）包含诉讼费、保全费和执行费等预估金额。时效检查（limitation_check，JSON 对象）给出诉讼时效的状态判断。免责声明（disclaimer，TEXT）标注 AI 分析的参考性质。
+
+（9）SearchResult（搜索结果类）。法条编号（article，VARCHAR(64)）标识检索到的具体条文。内容摘要（excerpt，TEXT）展示检索匹配的文本片段。来源标识（source，VARCHAR(256)）标注信息的出处（如"民法典·合同编"）。发布日期（date，VARCHAR(32)）标注法规或判例的生效日期。相关度评分（relevance，VARCHAR(16)）以百分比或等级形式表示检索结果与查询的匹配程度。
+
+（10）AgentState（Agent 状态类）。用户输入（user_input，str）存储原始任务描述。任务类型（task_type，str）标识当前任务为 contract_review、consultation、rpa 或 kg_query 之一。消息历史（messages，list）保存多轮对话上下文。下一 Agent（next_agent，str）由 Supervisor 节点填充路由目标。上下文数据（context，dict）在各 Agent 节点间传递中间结果。最终结果（result，str）存储任务完成后的输出文本。完成标志（finished，bool）标识任务是否已执行完毕，状态图据此决定是否终止执行。
+
+（11）Law（法律类）。法律名称（name，VARCHAR(256)）为法规的全称。发布机构（issuing_body，VARCHAR(128)）为制定该法律的国家机关。生效日期（effective_date，VARCHAR(32)）为法律正式施行的日期。法律类型（law_type，VARCHAR(64)）为法律的分类（如民法、刑法、行政法等）。法律状态（status，VARCHAR(32)）标识该法律当前是否有效、已修订或已废止。
+
+（12）Case（判例类）。案件标题（title，VARCHAR(256)）为判例的名称。案号（case_number，VARCHAR(64)）为法院立案编号。审理法院（court，VARCHAR(128)）为审理该案件的法院名称。案件类型（case_type，VARCHAR(64)）为案件的类别。当事人（parties，JSON 数组）列出案件的各方当事人。案情摘要（facts，TEXT）为案件基本事实的简述。判决结果（verdict，TEXT）为法院的裁判结论。判决日期（case_date，VARCHAR(32)）为判决作出的日期。判决要点（key_points，JSON 数组）列出判决中的核心法律观点。
+
+
+6.2.1 属性设计原则
+
+在识别和定义上述属性时，遵循了以下几项设计原则：
+
+（1）标识唯一性。每个实体类均定义了主键属性（如 id、case_id、audit_id 等），采用 UUID 前缀或业务编码作为唯一标识，确保实体在存储和检索中的可区分性。
+
+（2）类型恰当性。属性数据类型的选择与实际存储和业务需求相匹配。用户名、合同标题等短文本字段采用 VARCHAR 类型并设定合理长度上限；合同全文、案情描述、AI 回答等长文本字段采用 TEXT 类型以容纳完整内容；结构化嵌套数据（如 clauses、required_fields、laws、faq 等）采用 JSON 数组或对象类型以保持数据灵活性。
+
+（3）枚举约束。对于取值范围有限的属性（如角色、合同类型、风险等级、审查状态等），使用枚举类型进行约束，避免无效数据的进入，同时提高代码可读性和维护性。
+
+（4）可空性控制。必填属性标记为 NOT NULL，可选属性根据业务场景允许 NULL 值。例如，合同条款的 risk_level 在审查前为 NULL，仅在 AI 审查完成后才被填充；审计日志的 user_id 在匿名用户操作时可为空。
+
+（5）审计可追溯。所有涉及 AI 操作的核心实体（合同审查报告、咨询记录等）均包含 audit_id 属性，形成从业务数据到审计日志的完整追溯链路，满足合规审计对全链路可验证性的要求。

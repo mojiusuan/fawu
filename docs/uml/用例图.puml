@@ -1,0 +1,107 @@
+@startuml 用例图
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontSize 14
+skinparam ArrowColor #1B2A4A
+skinparam ArrowThickness 1.8
+skinparam actorBackgroundColor #1B2A4A
+skinparam actorBorderColor #1B2A4A
+skinparam actorFontColor #FFFFFF
+skinparam actorFontSize 14
+skinparam usecaseBackgroundColor #FFFFFF
+skinparam usecaseBorderColor #1B2A4A
+skinparam usecaseBorderThickness 1.5
+skinparam usecaseFontSize 14
+skinparam usecaseFontColor #1B2A4A
+skinparam packageBackgroundColor #FFFFFF
+skinparam packageBorderColor #5B6E8A
+skinparam packageBorderThickness 1.5
+skinparam packageFontSize 15
+skinparam packageFontColor #1B2A4A
+skinparam packageFontStyle bold
+skinparam linetype ortho
+skinparam nodesep 90
+skinparam ranksep 100
+skinparam padding 18
+scale 1.15
+
+top to bottom direction
+
+actor "业务人员" as Biz
+actor "法务人员" as Legal
+actor "系统管理员" as Admin
+actor "审计员" as Auditor
+
+actor "LLM 引擎\n(DeepSeek / Claude / GPT)" as LLM <<外部系统>>
+actor "Neo4j\n图数据库" as Neo4j <<外部系统>>
+
+rectangle "智能法务系统" {
+  usecase "用户注册与登录" as UC_Auth
+
+  usecase "上传合同" as UC_Upload
+  usecase "AI 合同审查" as UC_Review
+  usecase "合同条款比对" as UC_Compare
+  usecase "AI 合同生成" as UC_Generate
+
+  usecase "法律问题咨询" as UC_Ask
+  usecase "法律知识检索" as UC_Search
+
+  usecase "案件创建与管理" as UC_Case
+  usecase "案件分析" as UC_CaseAnalysis
+  usecase "证据指引查询" as UC_Evidence
+
+  usecase "知识图谱查询" as UC_KG
+  usecase "判例关系追溯" as UC_KGTrace
+
+  usecase "文书模板管理" as UC_Template
+  usecase "法律费用计算" as UC_Calculator
+  usecase "专题知识浏览" as UC_Topic
+  usecase "RPA 文档提取" as UC_RPA
+
+  usecase "系统配置管理" as UC_Settings
+  usecase "审计日志查看" as UC_Audit
+  usecase "数据导出" as UC_Export
+}
+
+' 角色层级继承
+Admin --|> Legal
+Legal --|> Biz
+Auditor --|> Legal
+
+' 业务人员
+Biz --> UC_Auth
+Biz --> UC_Upload
+Biz --> UC_Ask
+Biz --> UC_Search
+
+' 法务人员（继承业务人员全部权限）
+Legal --> UC_Review
+Legal --> UC_Compare
+Legal --> UC_Generate
+Legal --> UC_Case
+Legal --> UC_CaseAnalysis
+Legal --> UC_Evidence
+Legal --> UC_KG
+Legal --> UC_KGTrace
+Legal --> UC_Template
+Legal --> UC_Calculator
+Legal --> UC_Topic
+Legal --> UC_RPA
+Legal --> UC_Export
+
+' 管理员
+Admin --> UC_Settings
+Admin --> UC_Audit
+
+' 审计员
+Auditor --> UC_Audit
+
+' 外部系统依赖
+UC_Review ..> LLM : <<调用>>
+UC_Generate ..> LLM : <<调用>>
+UC_Ask ..> LLM : <<调用>>
+UC_CaseAnalysis ..> LLM : <<调用>>
+UC_KG ..> Neo4j : <<查询>>
+UC_KGTrace ..> Neo4j : <<查询>>
+
+@enduml

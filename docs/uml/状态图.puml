@@ -1,0 +1,102 @@
+@startuml 状态图
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontSize 14
+skinparam ArrowColor #1B2A4A
+skinparam ArrowThickness 1.8
+skinparam stateBackgroundColor #FFFFFF
+skinparam stateBorderColor #1B2A4A
+skinparam stateBorderThickness 1.5
+skinparam stateFontSize 14
+skinparam stateStartColor #4A7C59
+skinparam stateEndColor #C4705A
+skinparam stateArrowColor #1B2A4A
+skinparam linetype ortho
+skinparam nodesep 70
+skinparam ranksep 75
+skinparam padding 14
+scale 1.15
+
+title 智能法务系统 — 状态图
+
+' ═══════════════ 合同审查生命周期 ═══════════════
+state "合同审查生命周期" as ContractLife {
+  [*] --> 未审查 : 上传合同
+
+  state 未审查 : ContractInfo\nreview_status = "未审查"
+
+  未审查 --> 未审查 : parse_clauses()\n条款解析与拆分
+
+  未审查 --> 审查中 : POST /api/contracts/review/{id}
+
+  state 审查中 : ContractAgent.review_contract()\nLLM 正在逐条分析
+
+  审查中 --> 已审查 : LLM 返回 JSON 审查结果\nContractAgent 解析并填充 ClauseInfo
+
+  state 已审查 : review_status = "已审查"\nclauses 含 risk_level / law_basis / suggestion
+
+  已审查 --> 未审查 : 条款修改后重新解析\n重新提交审查
+
+  已审查 --> [*] : 导出报告
+}
+
+' ═══════════════ AgentState 工作流 ═══════════════
+state "AgentState 工作流" as AgentSM {
+  [*] --> Idle : 系统就绪
+
+  state Idle : user_input=""\ntask_type=""
+
+  Idle --> Receiving : 用户提交任务
+
+  state Receiving : user_input 已填充
+
+  Receiving --> Supervising : 进入 Supervisor 节点
+
+  state Supervising : Supervisor 分析意图\nLLM 判断 task_type
+
+  Supervising --> Routing : next_agent 已确定
+
+  state Routing : _route(state)\n条件路由
+
+  Routing --> ContractExec : agent="contract_agent"
+  Routing --> ConsultExec : agent="consultation_agent"
+  Routing --> RPAExec : agent="rpa_agent"
+  Routing --> KGExec : agent="kg_agent"
+  Routing --> Completed : agent="end"
+
+  state ContractExec : _contract_node(state)
+  state ConsultExec : _consultation_node(state)
+  state RPAExec : _rpa_node(state)
+  state KGExec : _kg_node(state)
+
+  ContractExec --> Completed : finished=true
+  ConsultExec --> Completed : finished=true
+  RPAExec --> Completed : finished=true
+  KGExec --> Completed : finished=true
+
+  state Completed : result 已填充\nfinished=true
+
+  Completed --> [*]
+}
+
+' ═══════════════ 用户会话状态 ═══════════════
+state "用户会话" as SessionSM {
+  [*] --> 未登录 : 访问系统首页
+
+  未登录 --> 登录中 : POST /api/auth/login
+  登录中 --> 已登录 : JWT 令牌签发成功
+  登录中 --> 未登录 : 密码错误
+
+  未登录 --> 注册中 : 点击注册
+  注册中 --> 已登录 : UserStore.create_user()
+  注册中 --> 未登录 : 用户名已存在
+
+  已登录 --> 浏览中 : 进入功能页面
+  浏览中 --> 操作中 : 发起操作请求(审查看)
+  操作中 --> 浏览中 : 操作完成
+
+  已登录 --> 未登录 : 令牌过期\n前端清除 token
+  已登录 --> 未登录 : 手动登出
+}
+
+@enduml

@@ -1,0 +1,97 @@
+@startuml 顺序图-法律咨询
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontSize 14
+skinparam ArrowColor #1B2A4A
+skinparam ArrowThickness 1.8
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam ParticipantBackgroundColor #1B2A4A
+skinparam ParticipantBorderColor #1B2A4A
+skinparam ParticipantFontColor #FFFFFF
+skinparam ParticipantFontSize 14
+skinparam actorBackgroundColor #C4A35A
+skinparam actorBorderColor #9B7B3A
+skinparam actorFontColor #1B2A4A
+skinparam actorFontSize 14
+skinparam databaseBackgroundColor #E8EDF2
+skinparam databaseBorderColor #3A6B8C
+skinparam databaseFontSize 13
+skinparam noteBackgroundColor #FDF8ED
+skinparam noteBorderColor #D4C070
+skinparam noteFontSize 11
+skinparam ParticipantPadding 60
+skinparam BoxPadding 28
+scale 1.15
+
+title 法律咨询顺序图 — RAG 增强生成
+
+actor "用户" as User
+participant "FastAPI 路由\nconsultation_service/routes.py" as Route
+participant "ConsultationAgent\nagent.py" as Agent
+participant "HybridRetriever\nrag_service/retriever.py" as Retriever
+participant "EmbeddingService\nrag_service/embedder.py" as Embedder
+participant "LLMClient\nutils/llm_client.py" as LLM
+participant "AuditLogger\naudit_service/logger.py" as Audit
+database "ChromaDB\n向量检索" as Chroma
+database "Whoosh\nBM25 检索" as Whoosh
+database "consultation_history.json" as History
+
+User -> Route : POST /api/consultation/ask
+note right : { question, source_type }
+
+Route -> Route : get_current_user()
+note right : JWT 令牌验证\n无令牌返回 anonymous
+
+Route -> Agent : ask(question, source_type, user_id)
+
+== RAG 混合检索 ==
+
+Agent -> Retriever : search(query, source_type, top_k=10)
+
+Retriever -> Audit : log_rag_query(query,\n  source_type, 0)
+note right : 记录检索追踪
+
+Retriever -> Embedder : embed_query(query)
+Embedder --> Retriever : query_vector (768维)
+
+Retriever -> Chroma : collection.query(\n  query_embeddings=[vector],\n  n_results=20)
+Chroma --> Retriever : semantic_results (top 20)
+note right : BGE-large-zh-v1.5 本地模型\n余弦相似度匹配
+
+Retriever -> Whoosh : searcher.search(\n  parsed_query, limit=20)
+Whoosh --> Retriever : bm25_results (top 20)
+note right : BM25 精确关键词匹配\nchunk_id / title / content / source
+
+Retriever -> Retriever : 合并去重排序
+note right : hybrid_weight = 0.7\n语义 0.7 + BM25 0.3
+
+Retriever -> Retriever : CitationFormatter.\nformat_search_result()
+note right : 标准化引用格式\n法条编号 / 来源 / 日期
+
+Retriever -> Audit : log_rag_query(query,\n  source_type, result_count)
+
+Retriever --> Agent : formatted_results [top_k=10]
+
+== LLM 增强生成 ==
+
+Agent -> Agent : 构建 Prompt
+note right : CONSULTATION_SYSTEM 模板\n+ 检索上下文注入\n+ 用户问题
+
+Agent -> LLM : generate(system_prompt, user_prompt,\n  temperature=0.1)
+LLM -> LLM : POST /v1/chat/completions
+LLM --> Agent : 结构化回答
+note right : 直接回答\n→ 法律依据\n→ 实操建议\n→ 注意事项
+
+Agent -> Audit : log(user_id, "", "consultation",\n  ...)
+Audit --> Agent : audit_id
+
+Agent --> Route : (answer, search_results,\n  law_basis, audit_id)
+
+Route -> History : add_history(question, answer_summary)
+note right : 存储摘要至 consultation_history.json
+
+Route --> User : AskResponse
+note left : answer / search_results\nlaw_basis / audit_id\ndisclaimer
+
+@enduml

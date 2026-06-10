@@ -1,0 +1,223 @@
+@startuml packages_智能法务系统
+set namespaceSeparator none
+package "src" as src {
+}
+package "src.agent_service" as src.agent_service {
+}
+package "src.agent_service.orchestrator" as src.agent_service.orchestrator {
+}
+package "src.agent_service.rpa_agent" as src.agent_service.rpa_agent {
+}
+package "src.agent_service.state" as src.agent_service.state {
+}
+package "src.agent_service.tools" as src.agent_service.tools {
+}
+package "src.audit_service" as src.audit_service {
+}
+package "src.audit_service.logger" as src.audit_service.logger {
+}
+package "src.audit_service.reporter" as src.audit_service.reporter {
+}
+package "src.auth_service" as src.auth_service {
+}
+package "src.auth_service.dependencies" as src.auth_service.dependencies {
+}
+package "src.auth_service.jwt_handler" as src.auth_service.jwt_handler {
+}
+package "src.auth_service.models" as src.auth_service.models {
+}
+package "src.auth_service.routes" as src.auth_service.routes {
+}
+package "src.auth_service.user_store" as src.auth_service.user_store {
+}
+package "src.calculator_routes" as src.calculator_routes {
+}
+package "src.calculator_service" as src.calculator_service {
+}
+package "src.case_analysis_service" as src.case_analysis_service {
+}
+package "src.case_analysis_service.analyzer" as src.case_analysis_service.analyzer {
+}
+package "src.case_analysis_service.matcher" as src.case_analysis_service.matcher {
+}
+package "src.case_analysis_service.models" as src.case_analysis_service.models {
+}
+package "src.case_routes" as src.case_routes {
+}
+package "src.case_service" as src.case_service {
+}
+package "src.config" as src.config {
+}
+package "src.consultation_service" as src.consultation_service {
+}
+package "src.consultation_service.agent" as src.consultation_service.agent {
+}
+package "src.consultation_service.models" as src.consultation_service.models {
+}
+package "src.consultation_service.routes" as src.consultation_service.routes {
+}
+package "src.consultation_service.service" as src.consultation_service.service {
+}
+package "src.contract_service" as src.contract_service {
+}
+package "src.contract_service.agent" as src.contract_service.agent {
+}
+package "src.contract_service.models" as src.contract_service.models {
+}
+package "src.contract_service.routes" as src.contract_service.routes {
+}
+package "src.contract_service.service" as src.contract_service.service {
+}
+package "src.document_service" as src.document_service {
+}
+package "src.evidence_routes" as src.evidence_routes {
+}
+package "src.evidence_service" as src.evidence_service {
+}
+package "src.export_routes" as src.export_routes {
+}
+package "src.knowledge_graph" as src.knowledge_graph {
+}
+package "src.knowledge_graph.builder" as src.knowledge_graph.builder {
+}
+package "src.knowledge_graph.extractor" as src.knowledge_graph.extractor {
+}
+package "src.knowledge_graph.models" as src.knowledge_graph.models {
+}
+package "src.knowledge_graph.query" as src.knowledge_graph.query {
+}
+package "src.main" as src.main {
+}
+package "src.rag_service" as src.rag_service {
+}
+package "src.rag_service.citation" as src.rag_service.citation {
+}
+package "src.rag_service.embedder" as src.rag_service.embedder {
+}
+package "src.rag_service.parser" as src.rag_service.parser {
+}
+package "src.rag_service.retriever" as src.rag_service.retriever {
+}
+package "src.rpa_routes" as src.rpa_routes {
+}
+package "src.settings_routes" as src.settings_routes {
+}
+package "src.template_routes" as src.template_routes {
+}
+package "src.topic_routes" as src.topic_routes {
+}
+package "src.topic_service" as src.topic_service {
+}
+package "src.utils" as src.utils {
+}
+package "src.utils.llm_client" as src.utils.llm_client {
+}
+src.agent_service.orchestrator --> src.agent_service.state
+src.agent_service.orchestrator --> src.audit_service.logger
+src.agent_service.orchestrator --> src.config
+src.agent_service.orchestrator --> src.utils.llm_client
+src.agent_service.rpa_agent --> src.audit_service.logger
+src.agent_service.rpa_agent --> src.config
+src.agent_service.rpa_agent --> src.rag_service.parser
+src.agent_service.rpa_agent --> src.utils.llm_client
+src.agent_service.tools --> src.knowledge_graph.query
+src.agent_service.tools --> src.rag_service.parser
+src.agent_service.tools --> src.rag_service.retriever
+src.audit_service.logger --> src.config
+src.audit_service.reporter --> src.audit_service.logger
+src.audit_service.reporter --> src.config
+src.auth_service.dependencies --> src.auth_service.jwt_handler
+src.auth_service.dependencies --> src.auth_service.models
+src.auth_service.jwt_handler --> src.config
+src.auth_service.routes --> src.auth_service.dependencies
+src.auth_service.routes --> src.auth_service.jwt_handler
+src.auth_service.routes --> src.auth_service.models
+src.auth_service.routes --> src.auth_service.user_store
+src.auth_service.user_store --> src.auth_service.jwt_handler
+src.auth_service.user_store --> src.auth_service.models
+src.auth_service.user_store --> src.config
+src.calculator_routes --> src.calculator_service
+src.calculator_routes --> src.case_analysis_service.models
+src.calculator_service --> src.config
+src.case_analysis_service.analyzer --> src.case_analysis_service.matcher
+src.case_analysis_service.analyzer --> src.config
+src.case_analysis_service.analyzer --> src.rag_service.retriever
+src.case_analysis_service.analyzer --> src.utils.llm_client
+src.case_analysis_service.matcher --> src.knowledge_graph.query
+src.case_routes --> src.auth_service.dependencies
+src.case_routes --> src.case_analysis_service.analyzer
+src.case_routes --> src.case_analysis_service.models
+src.case_routes --> src.case_service
+src.case_service --> src.config
+src.consultation_service.agent --> src.audit_service.logger
+src.consultation_service.agent --> src.config
+src.consultation_service.agent --> src.consultation_service.models
+src.consultation_service.agent --> src.rag_service.retriever
+src.consultation_service.agent --> src.utils.llm_client
+src.consultation_service.routes --> src.auth_service.dependencies
+src.consultation_service.routes --> src.consultation_service.agent
+src.consultation_service.routes --> src.consultation_service.models
+src.consultation_service.routes --> src.consultation_service.service
+src.consultation_service.service --> src.config
+src.consultation_service.service --> src.consultation_service.models
+src.consultation_service.service --> src.rag_service.retriever
+src.contract_service.agent --> src.audit_service.logger
+src.contract_service.agent --> src.config
+src.contract_service.agent --> src.contract_service.models
+src.contract_service.agent --> src.rag_service.retriever
+src.contract_service.agent --> src.utils.llm_client
+src.contract_service.routes --> src.auth_service.dependencies
+src.contract_service.routes --> src.contract_service.agent
+src.contract_service.routes --> src.contract_service.models
+src.contract_service.routes --> src.contract_service.service
+src.contract_service.service --> src.config
+src.contract_service.service --> src.contract_service.models
+src.contract_service.service --> src.rag_service.parser
+src.document_service --> src.config
+src.evidence_routes --> src.auth_service.dependencies
+src.evidence_routes --> src.evidence_service
+src.evidence_service --> src.config
+src.export_routes --> src.auth_service.dependencies
+src.export_routes --> src.contract_service.service
+src.knowledge_graph.builder --> src.config
+src.knowledge_graph.builder --> src.knowledge_graph.extractor
+src.knowledge_graph.builder --> src.knowledge_graph.models
+src.knowledge_graph.extractor --> src.config
+src.knowledge_graph.extractor --> src.utils.llm_client
+src.knowledge_graph.query --> src.config
+src.knowledge_graph.query --> src.knowledge_graph.models
+src.main --> src.audit_service.logger
+src.main --> src.auth_service.dependencies
+src.main --> src.auth_service.routes
+src.main --> src.calculator_routes
+src.main --> src.case_routes
+src.main --> src.config
+src.main --> src.consultation_service.routes
+src.main --> src.contract_service.routes
+src.main --> src.evidence_routes
+src.main --> src.export_routes
+src.main --> src.knowledge_graph.builder
+src.main --> src.knowledge_graph.query
+src.main --> src.rpa_routes
+src.main --> src.settings_routes
+src.main --> src.template_routes
+src.main --> src.topic_routes
+src.main --> src.utils.llm_client
+src.rag_service.embedder --> src.utils.llm_client
+src.rag_service.retriever --> src.audit_service.logger
+src.rag_service.retriever --> src.config
+src.rag_service.retriever --> src.rag_service.citation
+src.rag_service.retriever --> src.rag_service.embedder
+src.rpa_routes --> src.agent_service.rpa_agent
+src.rpa_routes --> src.auth_service.dependencies
+src.settings_routes --> src.auth_service.dependencies
+src.settings_routes --> src.config
+src.settings_routes --> src.utils.llm_client
+src.template_routes --> src.auth_service.dependencies
+src.template_routes --> src.document_service
+src.topic_routes --> src.auth_service.dependencies
+src.topic_routes --> src.config
+src.topic_routes --> src.topic_service
+src.topic_service --> src.config
+src.utils.llm_client --> src.config
+@enduml

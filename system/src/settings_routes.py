@@ -16,19 +16,24 @@ ENV_PATH = Path(__file__).parent.parent / ".env"
 
 
 class SettingsUpdate(BaseModel):
-    llm_provider: str | None = None       # claude / openai / deepseek
+    llm_provider: str | None = None
     anthropic_api_key: str | None = None
     openai_api_key: str | None = None
     deepseek_api_key: str | None = None
     claude_model: str | None = None
     openai_model: str | None = None
     deepseek_model: str | None = None
+    embedding_provider: str | None = None
     embedding_model: str | None = None
     llm_temperature: float | None = None
     llm_max_tokens: int | None = None
     neo4j_uri: str | None = None
     neo4j_username: str | None = None
     neo4j_password: str | None = None
+    port: int | None = None
+    jwt_secret_key: str | None = None
+    access_token_expire_minutes: int | None = None
+    log_level: str | None = None
 
 
 def read_env_file() -> dict:
@@ -120,12 +125,17 @@ async def update_settings(update: SettingsUpdate, current_user: dict = Depends(r
         "claude_model": "CLAUDE_MODEL",
         "openai_model": "OPENAI_MODEL",
         "deepseek_model": "DEEPSEEK_MODEL",
+        "embedding_provider": "EMBEDDING_PROVIDER",
         "embedding_model": "EMBEDDING_MODEL",
         "llm_temperature": "LLM_TEMPERATURE",
         "llm_max_tokens": "LLM_MAX_TOKENS",
         "neo4j_uri": "NEO4J_URI",
         "neo4j_username": "NEO4J_USERNAME",
         "neo4j_password": "NEO4J_PASSWORD",
+        "port": "PORT",
+        "jwt_secret_key": "JWT_SECRET_KEY",
+        "access_token_expire_minutes": "ACCESS_TOKEN_EXPIRE_MINUTES",
+        "log_level": "LOG_LEVEL",
     }
 
     config = read_env_file()

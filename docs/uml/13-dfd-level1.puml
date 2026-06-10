@@ -1,0 +1,116 @@
+@startuml DFD-Level1
+skinparam backgroundColor #FBFAF7
+skinparam shadowing false
+skinparam roundcorner 4
+skinparam defaultFontSize 14
+skinparam defaultFontColor #2D2A26
+skinparam ArrowColor #5B6E8A
+skinparam ArrowThickness 2.0
+skinparam componentBackgroundColor #F7F3EB
+skinparam componentBorderColor #1B2A4A
+skinparam componentBorderThickness 1.8
+skinparam componentFontSize 14
+skinparam databaseBackgroundColor #E8EDF2
+skinparam databaseBorderColor #3A6B8C
+skinparam databaseFontSize 13
+skinparam actorBackgroundColor #C4A35A
+skinparam actorBorderColor #9B7B3A
+skinparam actorFontSize 14
+skinparam linetype ortho
+skinparam nodesep 130
+skinparam ranksep 130
+skinparam padding 18
+scale 1.1
+
+title DFD Level 1 — 智能法务系统子系统分解
+
+actor "业务人员" as Biz
+actor "法务人员" as Legal
+actor "管理员" as Admin
+actor "审计员" as Auditor
+actor "LLM引擎" as LLM
+actor "Neo4j" as Neo4j
+
+rectangle "P1\n合同管理" as P1 #F7F3EB
+rectangle "P2\n法律咨询" as P2 #F7F3EB
+rectangle "P3\n案件分析" as P3 #F7F3EB
+rectangle "P4\n知识图谱" as P4 #F7F3EB
+rectangle "P5\nAgent调度" as P5 #F7F3EB
+rectangle "P6\n认证授权" as P6 #F7F3EB
+rectangle "P7\n工具与专题\n(计算·模板·专题·RPA)" as P7 #F7F3EB
+rectangle "P8\n系统管理\n(审计·设置·导出)" as P8 #F7F3EB
+
+database "用户库\n(users_store)" as D1
+database "合同库\n(contracts_store)" as D2
+database "咨询历史\n(consultation_history)" as D3
+database "案件证据库\n(case_types+\nevidence_guides)" as D4
+database "规则与模板库\n(fee/compensation/\nlimitation/doc_templates)" as D5
+database "专题库\n(topic_libraries)" as D6
+database "审计日志\n(logs/)" as D7
+database "知识索引\n(ChromaDB+Whoosh\n只读)" as D8
+database "Prompt模板\n(prompts/·只读)" as D9
+
+' ── 认证入口（所有角色） ──
+Biz --> P6 : 登录
+Legal --> P6 : 登录
+Admin --> P6 : 登录
+Auditor --> P6 : 登录
+P6 --> D1 : 验证身份与角色
+
+' ── 业务人员 ──
+Biz --> P1 : 上传合同·查看状态
+P1 --> D2 : 写入合同
+P1 --> Biz : 合同编号·审查状态
+
+Biz --> P2 : 法律问题提问
+P2 --> Biz : 法律意见答复
+
+' ── 法务人员 ──
+Legal --> P1 : 审查·比对·生成合同
+P1 --> P5 : 调用Agent编排
+P1 --> Legal : 审查报告·差异清单·合同草稿
+
+Legal --> P2 : 知识搜索
+P2 --> Legal : 检索结果
+
+Legal --> P3 : 案件创建·证据管理·分析
+P3 --> Legal : 分析结论
+
+Legal --> P4 : 图谱查询·关系追溯
+P4 --> Legal : 实体链路
+
+Legal --> P7 : 浏览模板·计算工具·专题查阅
+P7 --> Legal : 文书·结果·专题内容
+
+' ── 管理员 ──
+Admin --> P8 : 系统配置·LLM切换·用户管理
+P8 --> Admin : 配置结果
+
+' ── 审计员 ──
+Auditor --> P8 : 查看审计日志·导出报告
+P8 --> Auditor : 审计数据
+
+' ── Agent协作 ──
+P1 --> P5 : 审查请求
+P2 --> P5 : 咨询请求
+P3 --> P5 : 分析请求
+P5 --> LLM : 统一API调用
+LLM --> P5 : AI生成结果
+P5 --> P1 : 审查结果
+P5 --> P2 : 咨询结果
+P5 --> P3 : 分析结果
+
+' ── 数据读写 ──
+P1 --> D2 : 读写合同
+P1 --> D7 : 审查日志
+P2 --> D8 : 知识检索
+P2 --> D3 : 记录咨询历史
+P3 --> D4 : 读取案件规则
+P3 --> D7 : 分析日志
+P4 --> Neo4j : 图查询
+P7 --> D5 : 读取规则与模板
+P7 --> D6 : 读取专题
+P8 --> D7 : 读取审计日志
+P5 --> D9 : 加载Prompt模板
+
+@enduml

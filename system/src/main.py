@@ -103,6 +103,9 @@ app.include_router(evidence_router)
 from src.template_routes import router as template_router
 app.include_router(template_router)
 
+from src.knowledge_routes import router as knowledge_router
+app.include_router(knowledge_router)
+
 from src.topic_routes import router_topics, router_esc
 app.include_router(router_topics)
 app.include_router(router_esc)

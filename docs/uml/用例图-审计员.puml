@@ -1,0 +1,35 @@
+@startuml
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontSize 15
+skinparam ArrowColor #1B2A4A
+skinparam ArrowThickness 1.8
+skinparam actorBackgroundColor #1B2A4A
+skinparam actorBorderColor #1B2A4A
+skinparam actorFontColor #FFFFFF
+skinparam actorFontSize 15
+skinparam usecaseBackgroundColor #FFFFFF
+skinparam usecaseBorderColor #1B2A4A
+skinparam usecaseBorderThickness 1.5
+skinparam usecaseFontSize 14
+skinparam usecaseFontColor #1B2A4A
+skinparam linetype polyline
+skinparam nodesep 80
+skinparam ranksep 50
+skinparam padding 20
+scale 1.4
+
+left to right direction
+
+actor "审计员" as Auditor
+
+  usecase "查看审计日志" as UC1
+  usecase "导出合规报告" as UC2
+  usecase "按条件筛选日志" as UC3
+  usecase "查看操作统计" as UC4
+
+Auditor --> UC1
+Auditor --> UC2
+Auditor --> UC3
+Auditor --> UC4
+@enduml

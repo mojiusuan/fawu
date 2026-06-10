@@ -1,0 +1,91 @@
+@startuml 顺序图-Agent编排
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontSize 14
+skinparam ArrowColor #1B2A4A
+skinparam ArrowThickness 1.8
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam ParticipantBackgroundColor #1B2A4A
+skinparam ParticipantBorderColor #1B2A4A
+skinparam ParticipantFontColor #FFFFFF
+skinparam ParticipantFontSize 14
+skinparam actorBackgroundColor #C4A35A
+skinparam actorBorderColor #9B7B3A
+skinparam actorFontColor #1B2A4A
+skinparam actorFontSize 14
+skinparam noteBackgroundColor #FDF8ED
+skinparam noteBorderColor #D4C070
+skinparam noteFontSize 11
+skinparam ParticipantPadding 55
+skinparam BoxPadding 25
+scale 1.1
+
+title Agent 编排顺序图 — LangGraph Supervisor 模式
+
+actor "用户" as User
+participant "AgentOrchestrator\norchestrator.py" as Orch
+participant "Supervisor\n_supervisor_node()" as Sup
+participant "LLMClient\nutils/llm_client.py" as LLM
+participant "ContractAgent\ncontract_service/agent.py" as CA
+participant "ConsultationAgent\nconsultation_service/agent.py" as CoA
+participant "RPAAgent\nagent_service/rpa_agent.py" as RPA
+participant "KGQuery\nknowledge_graph/query.py" as KG
+
+User -> Orch : run(user_input)
+
+Orch -> Orch : 构建 AgentState
+note right : user_input / task_type="" /\nnext_agent="" / finished=false
+
+Orch -> Orch : graph.ainvoke(state)
+note right : LangGraph 编译图执行
+
+== Supervisor 意图识别 ==
+
+Orch -> Sup : _supervisor_node(state)
+
+Sup -> LLM : generate(SUPERVISOR_SYSTEM,\n  user_input, temperature=0.0)
+note right : 路由规则：\n合同→contract_agent\n咨询→consultation_agent\nRPA→rpa_agent\n图谱→kg_agent
+
+LLM --> Sup : JSON 路由决策
+note right : { "task_type",\n  "agent", "reason" }
+
+alt JSON 解析成功
+  Sup -> Sup : 解析 agent 和 task_type
+else JSON 解析失败
+  Sup -> Sup : 关键词回退匹配
+  note right : "合同/审查/条款"\n→ contract_agent\n"图谱/案例关系"\n→ kg_agent\n其他→ consultation_agent
+end
+
+Sup --> Orch : { task_type, next_agent, context }
+
+== 条件路由 ==
+
+Orch -> Orch : _route(state)
+note right : 返回 next_agent 字符串
+
+alt contract_agent
+  Orch -> CA : _contract_node(state)
+  CA -> CA : 执行合同审查任务
+  CA --> Orch : { result, finished=true }
+else consultation_agent
+  Orch -> CoA : _consultation_node(state)
+  CoA -> CoA : RAG检索 + LLM生成
+  CoA --> Orch : { result, finished=true }
+else rpa_agent
+  Orch -> RPA : _rpa_node(state)
+  RPA -> RPA : 文档数据提取
+  RPA --> Orch : { result, finished=true }
+else kg_agent
+  Orch -> KG : _kg_node(state)
+  KG -> KG : 知识图谱查询
+  KG --> Orch : { result, finished=true }
+else end
+  Orch -> Orch : 直接结束
+end
+
+Orch -> Orch : 检测 finished=true → END
+Orch --> User : result dict
+note left : { user_input, task_type,\n  result, context }
+
+@enduml

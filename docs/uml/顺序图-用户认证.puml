@@ -1,0 +1,77 @@
+@startuml 顺序图-用户认证
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontSize 14
+skinparam ArrowColor #1B2A4A
+skinparam ArrowThickness 1.8
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam ParticipantBackgroundColor #1B2A4A
+skinparam ParticipantBorderColor #1B2A4A
+skinparam ParticipantFontColor #FFFFFF
+skinparam ParticipantFontSize 14
+skinparam actorBackgroundColor #C4A35A
+skinparam actorBorderColor #9B7B3A
+skinparam actorFontColor #1B2A4A
+skinparam actorFontSize 14
+skinparam databaseBackgroundColor #E8EDF2
+skinparam databaseBorderColor #3A6B8C
+skinparam databaseFontSize 13
+skinparam noteBackgroundColor #FDF8ED
+skinparam noteBorderColor #D4C070
+skinparam noteFontSize 11
+skinparam ParticipantPadding 55
+skinparam BoxPadding 25
+scale 1.2
+
+title 用户认证顺序图
+
+actor "用户" as User
+participant "FastAPI 路由\nauth_service/routes.py" as Route
+participant "UserStore\nauth_service/user_store.py" as Store
+participant "jwt_handler\nauth_service/jwt_handler.py" as JWT
+database "users_store.json" as DB
+
+== 登录 ==
+
+User -> Route : POST /api/auth/login
+note right : { username, password }
+
+Route -> Store : get_by_username(username)
+Store -> DB : 读取 users_store.json
+DB --> Store : 用户记录
+Store --> Route : user_data (含 hashed_password)
+
+Route -> Route : verify_password(password,\n  hashed_password)
+note right : BCrypt 哈希比对
+
+alt 验证通过
+  Route -> JWT : create_access_token(\n  user_id, username, role)
+  note right : HS256 签名\n有效期 480 分钟\npayload: sub / username / role
+  JWT --> Route : access_token
+  Route --> User : LoginResponse\n{ access_token, token_type, user }
+  User -> User : localStorage.setItem("token")
+else 验证失败
+  Route --> User : 401 Unauthorized
+  note left : "用户名或密码错误"
+end
+
+== 后续请求认证 ==
+
+User -> Route : GET /api/contracts/\nAuthorization: Bearer {token}
+Route -> Route : get_current_user(token)
+note right : decode_access_token()\n验证 HS256 签名与过期时间
+
+alt token 有效
+  Route -> Route : require_role("admin","legal")
+  note right : 检查 payload.role\n是否在允许列表中
+  Route -> Route : 执行业务逻辑
+else token 无效或过期
+  Route --> User : 401 Unauthorized
+  note left : "登录已过期，请重新登录"
+else 角色权限不足
+  Route --> User : 403 Forbidden
+  note left : "权限不足"
+end
+
+@enduml

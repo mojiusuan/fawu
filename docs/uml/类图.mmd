@@ -1,0 +1,469 @@
+classDiagram
+    direction TB
+
+    %% ═══════════════ 全局配置 ═══════════════
+    class Settings {
+        +LLM_PROVIDER : str
+        +llm_model : str
+        +NEO4J_URI : str
+        +JWT_SECRET_KEY : str
+        +ensure_directories()
+    }
+
+    class SettingsUpdate {
+        +llm_provider : str
+        +deepseek_api_key : str
+        +anthropic_api_key : str
+        +openai_api_key : str
+        +llm_temperature : float
+    }
+
+    %% ═══════════════ 认证授权 ═══════════════
+    class Role {
+        <<enumeration>>
+        admin
+        legal
+        business
+        auditor
+    }
+
+    class UserInfo {
+        +id : str
+        +username : str
+        +display_name : str
+        +role : Role
+        +created_at : str
+    }
+
+    class UserStore {
+        +get_by_username()
+        +create_user()
+        +list_users()
+        +delete_user()
+        +update_user()
+    }
+
+    class UserCreateRequest {
+        +username : str
+        +password : str
+        +display_name : str
+        +role : Role
+    }
+
+    class LoginRequest {
+        +username : str
+        +password : str
+    }
+
+    class LoginResponse {
+        +access_token : str
+        +token_type : str
+        +user : UserInfo
+    }
+
+    %% ═══════════════ 合同管理 ═══════════════
+    class ContractType {
+        <<enumeration>>
+        买卖合同
+        租赁合同
+        服务合同
+        劳动合同
+        借款合同
+        其他
+    }
+
+    class RiskLevel {
+        <<enumeration>>
+        high
+        medium
+        low
+        none
+    }
+
+    class ContractInfo {
+        +id : str
+        +title : str
+        +contract_type : str
+        +party_a : str
+        +party_b : str
+        +content : str
+        +review_status : str
+        +clauses : ClauseInfo[]
+        +created_at : str
+    }
+
+    class ClauseInfo {
+        +clause_number : str
+        +content : str
+        +risk_level : RiskLevel
+        +risk_analysis : str
+        +law_basis : str
+        +suggestion : str
+    }
+
+    class ContractService {
+        +create_contract()
+        +get_contract()
+        +list_contracts()
+        +parse_clauses()
+        +build_review_result()
+        +build_compare_result()
+    }
+
+    class ContractAgent {
+        -client : LLMClient
+        +review_contract()
+        +compare_contracts()
+        +generate_contract()
+    }
+
+    class ContractReviewResult {
+        +contract_id : str
+        +high_risks : int
+        +medium_risks : int
+        +low_risks : int
+        +clauses : ClauseInfo[]
+        +suggestions : str
+        +audit_id : str
+    }
+
+    class ContractCompareResult {
+        +contract_a_title : str
+        +contract_b_title : str
+        +total_clauses : int
+        +identical : int
+        +formal_diff : int
+        +substantive_diff : int
+        +differences : list
+    }
+
+    class ContractGenerateResult {
+        +title : str
+        +content : str
+        +warnings : list
+    }
+
+    %% ═══════════════ 法律咨询 ═══════════════
+    class ConsultationService {
+        +add_history()
+        +get_history()
+    }
+
+    class ConsultationAgent {
+        -client : LLMClient
+        +ask()
+    }
+
+    class AskRequest {
+        +question : str
+        +source_type : str
+    }
+
+    class AskResponse {
+        +question : str
+        +answer : str
+        +search_results : list
+        +law_basis : list
+        +audit_id : str
+        +disclaimer : str
+    }
+
+    class SearchResult {
+        +article : str
+        +excerpt : str
+        +source : str
+        +date : str
+        +relevance : str
+    }
+
+    class ConsultationHistory {
+        +id : str
+        +question : str
+        +answer_summary : str
+        +timestamp : str
+    }
+
+    class SearchRequest {
+        +query : str
+        +source_type : str
+        +top_k : int
+    }
+
+    class SearchResponse {
+        +query : str
+        +results : list
+        +total : int
+    }
+
+    %% ═══════════════ 案件分析 ═══════════════
+    class CaseService {
+        +create()
+        +get()
+        +list_by_user()
+        +update()
+        +delete()
+    }
+
+    class CaseAnalyzer {
+        -client : LLMClient
+        +analyze()
+        +get_analysis()
+        +get_case_types()
+    }
+
+    class CaseMatcher {
+        +match_by_case_type()
+        +rerank_cases()
+    }
+
+    class CaseProfileInfo {
+        +case_id : str
+        +case_name : str
+        +case_type : str
+        +description : str
+        +status : str
+        +structured_facts : dict
+        +user_id : str
+    }
+
+    class AnalysisRequest {
+        +case_type : str
+        +structured_facts : dict
+    }
+
+    class AnalysisResponse {
+        +analysis_id : str
+        +summary : str
+        +legal_basis : list
+        +risk_assessment : dict
+        +similar_cases : list
+        +evidence_checklist : list
+        +fee_estimate : dict
+        +limitation_check : dict
+        +disclaimer : str
+    }
+
+    %% ═══════════════ RAG 引擎 ═══════════════
+    class HybridRetriever {
+        -_chroma_client
+        -_whoosh_index
+        +search()
+        +index_documents()
+        +search_laws()
+        +search_cases()
+    }
+
+    class EmbeddingService {
+        -client : LLMClient
+        +embed_query()
+        +embed_chunks()
+    }
+
+    class CitationFormatter {
+        +format_search_result()
+        +format_law_citation()
+        +format_case_citation()
+    }
+
+    class LegalDocumentParser {
+        +parse()
+        +parse_to_documents()
+    }
+
+    %% ═══════════════ Agent 编排 ═══════════════
+    class AgentOrchestrator {
+        -client : LLMClient
+        -graph : StateGraph
+        +run()
+    }
+
+    class RPAAgent {
+        -client : LLMClient
+        +extract_contract_data()
+        +fill_form()
+        +batch_extract_key_clauses()
+    }
+
+    class AgentState {
+        +user_input : str
+        +task_type : str
+        +messages : list
+        +next_agent : str
+        +context : dict
+        +result : str
+        +finished : bool
+    }
+
+    %% ═══════════════ 知识图谱 ═══════════════
+    class GraphBuilder {
+        -driver
+        +build_from_documents()
+        +build_from_case_data()
+        +create_entity()
+        +create_relationship()
+        +get_stats()
+    }
+
+    class KnowledgeExtractor {
+        -client : LLMClient
+        +extract_from_text()
+        +extract_from_contract()
+        +extract_from_case()
+    }
+
+    class KGQuery {
+        -driver
+        +is_available : bool
+        +search_fulltext()
+        +query_entity()
+        +query_relations()
+        +find_related_articles()
+        +find_case_precedents()
+    }
+
+    class Law {
+        +name : str
+        +issuing_body : str
+        +effective_date : str
+        +law_type : str
+    }
+
+    class Case {
+        +title : str
+        +case_number : str
+        +court : str
+        +case_type : str
+        +parties : list
+        +facts : str
+        +verdict : str
+        +case_date : str
+    }
+
+    class LegalConcept {
+        +name : str
+        +definition : str
+        +related_laws : list
+    }
+
+    class Court {
+        +name : str
+        +level : str
+        +jurisdiction : str
+    }
+
+    class RiskPoint {
+        +risk_type : str
+        +level : str
+        +description : str
+        +law_basis : str
+        +suggestion : str
+    }
+
+    class GraphQueryResult {
+        +entities : list
+        +relationships : list
+    }
+
+    %% ═══════════════ 审计服务 ═══════════════
+    class AuditLogger {
+        +log()
+        +log_rag_query()
+        +log_prompt_usage()
+        +get_all_logs()
+        +get_stats()
+        +query()
+    }
+
+    class AuditReporter {
+        +generate_report()
+        +export()
+    }
+
+    %% ═══════════════ 工具服务 ═══════════════
+    class CalculatorService {
+        +calc_court_fee()
+        +calc_compensation()
+        +check_limitation()
+    }
+
+    class DocumentService {
+        +list_templates()
+        +get_template()
+        +assemble()
+    }
+
+    class EvidenceService {
+        +get_guide()
+        +list_case_types_with_guides()
+    }
+
+    class TopicService {
+        +list_topics()
+        +get_topic()
+        +search()
+    }
+
+    %% ═══════════════ 基础设施 ═══════════════
+    class LLMClient {
+        -provider : str
+        -model : str
+        +generate()
+        +embed_query()
+        +embed_texts()
+    }
+
+    class LocalEmbedding {
+        +embed_query()
+        +embed_documents()
+        +aembed_query()
+        +aembed_documents()
+    }
+
+    %% ═══════════════ 关系 ═══════════════
+
+    Settings ..> LLMClient : 配置
+
+    UserStore --> UserInfo : 管理
+    UserInfo --> Role
+    LoginResponse --> UserInfo
+    UserCreateRequest --> Role
+
+    ContractService --> ContractAgent : 委托
+    ContractService --> ContractInfo : 管理
+    ContractService ..> ContractReviewResult
+    ContractService ..> ContractCompareResult
+    ContractService ..> ContractGenerateResult
+    ContractInfo *-- ClauseInfo
+    ClauseInfo --> RiskLevel
+    ContractAgent ..> LLMClient : 调用
+
+    ConsultationService --> ConsultationAgent : 委托
+    ConsultationAgent ..> LLMClient : 调用
+    ConsultationAgent --> HybridRetriever
+    AskResponse --> SearchResult
+    ConsultationService --> ConsultationHistory
+
+    CaseService --> CaseAnalyzer : 委托
+    CaseService --> CaseMatcher : 委托
+    CaseAnalyzer ..> LLMClient : 调用
+
+    HybridRetriever --> EmbeddingService
+    HybridRetriever --> CitationFormatter
+    EmbeddingService ..> LLMClient : 调用
+    LocalEmbedding <|-- LLMClient : 备选
+
+    AgentOrchestrator ..> LLMClient : 调用
+    AgentOrchestrator --> AgentState
+    RPAAgent ..> LLMClient : 调用
+
+    GraphBuilder --> KnowledgeExtractor : 依赖
+    KnowledgeExtractor ..> LLMClient : 调用
+    GraphBuilder --> KGQuery : 填充
+
+    AuditLogger ..> ContractAgent : 记录
+    AuditLogger ..> ConsultationAgent : 记录
+    AuditLogger ..> HybridRetriever : 记录
+
+    CalculatorService ..> Settings : 读规则配置
+    DocumentService ..> Settings : 读模板配置
+    EvidenceService ..> Settings : 读指引配置

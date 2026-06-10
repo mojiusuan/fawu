@@ -1,0 +1,47 @@
+@startuml
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontSize 15
+skinparam ArrowColor #1B2A4A
+skinparam ArrowThickness 1.8
+skinparam actorBackgroundColor #1B2A4A
+skinparam actorBorderColor #1B2A4A
+skinparam actorFontColor #FFFFFF
+skinparam actorFontSize 15
+skinparam usecaseBackgroundColor #FFFFFF
+skinparam usecaseBorderColor #1B2A4A
+skinparam usecaseBorderThickness 1.5
+skinparam usecaseFontSize 14
+skinparam usecaseFontColor #1B2A4A
+skinparam linetype polyline
+skinparam nodesep 80
+skinparam ranksep 60
+skinparam padding 20
+scale 1.3
+
+left to right direction
+
+actor "法务人员" as Legal
+
+usecase "合同上传" as UC1
+usecase "AI 合同审查" as UC2
+usecase "合同条款比对" as UC3
+usecase "AI 合同生成" as UC4
+usecase "案件管理与分析" as UC5
+usecase "法律咨询与检索" as UC6
+usecase "知识图谱查询" as UC7
+usecase "文书模板管理" as UC8
+usecase "法律计算工具" as UC9
+usecase "数据导出" as UC10
+
+Legal --> UC1
+Legal --> UC2
+Legal --> UC3
+Legal --> UC4
+Legal --> UC5
+Legal --> UC6
+Legal --> UC7
+Legal --> UC8
+Legal --> UC9
+Legal --> UC10
+@enduml

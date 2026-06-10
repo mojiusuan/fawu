@@ -1,0 +1,96 @@
+@startuml 活动图
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontSize 14
+skinparam ArrowColor #1B2A4A
+skinparam ArrowThickness 1.8
+skinparam activityBackgroundColor #FFFFFF
+skinparam activityBorderColor #1B2A4A
+skinparam activityBorderThickness 1.5
+skinparam activityFontSize 14
+skinparam activityDiamondBackgroundColor #FDF8ED
+skinparam activityDiamondBorderColor #C4A35A
+skinparam activityStartColor #4A7C59
+skinparam activityEndColor #C4705A
+skinparam activityBarColor #1B2A4A
+skinparam swimlaneBorderColor #5B6E8A
+skinparam swimlaneTitleBackgroundColor #1B2A4A
+skinparam swimlaneTitleFontColor #FFFFFF
+skinparam swimlaneTitleFontSize 15
+skinparam linetype ortho
+skinparam nodesep 55
+skinparam ranksep 60
+skinparam padding 14
+scale 1.1
+
+title 智能法务系统 — 核心业务活动图
+
+|用户|
+start
+:访问系统首页;
+:身份认证;
+
+if (角色?) then (业务人员)
+  :上传合同文件;
+  :输入合同信息;
+elseif (法务人员)
+  :选择业务功能;
+else (管理员)
+  :系统配置管理;
+  stop
+endif
+
+|系统 (FastAPI)|
+:接收请求;
+:JWT 令牌验证;
+:角色权限校验;
+
+if (业务类型?) then (合同审查)
+  :ContractService.get_contract();
+  :ContractAgent.review_contract();
+  :加载 CONTRACT_REVIEW_SYSTEM;
+  :组装审查 Prompt;
+  fork
+    :LLMClient.generate()\n审查条款;
+  fork again
+    :标注风险等级\nhigh/medium/low/none;
+  fork again
+    :匹配法律依据\n引用法条;
+  fork again
+    :生成修改建议;
+  end fork
+  :解析 JSON 结果;
+  :填充 ClauseInfo 字段;
+  :AuditLogger.log()\n记录审计日志;
+  :更新 review_status="已审查";
+elseif (法律咨询)
+  :ConsultationAgent.ask();
+  :HybridRetriever.search();
+  :ChromaDB 语义检索;
+  :Whoosh BM25 检索;
+  :加权合并(0.7:0.3);
+  :CitationFormatter 格式化;
+  :加载 CONSULTATION_SYSTEM;
+  :LLM 增强生成;
+  :AuditLogger.log();
+  :记录 consultation_history;
+elseif (案件分析)
+  :CaseAnalyzer.analyze();
+  :读取 case_types.json;
+  :读取 evidence_guides.json;
+  :LLM 提取要素;
+  :CaseMatcher 匹配判例;
+  :生成分析报告;
+endif
+
+|用户|
+:接收处理结果;
+
+if (结果满意?) then (是)
+  :确认或导出;
+  stop
+else (否)
+  :修改后重新提交;
+endif
+
+@enduml

@@ -1,0 +1,84 @@
+erDiagram
+    users {
+        varchar id PK "用户唯一标识"
+        varchar username "登录用户名"
+        varchar hashed_password "BCrypt哈希密码"
+        varchar role "admin/legal/business/auditor"
+        datetime created_at "创建时间"
+    }
+
+    contracts {
+        varchar id PK "合同唯一标识"
+        varchar title "合同标题"
+        varchar contract_type "买卖/租赁/服务/劳动/借款"
+        varchar party_a "甲方"
+        varchar party_b "乙方"
+        text content "合同全文"
+        varchar review_status "未审查/已审查"
+        json clauses "条款列表"
+        datetime created_at "创建时间"
+    }
+
+    consultation_history {
+        varchar id PK "咨询记录标识"
+        text question "用户法律问题"
+        text answer_summary "AI回答摘要"
+        datetime timestamp "咨询时间"
+    }
+
+    document_templates {
+        varchar template_id PK "模板唯一标识"
+        varchar category "起诉类/答辩类/申请类/协议类"
+        varchar title "模板名称"
+        text description "用途说明"
+        json required_fields "需填写字段定义"
+        text template_content "模板正文"
+        int download_count "下载次数"
+    }
+
+    topic_libraries {
+        varchar topic_id PK "专题唯一标识"
+        varchar title "专题名称"
+        text description "内容描述"
+        varchar icon "图标"
+        json laws "相关法律法规"
+        json faq "常见问答"
+    }
+
+    audit_logs {
+        varchar audit_id PK "审计记录标识"
+        datetime timestamp "操作时间"
+        varchar user_id "操作用户"
+        varchar task_type "任务类型"
+        varchar model "LLM模型"
+        text input_summary "输入摘要"
+        text output_summary "输出摘要"
+        int token_count "消耗Token"
+        int latency_ms "响应延迟"
+    }
+
+    calculation_rules {
+        varchar rule_type PK "fee/compensation/limitation"
+        json rule_content "规则参数与公式"
+    }
+
+    case_evidence_guides {
+        varchar case_type PK "案件类型"
+        json type_config "构成要件与分析模板"
+        json evidence_guide "证据收集指引"
+    }
+
+    prompt_templates {
+        varchar template_name PK "模板名称"
+        text system_prompt "系统提示词"
+        text user_prompt_template "用户提示词模板"
+    }
+
+    users ||--o{ contracts : "上传管理"
+    users ||--o{ consultation_history : "发起咨询"
+    users ||--o{ audit_logs : "触发操作"
+
+    contracts }o--o{ document_templates : "引用模板"
+    contracts }o--o{ prompt_templates : "审查引用"
+
+    consultation_history }o--o{ topic_libraries : "引用专题"

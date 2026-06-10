@@ -1,0 +1,86 @@
+@startuml 顺序图-合同审查
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontSize 14
+skinparam ArrowColor #1B2A4A
+skinparam ArrowThickness 1.8
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam ParticipantBackgroundColor #1B2A4A
+skinparam ParticipantBorderColor #1B2A4A
+skinparam ParticipantFontColor #FFFFFF
+skinparam ParticipantFontSize 14
+skinparam actorBackgroundColor #C4A35A
+skinparam actorBorderColor #9B7B3A
+skinparam actorFontColor #1B2A4A
+skinparam actorFontSize 14
+skinparam databaseBackgroundColor #E8EDF2
+skinparam databaseBorderColor #3A6B8C
+skinparam databaseFontSize 13
+skinparam noteBackgroundColor #FDF8ED
+skinparam noteBorderColor #D4C070
+skinparam noteFontSize 11
+skinparam ParticipantPadding 60
+skinparam BoxPadding 28
+scale 1.15
+
+title 合同审查顺序图
+
+actor "法务人员" as User
+participant "FastAPI 路由\ncontract_service/routes.py" as Route
+participant "ContractService\nservice.py" as Svc
+participant "ContractAgent\nagent.py" as Agent
+participant "LLMClient\nutils/llm_client.py" as LLM
+participant "AuditLogger\naudit_service/logger.py" as Audit
+database "contracts_store.json" as DB
+
+User -> Route : POST /api/contracts/review/{contract_id}
+note right : 请求头携带 JWT Token
+
+Route -> Route : require_role("admin","legal")
+note right : 依赖注入校验角色权限
+
+Route -> Svc : get_contract(contract_id)
+Svc -> DB : 读取合同记录
+DB --> Svc : ContractInfo (含 clauses 列表)
+Svc --> Route : ContractInfo
+
+alt clauses 为空
+  Route -> Svc : parse_clauses(content)
+  note right : 按条款编号逐条拆分\n生成 ClauseInfo 列表
+  Svc --> Route : list[ClauseInfo]
+end
+
+Route -> Agent : review_contract(contract_id, title,\n  contract_type, clauses, user_id)
+
+Agent -> Agent : 加载 CONTRACT_REVIEW_SYSTEM\n(审查 Prompt 模板)
+note right : 风险等级定义：\nhigh / medium / low / none\n审查原则与安全护栏
+
+Agent -> LLM : generate(system_prompt, user_prompt,\n  temperature=0.1)
+note right : system_prompt=审查规则\nuser_prompt=合同条款+类型
+
+LLM -> LLM : POST /v1/chat/completions
+note right : 支持 DeepSeek / Claude / OpenAI\n三引擎切换
+LLM --> Agent : JSON 审查结果
+note right : risk_level / risk_analysis /\nlaw_basis / suggestion
+
+Agent -> Agent : 解析 LLM 输出 JSON
+note right : 逐条填充 ClauseInfo 的\n审查字段
+
+Agent -> Audit : log(contract_id, user_id, "contract_review",\n  model, params, input_text, output_text,\n  latency_ms, token_usage)
+note right : 记录完整审计信息\nSHA256 脱敏
+
+Audit --> Agent : audit_id
+
+Agent --> Route : (reviewed_clauses, suggestions)
+
+Route -> Svc : build_review_result(contract_id,\n  clauses, suggestions, audit_id)
+Svc --> Route : ContractReviewResult
+note right : 含 high_risks / medium_risks /\nlow_risks 统计
+
+Route -> Svc : update_contract(contract)
+Svc -> DB : review_status = "已审查"
+Route --> User : ContractReviewResult
+note left : 风险分布统计\n逐条审查详情\n审计追溯号
+
+@enduml

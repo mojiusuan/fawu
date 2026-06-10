@@ -1,0 +1,113 @@
+4.3 代码设计
+
+本章阐述智能法务系统的代码层面设计，涵盖代码组织结构、后端服务模块划分、前端模块架构、核心业务实现流程、RAG检索增强生成机制、日志与异常处理策略以及提示词模板体系。
+
+4.3.1 代码组织结构
+
+系统整体采用前后端分离的单仓库（Monorepo）组织方式。项目根目录为 system/，其下划分为后端源码目录 src/、前端界面目录 web/、Prompt模板目录 prompts/、知识库目录 knowledge/、测试目录 tests/、脚本目录 scripts/ 以及数据目录 data/。各目录职责明确、边界清晰，便于团队协作与后续维护。
+
+后端源码 src/ 下包含一个应用入口文件 main.py 和一个全局配置文件 config.py，以及十二个功能模块。其中九个核心模块采用 Python 包（Package）形式组织，每个包内部遵循统一的分层结构：routes.py（路由层）负责 HTTP 请求接收与响应、service.py 或 agent.py（业务逻辑层）负责核心处理、models.py（数据模型层）负责 Pydantic 数据校验与序列化。另有部分轻量模块以独立 .py 文件形式存在（如 calculator_service.py、document_service.py 等），通过对应的路由文件对外暴露 API 端点。
+
+前端 web/ 目录采用零依赖的单页应用（SPA）架构，由 index.html（结构层，672行）、css/style.css（表现层）和 js/app.js（行为层，2002行）三个文件构成。所有页面状态通过 JavaScript 动态管理，无需前端构建工具或第三方框架，大幅简化了部署流程。
+
+4.3.2 后端服务模块设计
+
+后端共包含以下十二个功能模块：
+
+（1）合同服务模块（contract_service）：负责合同的全生命周期管理。ContractService 类提供合同创建、查询、列表、更新等基础 CRUD 操作，以及条款解析、审查报告组装等业务逻辑。ContractAgent 类封装与大语言模型的交互，通过构造专业的审查 Prompt 实现逐条合同条款的风险识别、法律依据匹配和修改建议生成。该模块为系统最核心的业务模块。
+
+（2）咨询服务模块（consultation_service）：负责法律问答与知识检索。ConsultationAgent 类协调 RAG 检索与 LLM 生成的完整流程：接收用户问题后，先通过 HybridRetriever 从知识库中检索相关法条与判例作为上下文，再将检索结果注入 Prompt 提交给大语言模型生成最终回答。ConsultationService 类管理咨询历史的增删查。
+
+（3）RAG 检索引擎模块（rag_service）：提供混合检索能力。HybridRetriever 类同时管理 ChromaDB 向量数据库（语义检索通道）和 Whoosh 全文索引（BM25关键词检索通道），两个通道的检索结果经加权合并去重排序后返回最优匹配。EmbeddingService 类负责文本向量化，CitationFormatter 类负责检索结果的引用格式标准化。
+
+（4）Agent 编排模块（agent_service）：基于 LangGraph 的 Supervisor 模式实现多 Agent 协作。AgentOrchestrator 类构建包含 Supervisor 节点和四个专业 Agent 节点（contract_agent、consultation_agent、rpa_agent、kg_agent）的有向状态图。Supervisor 节点通过分析用户意图将任务路由至对应 Agent，各 Agent 独立完成任务后返回结果。RPAAgent 类提供文档数据提取和表格填写等自动化功能。
+
+（5）知识图谱模块（knowledge_graph）：基于 Neo4j 图数据库实现法律实体关系的建模与查询。GraphBuilder 类负责从法律文本中构建知识图谱，KGExtractor 类通过 LLM 进行实体识别和关系抽取，KGQuery 类提供全文搜索和 Cypher 图查询接口。系统在 Neo4j 不可用时自动降级，确保核心业务不受影响。
+
+（6）认证授权模块（auth_service）：实现基于 JWT 的用户认证与角色授权。UserStore 类管理用户数据的持久化。JWT 令牌通过 HS256 算法签名，包含用户标识和角色信息。角色门禁函数 require_role() 提供声明式的权限控制，支持 admin、legal、business、auditor 四种角色的层级继承。
+
+（7）审计服务模块（audit_service）：提供全链路 AI 决策追溯。AuditLogger 类以追加写入（Append-Only）模式记录每次 LLM 调用的完整上下文，包括时间戳、操作用户、任务类型、使用的模型、输入输出摘要、Token 消耗量和响应延迟。AuditReporter 类支持按时间范围和任务类型生成审计报告并导出。
+
+（8）案件分析模块（case_analysis_service）：负责案件要素提取、相似判例匹配和分析报告生成。CaseAnalyzer 类整合案件类型定义和证据指引，通过 LLM 进行案情梳理和结论推演。CaseMatcher 类实现基于关键词和语义的相似案例匹配。
+
+（9）计算工具模块（calculator_service/calculator_routes.py）：提供诉讼费用计算、赔偿金估算和诉讼时效检查三项法律计算功能。CalculatorService 类从 fee_rules.json、compensation_rules.json 和 limitation_rules.json 中读取规则参数，支持阶梯计算和公式求值。
+
+（10）文书服务模块（document_service.py）：管理十二类法律文书模板的读取、检索和填充。支持按分类筛选模板，通过 required_fields 定义的字段占位符自动匹配用户输入生成文书草稿。
+
+（11）证据服务模块（evidence_service/evidence_routes.py）：提供按案件类型的证据收集指引查询，覆盖劳动、借贷、人身损害、婚姻、消费、财产、合同七类常见案件。
+
+（12）辅助路由模块：包括 case_routes.py（案件档案管理）、topic_routes.py（专题库浏览）、template_routes.py（文书模板管理）、export_routes.py（数据导出）、rpa_routes.py（RPA文档提取）、settings_routes.py（系统配置管理）等，均通过 FastAPI 的 APIRouter 注册到主应用。
+
+4.3.3 前端模块设计
+
+前端采用模块化的 JavaScript 架构，app.js 文件（2002行）按功能域组织为以下核心模块：
+
+（1）认证模块（AuthModule）：处理用户登录、注册、令牌管理和会话保持。登录成功后 JWT 令牌存储于 localStorage，后续请求通过 Authorization 头自动携带。支持令牌过期检测和自动登出。
+
+（2）导航与路由模块（NavigationModule）：管理左侧导航栏的折叠展开、页面切换时的活动状态高亮、移动端的响应式适配以及浏览器历史记录同步。
+
+（3）合同管理模块（ContractModule）：负责合同上传表单、合同列表展示、合同详情查看、审查结果可视化（风险等级以红/橙/黄/绿色分级标注）、合同比对结果展示以及合同生成向导的交互逻辑。
+
+（4）法律咨询模块（ConsultationModule）：实现对话式问答界面，支持多轮对话上下文保持、消息气泡渲染、加载状态指示、引用法条的折叠展开以及咨询历史的浏览。
+
+（5）案件中心模块（CaseModule）：管理案件的创建、编辑、列表筛选和详情展示，支持案件分析结果的图文呈现。
+
+（6）知识图谱模块（KGModule）：提供图谱搜索的输入框、搜索结果列表和实体关系可视化展示区域。
+
+（7）工具集模块（ToolsModule）：集成计算工具（费用计算器、赔偿估算器、时效检查器）、模板浏览器、证据指引查看器和专题库浏览器等辅助功能的交互逻辑。
+
+（8）系统管理模块（SettingsModule）：提供 LLM 提供商切换、模型选择、API Key 配置、知识库初始化状态监控和用户管理等系统设置功能的交互界面。
+
+各模块通过统一的 API 请求封装函数与后端通信，请求函数自动处理 JWT 令牌注入、网络异常捕获和错误信息展示。前端设计系统通过 CSS 自定义属性（CSS Custom Properties）定义统一的设计令牌，确保十二个功能页面在色彩、间距、字体和组件样式上保持一致。
+
+4.3.4 核心业务实现设计
+
+（一）合同审查流程
+
+合同审查是系统最核心的业务流程，其实现贯穿 contract_service 模块的各层。流程始于用户通过前端上传合同文本及基本信息（标题、合同类型、甲乙方名称），路由层接收请求后经 JWT 认证中间件验证身份，再经 require_role("admin","legal","business") 门禁检查权限。服务层 ContractService.create_contract() 创建合同记录并分配 UUID 标识，随即调用 parse_clauses() 方法将合同全文按条款编号拆分为 ClauseInfo 对象列表。
+
+法务人员发起审查时，路由层调用 ContractAgent.review_contract()。该方法的处理流程如下：第一步，从 contracts_store.json 读取合同原文和已解析的条款列表；第二步，从 prompts/ 目录加载 contract_review.md 模板，将合同类型、条款内容和审查要求填入模板构建系统提示词（System Prompt）；第三步，调用 llm_client.generate() 将组装好的 Prompt 发送至配置的大语言模型 API（支持 DeepSeek、Claude、OpenAI 三家切换），temperature 参数设置为 0.1 以确保输出的稳定性和一致性；第四步，解析 LLM 返回的 JSON 格式审查结果，提取每条条款的风险等级（high/medium/low/none）、风险分析说明、法律依据引用和具体修改建议；第五步，调用 AuditLogger.log() 记录本次审查的完整审计信息（合同编号、操作用户、使用模型、输入输出摘要、Token 消耗、响应延迟）；第六步，更新合同对象的 review_status 为"已审查"，将带有风险标签的条款列表写回 contracts_store.json；最后，组装 ContractReviewResult 对象返回前端展示。
+
+（二）法律咨询流程
+
+法律咨询的核心在于 RAG（检索增强生成）机制的运用。ConsultationAgent.ask() 方法接收用户问题和检索源类型参数后执行以下流程：首先，调用 HybridRetriever.search() 执行混合检索——一方面通过 ChromaDB 进行语义向量检索（将用户问题经 EmbeddingService 向量化后在 ChromaDB 的 legal_knowledge 集合中搜索最相似的 20 条记录），另一方面通过 Whoosh 进行 BM25 关键词检索（在全文索引中匹配关键词并返回 20 条结果），两个通道的结果经加权合并（语义权重 0.7，关键词权重 0.3）、去重、按得分降序排列后取前 10 条作为检索结果集。然后，将检索到的法条和判例文本作为知识上下文，与用户问题一同注入 ConsultationAgent 预定义的系统提示词模板（定义了"法小智"法律助手的角色、回答格式规范和引用要求），组装成完整的 Prompt 提交给大语言模型。LLM 基于注入的权威法条信息生成回答，有效降低了幻觉风险。最后，记录审计日志和咨询历史，返回包含回答正文、检索结果列表和法律依据清单的 AskResponse 对象。
+
+（三）Agent 编排流程
+
+系统提供可选的 Agent 编排入口。当用户通过 Agent 编排接口提交任务时，AgentOrchestrator.run() 方法创建初始 AgentState（包含 user_input、task_type、messages、next_agent、context、result 和 finished 等字段），随后调用 LangGraph 编译后的状态图执行。Supervisor 节点首先分析用户输入，通过 LLM 进行意图识别，输出包含 agent 名称和 task_type 的 JSON 决策。系统根据决策结果经条件边路由至对应的专业 Agent 节点执行具体任务。各 Agent 节点完成处理后设置 finished=True 状态标志，状态图检测到该标志后结束执行并返回最终结果。当 LLM 的 JSON 输出解析失败时，系统通过关键词匹配策略作为容灾回退：检测到"合同""审查""条款"等词时路由至 contract_agent，检测到"图谱""案例关系"时路由至 kg_agent，其余情况默认路由至 consultation_agent，确保在任何情况下服务不中断。
+
+4.3.5 RAG 检索增强生成实现
+
+RAG（Retrieval-Augmented Generation）是本系统实现高质量法律问答的核心技术架构，由 rag_service 模块统一实现。
+
+（1）知识库初始化：系统在首次部署时通过 scripts/init_knowledge_base.py 脚本构建知识库。脚本读取 knowledge/ 目录下的法律条文和判例文档，经 rag_service/parser.py 解析后按段落拆分为文档块（Chunk），每个块包含 chunk_id、标题、正文内容和来源信息。随后，EmbeddingService 调用本地 BGE-large-zh-v1.5 嵌入模型将所有文档块转换为高维向量，存入 ChromaDB 持久化向量数据库的 legal_knowledge 集合中。同时，HybridRetriever 在 Whoosh 中构建 BM25 全文索引，索引字段包括 chunk_id、title、content 和 source。
+
+（2）混合检索策略：系统采用语义检索与关键词检索互补的混合策略。语义检索通过 ChromaDB 执行，计算查询向量与文档向量的余弦相似度，擅长捕获语义相近但用词不同的匹配（如"解雇"与"解除劳动合同"在语义上高度相关）。关键词检索通过 Whoosh 执行 BM25 算法，擅长精确匹配法规编号、特定术语等明确关键词（如"劳动合同法第三十九条"的精确查找）。两通道检索结果经加权合并（默认语义权重 0.7，BM25 权重 0.3）、按关联度得分降序重排后返回最终结果集。
+
+（3）引用格式化：检索结果经 CitationFormatter 标准化处理后，每条结果包含法条编号、法规名称、正文摘要、来源文件和关联度评分，确保 LLM 生成回答时能够准确引用具体的法律依据。
+
+（4）嵌入模型：系统默认使用 BAAI 开源的 BGE-large-zh-v1.5 中文嵌入模型。该模型专为中文文本的语义表示优化，在中文法律文本的检索任务上表现优异。模型在首次启动时自动下载至本地缓存（约 1.3GB），后续启动直接从缓存加载。系统支持通过设置 EMBEDDING_PROVIDER=openai 切换为 OpenAI Embedding API。
+
+4.3.6 日志与异常处理设计
+
+（1）审计日志系统：审计日志由 audit_service 模块实现，遵循不可篡改、全链路追溯的设计原则。AuditLogger 类以追加写入（Append-Only）模式操作日志文件，每条日志记录为一个完整的 JSON 对象，包含 audit_id（UUID前缀）、timestamp（UTC时间戳）、user_id（操作用户）、task_type（任务类型枚举）、model（使用的LLM模型）、input_summary（输入摘要）、output_summary（输出摘要）、token_count（Token消耗）和 latency_ms（响应延迟）等字段。日志按日期分文件存储于 logs/ 目录，文件名格式为 audit_YYYY-MM-DD.log。SHA256 哈希函数用于对日志中的敏感字段进行脱敏处理。基于追加写入的不可删除特性，审计日志天然满足合规审计对数据完整性和不可否认性的要求。
+
+（2）应用日志：系统使用 Python 标准库 logging 模块进行应用级日志记录。通过 config.py 中的 LOG_LEVEL 环境变量控制日志级别（默认为 INFO），支持 DEBUG、INFO、WARNING、ERROR 四个级别。启动时在控制台输出关键配置信息和服务状态（如 Neo4j 连接检测结果、嵌入模型加载状态等），便于运维人员快速确认系统运行环境。
+
+（3）异常处理策略：系统在各层实施分级异常处理。路由层通过 FastAPI 的 HTTPException 机制统一返回标准 HTTP 错误响应，包括 401（认证失败）、403（权限不足）、404（资源不存在）和 500（服务器内部错误）。服务层通过 try-except 捕获外部依赖（LLM API、Neo4j、ChromaDB）的调用异常并实施优雅降级——Neo4j 不可用时知识图谱功能自动关闭但不影响合同审查和法律咨询；ChromaDB 异常时回退为仅使用 Whoosh 关键词检索；LLM API 调用失败时返回明确的错误提示引导用户稍后重试。所有未捕获的异常由 FastAPI 全局异常处理器兜底，记录完整堆栈信息至应用日志。
+
+4.3.7 提示词模板设计
+
+系统在 prompts/ 目录下维护五类提示词（Prompt）模板文件，均以 Markdown 格式编写，支持通过占位符动态注入用户输入和检索结果。
+
+（1）合同审查模板（contract_review.md）：定义合同审查的系统提示词。模板设定 AI 角色为"资深合同律师"，要求其按照"条款内容→风险等级→风险分析→法律依据→修改建议"的固定结构逐条输出审查意见。风险等级划分为高（High，违反强制性法律规定）、中（Medium，存在争议或模糊表述）、低（Low，轻微瑕疵但效力不受影响）和无（None，合法合规）四档。模板包含审查格式的严格要求以确保 LLM 输出可解析的结构化 JSON，便于程序自动提取风险统计和生成报告。
+
+（2）法律咨询模板（legal_opinion.md）：定义"法小智"AI 法律顾问的角色设定和回答规范。模板要求回答按照"直接回答→法律依据→实操建议"的三段式结构组织，每条法律依据须注明法规全称和具体条文编号，每项建议须具备可操作性。同时设定 AI 必须声明"本回答由 AI 生成，不构成正式法律意见，重大法律事务请咨询持证律师"的免责声明。
+
+（3）文书生成模板（doc_draft.md）：定义法律文书的起草规范。模板设定 AI 角色为"法律文书起草专家"，要求按照中国法律文书格式规范生成文本，对关键信息使用方括号标注待填写项，末尾附注使用说明和注意事项。
+
+（4）条款比对模板（clause_compare.md）：定义合同条款比对的分析框架。模板要求从形式差异（措辞、标点、格式）和实质差异（权利义务变更、责任分配变化）两个维度识别两份合同条款的异同，以表格形式输出差异清单。
+
+（5）风险评估模板（risk_assessment.md）：定义专项风险评估的分析框架。模板设定 AI 从法律合规性、商业合理性和执行可行性三个维度评估合同条款风险，输出综合风险评分和优先修改建议。
+
+所有提示词模板在系统启动时由各 Agent 模块加载至内存，运行时通过 Python 字符串格式化将用户输入、检索结果、合同信息等动态内容注入模板的占位符位置，生成完整的 Prompt 提交给大语言模型。模板文件独立于代码存储，法律专业人员可直接修改 Markdown 文件来调整审查标准和回答风格，无需改动程序代码。

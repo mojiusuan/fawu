@@ -1,0 +1,75 @@
+@startuml DFD-Level0
+skinparam backgroundColor #FBFAF7
+skinparam shadowing false
+skinparam roundcorner 4
+skinparam defaultFontSize 15
+skinparam defaultFontColor #2D2A26
+skinparam ArrowColor #5B6E8A
+skinparam ArrowThickness 2.0
+skinparam componentBackgroundColor #F7F3EB
+skinparam componentBorderColor #1B2A4A
+skinparam componentBorderThickness 2.0
+skinparam componentFontSize 15
+skinparam databaseBackgroundColor #E8EDF2
+skinparam databaseBorderColor #3A6B8C
+skinparam databaseFontSize 14
+skinparam actorBackgroundColor #C4A35A
+skinparam actorBorderColor #9B7B3A
+skinparam actorFontSize 15
+skinparam linetype ortho
+skinparam nodesep 140
+skinparam ranksep 140
+skinparam padding 20
+scale 1.2
+
+title DFD Level 0 — 智能法务系统上下文图
+
+actor "业务人员" as BizUser
+actor "法务人员" as LegalUser
+actor "管理员" as AdminUser
+actor "审计员" as Auditor
+
+actor "LLM大语言模型\n(DeepSeek/Claude/GPT)" as LLM
+actor "Neo4j图数据库\n(可选·可降级)" as Neo4j
+
+rectangle "P0\n智能法务系统" as P0 #F7F3EB
+
+database "用户库\n(users_store.json)" as D_User
+database "合同库\n(contracts_store.json)" as D_Contract
+database "咨询历史\n(consultation_history.json)" as D_Consult
+database "文书模板库\n(doc_templates.json)" as D_Template
+database "案件与证据库\n(case_types.json+\nevidence_guides.json)" as D_Case
+database "计算规则库\n(fee/compensation/\nlimitation_rules.json)" as D_Rule
+database "专题库\n(topic_libraries.json)" as D_Topic
+database "审计日志\n(logs/·追加写入)" as D_Audit
+database "知识索引\n(ChromaDB+Whoosh\n只读·预加载)" as D_KG
+database "Prompt模板\n(prompts/·只读)" as D_Prompt
+
+BizUser --> P0 : 上传合同\n法律咨询提问
+LegalUser --> P0 : 审查合同·案件分析\n图谱追溯·文书管理
+AdminUser --> P0 : LLM配置·用户管理\n知识库维护
+Auditor --> P0 : 查看审计日志\n导出合规报告
+
+P0 --> BizUser : 审查状态·咨询答复
+P0 --> LegalUser : 审查报告·分析结论\n追溯路径·文书草稿
+P0 --> AdminUser : 配置确认·操作反馈
+P0 --> Auditor : 审计数据·合规报告
+
+P0 --> LLM : 审查Prompt·咨询上下文\n文书生成·信息提取
+LLM --> P0 : 风险分析·法律意见\n生成文本·提取结果
+
+P0 --> Neo4j : Cypher图查询
+Neo4j --> P0 : 实体关系·判例链路
+
+P0 --> D_User : 验证与授权
+P0 --> D_Contract : 读写合同
+P0 --> D_Consult : 记录咨询历史
+P0 --> D_Template : 读取模板
+P0 --> D_Case : 读取案件与证据规则
+P0 --> D_Rule : 读取计算参数
+P0 --> D_Topic : 读取专题内容
+P0 --> D_Audit : 追加审计日志
+P0 --> D_KG : 语义与关键词检索
+P0 --> D_Prompt : 读取Prompt模板
+
+@enduml

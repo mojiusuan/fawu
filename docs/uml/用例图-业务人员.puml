@@ -1,0 +1,37 @@
+@startuml
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontSize 15
+skinparam ArrowColor #1B2A4A
+skinparam ArrowThickness 1.8
+skinparam actorBackgroundColor #1B2A4A
+skinparam actorBorderColor #1B2A4A
+skinparam actorFontColor #FFFFFF
+skinparam actorFontSize 15
+skinparam usecaseBackgroundColor #FFFFFF
+skinparam usecaseBorderColor #1B2A4A
+skinparam usecaseBorderThickness 1.5
+skinparam usecaseFontSize 14
+skinparam usecaseFontColor #1B2A4A
+skinparam linetype polyline
+skinparam nodesep 80
+skinparam ranksep 50
+skinparam padding 20
+scale 1.4
+
+left to right direction
+
+actor "业务人员" as Biz
+
+  usecase "用户注册与登录" as UC1
+  usecase "上传合同" as UC2
+  usecase "查看合同状态" as UC3
+  usecase "法律问题咨询" as UC4
+  usecase "法律知识检索" as UC5
+
+Biz --> UC1
+Biz --> UC2
+Biz --> UC3
+Biz --> UC4
+Biz --> UC5
+@enduml

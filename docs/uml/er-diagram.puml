@@ -1,0 +1,109 @@
+@startuml ER图
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 3
+skinparam defaultFontSize 13
+skinparam ArrowColor #1B2A4A
+skinparam ArrowThickness 1.8
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #1B2A4A
+skinparam classBorderThickness 1.5
+skinparam classFontSize 12
+skinparam classAttributeFontSize 11
+skinparam classHeaderBackgroundColor #1B2A4A
+skinparam classHeaderFontColor #FFFFFF
+skinparam classHeaderFontSize 14
+skinparam linetype ortho
+skinparam nodesep 100
+skinparam ranksep 120
+skinparam padding 14
+scale 1.0
+
+class "users\n用户表" as User <<T>> {
+  + id : VARCHAR(8) <<PK>>
+  username : VARCHAR(32)
+  hashed_password : VARCHAR(256)
+  role : VARCHAR(16)
+  created_at : DATETIME
+}
+
+class "contracts\n合同表" as Contract <<T>> {
+  + id : VARCHAR(8) <<PK>>
+  title : VARCHAR(256)
+  contract_type : VARCHAR(32)
+  party_a : VARCHAR(128)
+  party_b : VARCHAR(128)
+  content : TEXT
+  review_status : VARCHAR(16)
+  clauses : JSON[]
+  created_at : DATETIME
+}
+
+class "consultation_history\n咨询历史表" as Consult <<T>> {
+  + id : VARCHAR(8) <<PK>>
+  question : TEXT
+  answer_summary : TEXT
+  timestamp : DATETIME
+}
+
+class "document_templates\n文书模板表" as DocTpl <<T>> {
+  + template_id : VARCHAR(64) <<PK>>
+  category : VARCHAR(32)
+  title : VARCHAR(256)
+  description : TEXT
+  required_fields : JSON[]
+  template_content : TEXT
+  download_count : INT
+}
+
+class "topic_libraries\n专题库表" as Topic <<T>> {
+  + topic_id : VARCHAR(32) <<PK>>
+  title : VARCHAR(128)
+  description : TEXT
+  icon : VARCHAR(8)
+  laws : JSON[]
+  faq : JSON[]
+}
+
+class "audit_logs\n审计日志" as Audit <<T>> {
+  + audit_id : VARCHAR(8) <<PK>>
+  timestamp : DATETIME
+  user_id : VARCHAR(8)
+  task_type : VARCHAR(32)
+  model : VARCHAR(64)
+  input_summary : TEXT
+  output_summary : TEXT
+  token_count : INT
+  latency_ms : INT
+}
+
+class "calculation_rules\n计算规则表" as Rule <<T>> {
+  + rule_type : VARCHAR(32) <<PK>>
+  rule_content : JSON
+}
+
+class "case_evidence_guides\n案件与证据指引表" as CaseGuide <<T>> {
+  + case_type : VARCHAR(32) <<PK>>
+  type_config : JSON
+  evidence_guide : JSON
+}
+
+class "prompt_templates\nPrompt模板表" as Prompt <<T>> {
+  + template_name : VARCHAR(64) <<PK>>
+  system_prompt : TEXT
+  user_prompt_template : TEXT
+}
+
+User "1" -- "0..*" Contract : 上传管理
+User "1" -- "0..*" Consult : 发起咨询
+User "1" -- "0..*" Audit : 触发操作
+
+Contract "0..*" -- "0..*" DocTpl : 引用模板
+Contract "0..*" -- "0..*" Prompt : 审查引用
+
+Consult "0..*" -- "0..*" Topic : 引用专题
+
+Rule -[hidden] CaseGuide
+CaseGuide -[hidden] Prompt
+
+@enduml

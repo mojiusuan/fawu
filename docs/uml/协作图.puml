@@ -1,0 +1,85 @@
+@startuml 协作图
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontSize 14
+skinparam ArrowColor #1B2A4A
+skinparam ArrowThickness 1.8
+skinparam objectBackgroundColor #FFFFFF
+skinparam objectBorderColor #1B2A4A
+skinparam objectBorderThickness 1.5
+skinparam objectFontSize 14
+skinparam linetype ortho
+skinparam nodesep 70
+skinparam ranksep 70
+skinparam padding 14
+scale 1.2
+
+title 智能法务系统 — Agent 协作图
+
+object "AgentOrchestrator\n(orchestrator.py)" as Orch
+object "Supervisor 节点\n_supervisor_node()" as Sup
+object "ContractAgent\ncontract_service/agent.py" as CA
+object "ConsultationAgent\nconsultation_service/agent.py" as CoA
+object "RPAAgent\nagent_service/rpa_agent.py" as RPA
+object "KGQuery\nknowledge_graph/query.py" as KG
+object "LLMClient\nutils/llm_client.py" as LLM
+object "AuditLogger\naudit_service/logger.py" as Audit
+object "HybridRetriever\nrag_service/retriever.py" as Retrieval
+
+' ── 初始化 ──
+Orch -> Orch : _build_graph()
+note top of Orch : 构建 LangGraph StateGraph\n添加 5 个节点\n设置入口与条件边
+
+' ── 执行流程 ──
+Orch -> Sup : graph.ainvoke(state)
+
+Sup -> LLM : generate()
+note bottom of LLM : SUPERVISOR_SYSTEM Prompt\ntemperature=0.0\n返回 JSON 路由决策
+
+LLM --> Sup : { agent, task_type }
+
+Sup -> Orch : 更新 AgentState\nnext_agent / task_type
+
+' ── 路由分发 ──
+Orch -> CA : _contract_node(state)
+note top of CA : review_contract() /\ncompare_contracts() /\ngenerate_contract()
+
+Orch -> CoA : _consultation_node(state)
+note top of CoA : ask() → RAG 检索\n→ LLM 生成回答
+
+Orch -> RPA : _rpa_node(state)
+note top of RPA : extract_contract_data() /\nfill_form() /\nbatch_extract_key_clauses()
+
+Orch -> KG : _kg_node(state)
+note top of KG : search_fulltext() /\nquery_entity() /\nfind_case_precedents()
+
+' ── 共享资源 ──
+CA -> LLM : 调用审查 API
+CoA -> LLM : 调用咨询 API
+RPA -> LLM : 调用提取 API
+KG -> LLM : 调用抽取 API
+
+CoA -> Retrieval : RAG 混合检索
+note right of Retrieval : ChromaDB 语义\n+ Whoosh BM25
+
+CA -> Audit : log(contract_review)
+CoA -> Audit : log(consultation)
+RPA -> Audit : log(rpa_extract)
+KG -> Audit : log(kg_query)
+note bottom of Audit : 追加写入 logs/ 目录\nSHA256 脱敏
+
+' ── 返回 ──
+CA --> Orch : { result, finished }
+CoA --> Orch : { result, finished }
+RPA --> Orch : { result, finished }
+KG --> Orch : { result, finished }
+
+Orch -> Orch : 检测 finished=true → END
+
+note bottom of Orch
+  **容灾机制**
+  LLM 返回非 JSON 时
+  关键词回退匹配路由
+end note
+
+@enduml
