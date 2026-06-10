@@ -266,7 +266,7 @@ function navigateTo(page) {
   window.location.hash = page;
 
   // 设置页自动加载
-  if (page === 'settings') { loadSettings(); loadUsers(); loadKBStatus(); }
+  if (page === 'settings') { loadSettings(); loadUsers().catch(()=>{}); loadKBStatus().catch(()=>{}); }
 
   requestAnimationFrame(() => ANIM.refresh());
 }
@@ -1177,7 +1177,10 @@ async function loadUsers() {
         </select>
         <button onclick="deleteUser('${u.id}','${u.username}')" style="font-size:.75rem;padding:.15rem .5rem;border:1px solid var(--danger);border-radius:4px;background:transparent;color:var(--danger);cursor:pointer">删除</button>
       </div>`).join('');
-  } catch (e) { showToast('加载用户失败: ' + e.message, 'error'); }
+  } catch (e) {
+    document.getElementById('user-list').innerHTML =
+      `<div style="color:var(--danger);padding:.5rem 0">加载失败——${e.message}<br><small>请确认已用管理员账户登录</small></div>`;
+  }
 }
 
 async function createUser() {
