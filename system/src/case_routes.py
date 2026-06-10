@@ -28,7 +28,7 @@ async def create_case_profile(req: CaseProfileCreate, current_user: dict = Depen
 
 @router.get("/profiles")
 async def list_case_profiles(status: str = "", current_user: dict = Depends(get_current_user)):
-    if current_user.get("role") == "admin":
+    if current_user.get("role") in ("admin", "auditor"):
         return case_service.list_all(status)
     return case_service.list_by_user(current_user.get("user_id", "anonymous"), status)
 
