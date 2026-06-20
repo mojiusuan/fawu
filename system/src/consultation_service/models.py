@@ -53,4 +53,5 @@ class ConsultationHistory(BaseModel):
     id: str
     question: str
     answer_summary: str
+    user_id: str = ""
     timestamp: str

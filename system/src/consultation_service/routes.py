@@ -22,7 +22,7 @@ async def ask_question(req: AskRequest, current_user: dict = Depends(get_current
 
     # 添加到历史
     summary = answer[:100] + "..." if len(answer) > 100 else answer
-    consultation_service.add_history(req.question, summary)
+    consultation_service.add_history(req.question, summary, user_id=current_user.get("user_id", ""))
 
     return AskResponse(
         question=req.question,
@@ -41,5 +41,5 @@ async def search_knowledge(req: SearchRequest, current_user: dict = Depends(get_
 
 @router.get("/history", response_model=list[ConsultationHistory])
 async def get_history(current_user: dict = Depends(get_current_user)):
-    """获取咨询历史"""
-    return consultation_service.get_history()
+    """获取当前用户的咨询历史"""
+    return consultation_service.get_history(user_id=current_user.get("user_id", ""))

@@ -1,0 +1,35 @@
+[
+  {
+    "approval_id": "cd19e4fc-5aaf-46e7-9f3c-549b4faefb6d",
+    "entity_type": "contract",
+    "entity_id": "test_001",
+    "submitted_by": "109a19cc",
+    "approver_id": "5cde3633",
+    "status": "approved",
+    "comment": "请审批该合同\n审批意见: 同意，合同条款符合要求",
+    "submitted_at": "2026-06-19T15:59:16.388171+00:00",
+    "decided_at": "2026-06-19T15:59:16.396856+00:00"
+  },
+  {
+    "approval_id": "f45a13cb-9750-4a36-943f-bc9aaa070826",
+    "entity_type": "contract",
+    "entity_id": "759924e4",
+    "submitted_by": "109a19cc",
+    "approver_id": "5cde3633",
+    "status": "approved",
+    "comment": "请审批\n审批意见: 同意",
+    "submitted_at": "2026-06-20T08:02:32.686494+00:00",
+    "decided_at": "2026-06-20T08:02:32.692212+00:00"
+  },
+  {
+    "approval_id": "87fa3359-52b2-4603-8486-1acaf389178e",
+    "entity_type": "contract",
+    "entity_id": "33116fc0",
+    "submitted_by": "109a19cc",
+    "approver_id": "5cde3633",
+    "status": "approved",
+    "comment": "请审批\n审批意见: 同意",
+    "submitted_at": "2026-06-20T08:03:46.695747+00:00",
+    "decided_at": "2026-06-20T08:03:46.702803+00:00"
+  }
+]

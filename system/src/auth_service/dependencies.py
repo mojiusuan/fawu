@@ -13,14 +13,18 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=Fals
 async def get_current_user(token: str | None = Depends(oauth2_scheme)) -> dict:
     """
     从 JWT 获取当前用户信息。
-    无 token 时返回匿名用户，token 无效时抛出 401。
+    v3.0: 无 token 时返回 401（不再允许匿名穿透）。
     """
     if not token:
-        return {"user_id": "anonymous", "username": "anonymous", "role": ""}
+        raise HTTPException(status_code=401, detail="请先登录")
 
     payload = decode_access_token(token)
     if payload is None:
         raise HTTPException(status_code=401, detail="登录已过期，请重新登录")
+
+    # 验证 token 类型
+    if payload.get("type") != "access":
+        raise HTTPException(status_code=401, detail="无效的令牌类型")
 
     return {
         "user_id": payload.get("sub", "unknown"),

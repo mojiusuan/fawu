@@ -1,0 +1,58 @@
+[
+  {
+    "request_id": "d6f7911c-3bb0-4d01-971b-9f4de8fef2b3",
+    "user_id": "109a19cc",
+    "user_name": "biz01",
+    "question": "劳动合同解除经济补偿金如何计算？",
+    "contact": "13800138000",
+    "priority": "normal",
+    "status": "resolved",
+    "assigned_to": "5cde3633",
+    "assigned_at": "2026-06-19T15:59:16.179370+00:00",
+    "resolved_at": "2026-06-19T15:59:16.187960+00:00",
+    "resolution_note": "根据劳动合同法第47条，经济补偿按劳动者在本单位工作的年限计算...",
+    "created_at": "2026-06-19T15:59:16.169870+00:00"
+  },
+  {
+    "request_id": "3eebfd09-dc76-4af6-bec2-7616efc5ab1e",
+    "user_id": "109a19cc",
+    "user_name": "biz01",
+    "question": "知识产权侵权咨询",
+    "contact": "13800138001",
+    "priority": "normal",
+    "status": "resolved",
+    "assigned_to": "5cde3633",
+    "assigned_at": "2026-06-20T08:00:50.972588+00:00",
+    "resolved_at": "2026-06-20T08:00:50.978648+00:00",
+    "resolution_note": "已解答",
+    "created_at": "2026-06-20T08:00:50.961969+00:00"
+  },
+  {
+    "request_id": "36d0d2b7-c5e7-48b5-87bc-184cde002ab7",
+    "user_id": "109a19cc",
+    "user_name": "biz01",
+    "question": "知识产权侵权咨询",
+    "contact": "13800138001",
+    "priority": "normal",
+    "status": "resolved",
+    "assigned_to": "5cde3633",
+    "assigned_at": "2026-06-20T08:02:32.708484+00:00",
+    "resolved_at": "2026-06-20T08:02:32.714267+00:00",
+    "resolution_note": "已解答",
+    "created_at": "2026-06-20T08:02:32.697624+00:00"
+  },
+  {
+    "request_id": "0a15e03a-9b72-4f7f-b75a-e297aacf3643",
+    "user_id": "109a19cc",
+    "user_name": "biz01",
+    "question": "知识产权侵权咨询",
+    "contact": "13800138001",
+    "priority": "normal",
+    "status": "resolved",
+    "assigned_to": "5cde3633",
+    "assigned_at": "2026-06-20T08:03:46.720504+00:00",
+    "resolved_at": "2026-06-20T08:03:46.726044+00:00",
+    "resolution_note": "已解答",
+    "created_at": "2026-06-20T08:03:46.709222+00:00"
+  }
+]

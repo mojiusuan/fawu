@@ -59,10 +59,15 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:8080",
+        "http://127.0.0.1:8080",
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 # ---- 静态文件（前端界面） ----
@@ -109,6 +114,19 @@ app.include_router(knowledge_router)
 from src.topic_routes import router_topics, router_esc
 app.include_router(router_topics)
 app.include_router(router_esc)
+
+# 协作服务路由
+from src.collaboration_service.task_routes import router as task_router
+app.include_router(task_router)
+
+from src.collaboration_service.notification_routes import router as notification_router
+app.include_router(notification_router)
+
+from src.collaboration_service.comment_routes import router as comment_router
+app.include_router(comment_router)
+
+from src.collaboration_service.approval_routes import router as approval_router
+app.include_router(approval_router)
 
 @app.get("/api/audit/logs")
 async def get_audit_logs(

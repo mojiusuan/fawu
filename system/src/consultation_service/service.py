@@ -24,7 +24,8 @@ class ConsultationService:
         self._load()
 
     def _save(self):
-        data = [{"id": h.id, "question": h.question, "answer_summary": h.answer_summary, "timestamp": h.timestamp} for h in self._history]
+        data = [{"id": h.id, "question": h.question, "answer_summary": h.answer_summary,
+                 "user_id": getattr(h, 'user_id', ''), "timestamp": h.timestamp} for h in self._history]
         self._store_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
     def _load(self):
@@ -53,18 +54,21 @@ class ConsultationService:
         st = req.source_type.value if hasattr(req.source_type, "value") else req.source_type
         return SearchResponse(query=req.query, source_type=st, total=len(search_results), results=search_results)
 
-    def add_history(self, question: str, answer_summary: str) -> ConsultationHistory:
+    def add_history(self, question: str, answer_summary: str, user_id: str = "") -> ConsultationHistory:
         h = ConsultationHistory(
             id=str(uuid.uuid4())[:8],
             question=question,
             answer_summary=answer_summary,
+            user_id=user_id,
             timestamp=datetime.now().isoformat(),
         )
         self._history.append(h)
         self._save()
         return h
 
-    def get_history(self) -> list[ConsultationHistory]:
+    def get_history(self, user_id: str = "") -> list[ConsultationHistory]:
+        if user_id:
+            return [h for h in self._history if getattr(h, 'user_id', '') == user_id][-20:]
         return self._history[-20:]
 
 

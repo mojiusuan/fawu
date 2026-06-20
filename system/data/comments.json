@@ -1,0 +1,32 @@
+[
+  {
+    "comment_id": "fd39b2f1-e405-45b6-9dc2-50c53fc4ecb6",
+    "entity_type": "contract",
+    "entity_id": "test_001",
+    "user_id": "5cde3633",
+    "user_name": "legal01",
+    "content": "合同第三条的违约金比例偏高，建议调整为不超过合同总金额的20%",
+    "parent_id": null,
+    "created_at": "2026-06-19T15:59:16.381596+00:00"
+  },
+  {
+    "comment_id": "3b7d5607-db34-44ca-8052-1aeebd74aafe",
+    "entity_type": "contract",
+    "entity_id": "759924e4",
+    "user_id": "5cde3633",
+    "user_name": "legal01",
+    "content": "建议增加免责条款",
+    "parent_id": null,
+    "created_at": "2026-06-20T08:02:32.680133+00:00"
+  },
+  {
+    "comment_id": "0d1b48e5-88f4-4ece-9891-e5843638dfc4",
+    "entity_type": "contract",
+    "entity_id": "33116fc0",
+    "user_id": "5cde3633",
+    "user_name": "legal01",
+    "content": "建议增加免责条款",
+    "parent_id": null,
+    "created_at": "2026-06-20T08:03:46.684501+00:00"
+  }
+]
