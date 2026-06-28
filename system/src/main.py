@@ -37,14 +37,9 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"  Neo4j: 未连接（知识图谱功能不可用）")
 
-    # 预加载本地嵌入模型（首次需下载，之后秒加载）
+    # 本地嵌入模型改为懒加载（启动时不等待，首次使用时加载）
     if settings.EMBEDDING_PROVIDER == "local":
-        try:
-            from src.utils.llm_client import llm_client
-            print("  预加载本地嵌入模型...")
-            _ = await llm_client.embed_query("init")
-        except Exception as e:
-            print(f"  模型预加载失败: {e}")
+        print("  嵌入模型: local (首次使用时懒加载)")
 
     yield
     print("  服务关闭")
