@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { caseApi } from '../../../api/cases';
 import { useToast } from '../../../contexts/ToastContext';
-import type { CaseProfile, CaseAnalysis as CaseAnalysisType } from '../../../types';
+import type { CaseAnalysis as CaseAnalysisType } from '../../../types';
 
 interface CaseTypeDef {
   key: string;
@@ -14,9 +14,6 @@ interface CaseTypeDef {
 export default function CaseAnalysis() {
   const { showToast } = useToast();
   const navigate = useNavigate();
-  const [params] = useSearchParams();
-  const caseId = params.get('case_id');
-
   const [step, setStep] = useState(1);
   const [caseTypes, setCaseTypes] = useState<CaseTypeDef[]>([]);
   const [selectedType, setSelectedType] = useState('');
@@ -25,7 +22,6 @@ export default function CaseAnalysis() {
   const [facts, setFacts] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<CaseAnalysisType | null>(null);
-  const [analysisId, setAnalysisId] = useState('');
 
   useEffect(() => {
     loadCaseTypes();
@@ -34,7 +30,7 @@ export default function CaseAnalysis() {
   async function loadCaseTypes() {
     try {
       const data = await caseApi.getTypes();
-      setCaseTypes(data.types || data);
+      setCaseTypes((data as any).types || data);
     } catch { /* will show empty */ }
   }
 
@@ -44,10 +40,9 @@ export default function CaseAnalysis() {
     setSubmitting(true);
     try {
       // 创建案件
-      const profile = await caseApi.create({ case_name: caseName, case_type: selectedType, description });
+      await caseApi.create({ case_name: caseName, case_type: selectedType, description });
       // 执行分析
       const analysis = await caseApi.analyze(selectedType, facts);
-      setAnalysisId(profile.case_id);
       setResult(analysis);
       setStep(3);
       showToast('分析完成', 'success');

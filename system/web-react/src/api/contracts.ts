@@ -1,9 +1,10 @@
 import { api } from './client';
-import type { Contract, Clause } from '../types';
+import type { Contract, RiskLevel } from '../types';
 
 interface ReviewResult {
   contract: Contract;
   summary: string;
+  clauses: { clause_number: string; content: string; risk_level: RiskLevel; risk_analysis: string; law_basis: string; suggestion: string }[];
   stats: { high: number; medium: number; low: number };
 }
 

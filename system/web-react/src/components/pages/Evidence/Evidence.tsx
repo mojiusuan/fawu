@@ -12,7 +12,7 @@ export default function Evidence() {
 
   useEffect(() => {
     api.get('/api/evidence/cases')
-      .then(data => setCaseTypes(data.cases || data))
+      .then((data: any) => setCaseTypes(data.cases || data))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

@@ -1,10 +1,7 @@
 import { useState, useEffect, useRef, type DragEvent, type FormEvent } from 'react';
-import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../contexts/ToastContext';
 import { contractApi } from '../../../api/contracts';
 import type { Contract, Clause } from '../../../types';
-import Loading from '../../common/Loading';
-import EmptyState from '../../common/EmptyState';
 
 type TabKey = 'upload' | 'review' | 'compare' | 'generate';
 
@@ -285,7 +282,7 @@ function ReviewTab({ contracts, loading, onReload }: { contracts: Contract[]; lo
 
 /* ============ Compare Tab ============ */
 
-function CompareTab({ contracts, loading }: { contracts: Contract[]; loading: boolean }) {
+function CompareTab({ contracts }: { contracts: Contract[]; loading: boolean }) {
   const { showToast } = useToast();
   const [idA, setIdA] = useState('');
   const [idB, setIdB] = useState('');

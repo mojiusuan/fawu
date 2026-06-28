@@ -120,7 +120,7 @@ function CompensationCalculator() {
       numParams[k] = parseFloat(v) || 0;
     }
     try {
-      const data = await api.post('/api/calculator/compensation', { scenario, params: numParams });
+      const data: any = await api.post('/api/calculator/compensation', { scenario, params: numParams });
       if (data.error) { showToast(data.error, 'error'); return; }
       setResult(data);
     } catch (e: unknown) { showToast((e as Error).message || '计算失败', 'error'); }

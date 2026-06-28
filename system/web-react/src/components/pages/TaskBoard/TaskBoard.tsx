@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../contexts/ToastContext';
 import { taskApi } from '../../../api/tasks';
-import { authApi } from '../../../api/auth';
 import type { Task, UserInfo } from '../../../types';
 import Loading from '../../common/Loading';
 import EmptyState from '../../common/EmptyState';
@@ -19,7 +17,6 @@ const TASK_TYPES: { value: string; label: string }[] = [
 ];
 
 export default function TaskBoard() {
-  const { user, hasRole } = useAuth();
   const { showToast } = useToast();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,7 +106,7 @@ export default function TaskBoard() {
     }
   }
 
-  async function handleAction(taskId: string, action: 'accept') {
+  async function handleAction(taskId: string, _action: 'accept') {
     try {
       const result = await taskApi.accept(taskId);
       showToast('已接受任务', 'success');

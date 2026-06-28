@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../contexts/ToastContext';
 import { caseApi } from '../../../api/cases';
 import type { CaseProfile } from '../../../types';
@@ -17,7 +16,6 @@ const STATUS_OPTIONS = [
 ];
 
 export default function CaseCenter() {
-  const { user } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const [cases, setCases] = useState<CaseProfile[]>([]);

@@ -17,7 +17,7 @@ export default function Templates() {
     setLoading(true);
     try {
       const data = await api.get('/api/templates');
-      setTemplates(data || []);
+      setTemplates(data as any || []);
     } catch (e: unknown) { showToast((e as Error).message || '加载失败', 'error'); }
     finally { setLoading(false); }
   }
@@ -35,7 +35,7 @@ export default function Templates() {
 
   function download(templateId: string, filename?: string) {
     const url = filename
-      ? `${api['BASE_URL'] || window.location.origin}/api/templates/${templateId}/download/${filename}`
+      ? `${window.location.origin}/api/templates/${templateId}/download/${filename}`
       : `${window.location.origin}/api/templates/${templateId}/download`;
     window.open(url, '_blank');
   }

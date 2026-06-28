@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type FormEvent } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { consultationApi } from '../../../api/consultation';
 import { useToast } from '../../../contexts/ToastContext';
 import { renderMarkdown } from '../../../utils/markdown';

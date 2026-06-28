@@ -13,7 +13,7 @@ const ROLES: { value: Role; label: string }[] = [
 ];
 
 export default function Settings() {
-  const { user, hasRole } = useAuth();
+  const { hasRole } = useAuth();
   const { showToast } = useToast();
 
   if (!hasRole('admin')) {
@@ -191,7 +191,6 @@ function Neo4jConfig({ showToast }: any) {
 
 function SystemParams({ showToast }: any) {
   const [port, setPort] = useState('8080');
-  const [jwtKey, setJwtKey] = useState('');
   const [jwtExpire, setJwtExpire] = useState('480');
   const [logLevel, setLogLevel] = useState('INFO');
 

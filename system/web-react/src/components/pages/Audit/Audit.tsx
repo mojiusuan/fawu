@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../../api/client';
-import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../contexts/ToastContext';
 import Loading from '../../common/Loading';
 import EmptyState from '../../common/EmptyState';
 
 export default function Audit() {
-  const { user } = useAuth();
   const { showToast } = useToast();
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +20,7 @@ export default function Audit() {
       if (taskFilter) qs.set('task_type', taskFilter);
       if (search) qs.set('search', search);
       qs.set('limit', '50');
-      const data = await api.get(`/api/audit/logs?${qs.toString()}`);
+      const data: any = await api.get(`/api/audit/logs?${qs.toString()}`);
       setLogs(data.logs || []);
     } catch (e: unknown) {
       showToast((e as Error).message || '加载审计日志失败', 'error');

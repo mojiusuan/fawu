@@ -13,7 +13,7 @@ export default function KG() {
     if (!keyword.trim()) return;
     setSearching(true);
     try {
-      const data = await api.get(`/api/kg/search?keyword=${encodeURIComponent(keyword)}`);
+      const data: any = await api.get(`/api/kg/search?keyword=${encodeURIComponent(keyword)}`);
       setResults(data.results || []);
       if (!data.available) showToast('知识图谱不可用', 'warning');
     } catch (e: unknown) {
