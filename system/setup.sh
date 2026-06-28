@@ -2,82 +2,80 @@
 set -e
 
 echo "=========================================="
-echo "  智能法务系统 - 一键环境初始化"
+echo "  Legal AI System v3.0 - Setup"
 echo "=========================================="
 echo ""
 
-# Check Python
 if ! command -v python3 &> /dev/null; then
-    echo "[ERROR] 未检测到 Python，请先安装 Python 3.11+"
+    echo "[ERROR] Python not found. Install Python 3.11+"
     exit 1
 fi
-echo "Python 环境: OK"
+echo "[OK] Python: $(python3 --version)"
 
-# Create venv
+if ! command -v node &> /dev/null; then
+    echo "[ERROR] Node.js not found. Install Node.js 18+"
+    exit 1
+fi
+echo "[OK] Node.js: $(node --version)"
+
 echo ""
-echo "[1/6] 创建虚拟环境..."
+echo "[1/7] Creating virtual environment..."
 python3 -m venv venv
 source venv/bin/activate
-echo "虚拟环境: OK"
+echo "[OK] venv"
 
-# Install dependencies
 echo ""
-echo "[2/6] 安装 Python 依赖（可能需要几分钟）..."
-echo ""
-echo "  若下载失败，可将 PIP_INDEX 改为其他镜像再重试"
-
-# 国内默认用清华镜像，海外用户可注释掉下面这行
+echo "[2/7] Installing Python dependencies..."
 PIP_INDEX="${PIP_INDEX:-https://pypi.tuna.tsinghua.edu.cn/simple}"
 pip install -r requirements.txt -i "$PIP_INDEX" || {
     echo ""
-    echo "[ERROR] 依赖安装失败，请检查网络连接"
-    echo "  国内用户可尝试其他镜像："
-    echo "   PIP_INDEX=https://mirrors.aliyun.com/pypi/simple/ ./setup.sh"
-    echo "  海外用户可跳过镜像："
-    echo "   PIP_INDEX=https://pypi.org/simple/ ./setup.sh"
+    echo "[ERROR] pip install failed."
+    echo "  China:  PIP_INDEX=https://mirrors.aliyun.com/pypi/simple/ ./setup.sh"
+    echo "  Global: PIP_INDEX=https://pypi.org/simple/ ./setup.sh"
     exit 1
 }
-echo ""
-echo "依赖安装: OK"
+echo "[OK] Python deps"
 
-# Install Playwright browsers
 echo ""
-echo "[3/6] 安装 Playwright 浏览器（约 500MB）..."
-playwright install chromium || echo "[WARNING] Playwright 浏览器安装失败，RPA 功能不可用"
-echo "Playwright: OK"
+echo "[3/7] Installing Node.js dependencies..."
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR/web-react"
+npm install || echo "[WARNING] npm install failed"
+cd "$SCRIPT_DIR"
+echo "[OK] Node deps"
 
-# Setup .env
 echo ""
-echo "[4/6] 配置环境变量..."
+echo "[4/7] Installing Playwright browsers..."
+playwright install chromium || echo "[WARNING] Playwright failed - RPA unavailable"
+echo "[OK] Playwright"
+
+echo ""
+echo "[5/7] Setting up .env..."
 if [ ! -f .env ]; then
     cp .env.example .env
-    echo "已创建 .env 文件，请用编辑器打开填写 API Key"
-    echo "至少需要配置: DEEPSEEK_API_KEY"
+    echo "Created .env - edit it to add DEEPSEEK_API_KEY"
 else
-    echo ".env 文件已存在，跳过"
+    echo ".env exists, skipping"
 fi
 
-# Init knowledge base
 echo ""
-echo "[5/6] 初始化知识库..."
+echo "[6/7] Initializing knowledge base..."
 python scripts/init_knowledge_base.py || {
-    echo "[WARNING] 知识库初始化失败（可能缺少 API Key），AI 功能暂不可用"
-    echo "  请编辑 .env 填写 DEEPSEEK_API_KEY 后重新运行: python scripts/init_knowledge_base.py"
+    echo "[WARNING] KB init failed - add API key to .env and re-run:"
+    echo "  python scripts/init_knowledge_base.py"
 }
 
-# Neo4j Desktop
 echo ""
-echo "[6/6] Neo4j Desktop (optional, for knowledge graph)..."
+echo "[7/7] Neo4j Desktop (optional)"
 echo "  Download: https://neo4j.com/download/"
-echo "  Install Neo4j Desktop, create a local DBMS (v5.x),"
-echo "  then re-run: python scripts/init_knowledge_base.py"
-echo "  Default connection: bolt://localhost:7687 (neo4j/legaladmin123)"
+echo "  Default: bolt://localhost:7687 (neo4j/legaladmin123)"
 
 echo ""
 echo "=========================================="
-echo "  初始化完成！"
+echo "  Setup complete!"
 echo ""
-echo "  启动系统: source venv/bin/activate && python -m src.main"
-echo "  浏览器打开: http://localhost:8000"
-echo "  API 文档:   http://localhost:8000/docs"
+echo "  Start: bash start.sh  or  pwsh start.ps1"
+echo "  Frontend: http://localhost:5173"
+echo "  Backend:  http://localhost:8080"
+echo "  API Docs: http://localhost:8080/docs"
 echo "=========================================="
