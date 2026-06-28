@@ -33,7 +33,9 @@ class ApiClient {
     if (res.status === 401) {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('current_user');
-      window.location.replace('/login');
+      if (window.location.pathname !== '/login') {
+        window.location.replace('/login');
+      }
       throw new Error('登录已过期，请重新登录');
     }
 
@@ -85,7 +87,9 @@ class ApiClient {
     if (res.status === 401) {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('current_user');
-      window.location.replace('/login');
+      if (window.location.pathname !== '/login') {
+        window.location.replace('/login');
+      }
       throw new Error('登录已过期，请重新登录');
     }
 
