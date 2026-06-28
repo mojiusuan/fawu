@@ -41,7 +41,24 @@ Write-Host "[2/2] Starting frontend on port 5173 ..." -ForegroundColor Yellow
 $webDir = Join-Path $root "web-react"
 Start-Process cmd -ArgumentList "/c", "npm run dev" -WorkingDirectory $webDir
 
-Start-Sleep -Seconds 5
+# Wait for backend to be ready
+Write-Host ""
+Write-Host "Waiting for backend to be ready..." -ForegroundColor Gray
+$ready = $false
+for ($i = 0; $i -lt 30; $i++) {
+    Start-Sleep -Seconds 1
+    try {
+        $r = Invoke-WebRequest -Uri "http://127.0.0.1:8080/api/health" -TimeoutSec 2 -ErrorAction Stop
+        if ($r.StatusCode -eq 200) {
+            $ready = $true
+            Write-Host "[OK] Backend ready (${i}s)" -ForegroundColor Green
+            break
+        }
+    } catch {}
+}
+if (-not $ready) {
+    Write-Host "[WARN] Backend may still be loading, check the backend window" -ForegroundColor Yellow
+}
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
