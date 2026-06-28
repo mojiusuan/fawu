@@ -27,7 +27,15 @@ $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Write-Host ""
 Write-Host "[1/2] Starting backend on port 8080 ..." -ForegroundColor Yellow
-Start-Process python -ArgumentList "-m", "src.main" -WorkingDirectory $root
+# Use venv python if exists, fallback to global python
+$pyExe = Join-Path $root "venv\Scripts\python.exe"
+if (Test-Path $pyExe) {
+    Write-Host "  Using venv Python" -ForegroundColor Gray
+    Start-Process $pyExe -ArgumentList "-m", "src.main" -WorkingDirectory $root
+} else {
+    Write-Host "  Using global Python" -ForegroundColor Gray
+    Start-Process python -ArgumentList "-m", "src.main" -WorkingDirectory $root
+}
 
 Write-Host "[2/2] Starting frontend on port 5173 ..." -ForegroundColor Yellow
 $webDir = Join-Path $root "web-react"

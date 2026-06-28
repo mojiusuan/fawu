@@ -22,7 +22,12 @@ if %errorlevel% neq 0 (
 
 echo [1/2] Starting backend on port 8080 ...
 cd /d "%~dp0"
-start "Legal Backend" python -m src.main
+if exist "venv\Scripts\python.exe" (
+    echo   Using venv Python
+    start "Legal Backend" venv\Scripts\python.exe -m src.main
+) else (
+    start "Legal Backend" python -m src.main
+)
 
 echo Waiting for backend...
 ping -n 5 127.0.0.1 >nul
