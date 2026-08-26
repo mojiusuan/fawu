@@ -18,7 +18,7 @@ export default function Settings() {
 
   if (!hasRole('admin')) {
     return (
-      <div className="page-section">
+      <div className="page-section" data-section="settings">
         <h2 className="page-title">系统设置</h2>
         <p style={{ color:'var(--text-secondary)' }}>仅管理员可访问此页面。</p>
       </div>
@@ -26,7 +26,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="page-section">
+    <div className="page-section" data-section="settings">
       <h2 className="page-title">系统设置</h2>
       <p className="page-desc">管理 LLM 配置、API 密钥、Neo4j 连接和用户账户</p>
 

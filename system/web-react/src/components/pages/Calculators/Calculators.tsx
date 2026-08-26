@@ -6,11 +6,11 @@ export default function Calculators() {
   const [tab, setTab] = useState<'fee' | 'comp' | 'limitation'>('fee');
 
   return (
-    <div className="page-section">
+    <div className="page-section" data-section="calculators">
       <h2 className="page-title">计算工具</h2>
       <p className="page-desc">诉讼费、赔偿金、诉讼时效计算</p>
 
-      <div className="tabs">
+      <div className="tabs" data-section="calculators-tabs">
         <button className={`tab ${tab === 'fee' ? 'active' : ''}`} onClick={() => setTab('fee')}>诉讼费计算</button>
         <button className={`tab ${tab === 'comp' ? 'active' : ''}`} onClick={() => setTab('comp')}>赔偿金计算</button>
         <button className={`tab ${tab === 'limitation' ? 'active' : ''}`} onClick={() => setTab('limitation')}>时效检查</button>

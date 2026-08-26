@@ -55,7 +55,7 @@ export default function Notifications() {
   }
 
   return (
-    <div className="page-section">
+    <div className="page-section" data-section="notifications">
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem' }}>
         <div>
           <h2 className="page-title">通知中心</h2>

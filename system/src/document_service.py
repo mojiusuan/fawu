@@ -524,6 +524,7 @@ class DocumentService:
             "category": t["category"],
             "title": t["title"],
             "description": t.get("description", ""),
+            "required_fields": t.get("required_fields", []),
             "download_count": t.get("download_count", 0),
         } for t in data]
 

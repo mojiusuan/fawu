@@ -114,7 +114,7 @@ class ContractService:
                 tmp_path.unlink()
         return [
             ClauseInfo(
-                clause_number=c.get("title", f"第{i+1}条"),
+                clause_number=c.get("title") or c.get("article", f"第{i+1}条"),
                 content=c.get("content", ""),
             )
             for i, c in enumerate(chunks)

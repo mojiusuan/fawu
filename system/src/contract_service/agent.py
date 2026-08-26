@@ -37,7 +37,11 @@ CLAUSE_COMPARE_SYSTEM = """你是合同比较分析专家。对比两份合同�
 ## 比较原则
 1. 关注实质性差异，忽略纯标点、排版差异
 2. 对每个实质性差异标注对哪一方有利
-3. 引用现行法律说明差异可能带来的法律后果"""
+3. 引用现行法律说明差异可能带来的法律后果
+
+## 输出格式
+必须严格输出 JSON，所有字段使用中文值：
+{"type": "实质性差异或形式差异或一致", "detail": "用中文描述具体差异内容", "favor": "甲方或乙方或无"}"""
 
 DOC_GENERATE_SYSTEM = """你是法律文书起草助理。按照中国法律文书格式规范起草合同草稿。合同中的关键信息用 [ ] 标注为待填写项。
 
@@ -183,8 +187,8 @@ class ContractAgent:
 **合同B**: {num_b}
 {content_b[:500]}
 
-判断差异类型（formal=形式差异 或 substantive=实质性差异），分析对哪方有利。
-输出 JSON: {{"type": "formal/substantive", "detail": "差异说明", "favor": "甲方/乙方/无"}}"""
+判断差异类型，分析对哪方有利。
+输出 JSON: {{"type": "实质性差异或形式差异或一致", "detail": "用中文描述差异", "favor": "甲方或乙方或无"}}"""
 
                 response, _ = await self.client.generate(
                     system_prompt=CLAUSE_COMPARE_SYSTEM,
@@ -194,7 +198,7 @@ class ContractAgent:
                 try:
                     result = json.loads(response.strip().split("```")[1] if "```" in response else response.strip())
                 except (json.JSONDecodeError, IndexError):
-                    result = {"type": "formal", "detail": "无法自动判断", "favor": "无"}
+                    result = {"type": "形式差异", "detail": "无法自动判断", "favor": "无"}
 
                 result["clause"] = num_a or num_b
                 diffs.append(result)

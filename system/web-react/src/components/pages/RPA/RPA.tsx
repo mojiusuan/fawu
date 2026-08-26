@@ -53,17 +53,17 @@ export default function RPA() {
   }
 
   return (
-    <div className="page-section">
+    <div className="page-section" data-section="rpa">
       <h2 className="page-title">自动化工具</h2>
       <p className="page-desc">AI 驱动的文档数据提取（RPA）</p>
 
-      <div className="tabs">
+      <div className="tabs" data-section="rpa-tabs">
         <button className={`tab ${tab === 'single' ? 'active' : ''}`} onClick={() => setTab('single')}>单文档提取</button>
         <button className={`tab ${tab === 'batch' ? 'active' : ''}`} onClick={() => setTab('batch')}>批量提取</button>
       </div>
 
       {tab === 'single' && (
-        <div>
+        <div data-section="rpa-single">
           <div className="card" style={{ marginBottom:'1rem' }}>
             <div className="file-drop-zone" onClick={() => fileRef.current?.click()}>
               <div className="file-drop-icon">🤖</div>
@@ -97,7 +97,7 @@ export default function RPA() {
       )}
 
       {tab === 'batch' && (
-        <div>
+        <div data-section="rpa-batch">
           <div className="card" style={{ marginBottom:'1rem' }}>
             <input type="file" multiple accept=".docx,.pdf,.txt"
               onChange={e => { const files = Array.from(e.target.files || []); setBatchFiles(files); setBatchResults([]); }}

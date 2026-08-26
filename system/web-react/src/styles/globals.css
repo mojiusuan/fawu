@@ -218,6 +218,8 @@ body {
 .badge-green { background:#d1fae5; color:#065f46; }
 .badge-blue { background:#dbeafe; color:#1e40af; }
 .badge-gray { background:#f1f5f9; color:#64748b; }
+.badge-orange { background:#ffedd5; color:#c2410c; }
+.badge-purple { background:#f3e8ff; color:#7c3aed; }
 
 /* ====== Modals ====== */
 .modal-overlay {
@@ -434,6 +436,23 @@ body {
 /* ====== Settings ====== */
 .settings-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
 @media (max-width:768px) { .settings-grid { grid-template-columns:1fr; } }
+
+/* ====== Knowledge Graph ====== */
+.kg-result-item {
+  display:flex; align-items:center; gap:.75rem; padding:.75rem 1rem;
+  border-bottom:1px solid var(--border); transition:background var(--transition);
+}
+.kg-result-item:last-child { border-bottom:none; }
+.kg-result-item:hover { background:var(--sidebar-hover); }
+.kg-result-score {
+  flex-shrink:0; font-size:.78rem; color:var(--accent); font-weight:600;
+  background:rgba(59,130,246,.1); padding:2px 8px; border-radius:4px;
+}
+.kg-diagram {
+  font-family:'Courier New',monospace; font-size:.82rem; line-height:1.8;
+  background:var(--bg); padding:1rem 1.25rem; border-radius:var(--radius);
+  overflow-x:auto; white-space:pre; color:var(--text-secondary);
+}
 
 /* ====== Responsive ====== */
 @media (max-width:768px) {

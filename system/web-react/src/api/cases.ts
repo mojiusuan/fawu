@@ -18,10 +18,17 @@ export const caseApi = {
   delete(caseId: string) {
     return api.delete<void>(`/api/case/profiles/${caseId}`);
   },
-  analyze(caseType: string, structuredFacts: Record<string, unknown>) {
-    return api.post<CaseAnalysis>('/api/case/analyze', { case_type: caseType, structured_facts: structuredFacts });
+  analyze(caseType: string, structuredFacts: Record<string, unknown>, caseId?: string) {
+    return api.post<any>('/api/case/analyze', { case_id: caseId || '', case_type: caseType, structured_facts: structuredFacts });
   },
   getTypes() {
     return api.get<any[]>('/api/case/types');
+  },
+  getAnalysis(analysisId: string) {
+    return api.get<any>(`/api/case/analyses/${analysisId}`);
+  },
+  listAnalyses(caseId?: string) {
+    const qs = caseId ? `?case_id=${caseId}` : '';
+    return api.get<any[]>(`/api/case/analyses${qs}`);
   },
 };

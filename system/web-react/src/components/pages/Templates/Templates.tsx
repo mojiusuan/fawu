@@ -33,19 +33,34 @@ export default function Templates() {
     } catch (e: unknown) { showToast((e as Error).message || '生成失败', 'error'); }
   }
 
-  function download(templateId: string, filename?: string) {
-    const url = filename
-      ? `${window.location.origin}/api/templates/${templateId}/download/${filename}`
-      : `${window.location.origin}/api/templates/${templateId}/download`;
-    window.open(url, '_blank');
+  async function download(templateId: string, filename?: string) {
+    try {
+      const url = filename
+        ? `${window.location.origin}/api/templates/${encodeURIComponent(templateId)}/download/${encodeURIComponent(filename)}`
+        : `${window.location.origin}/api/templates/${encodeURIComponent(templateId)}/download`;
+      const token = localStorage.getItem('auth_token');
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${JSON.parse(token)}`;
+      const res = await fetch(url, { headers });
+      if (!res.ok) throw new Error('下载失败');
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename || `${templateId}.docx`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      showToast('下载失败，请重试', 'error');
+    }
   }
 
   return (
-    <div className="page-section">
+    <div className="page-section" data-section="templates">
       <h2 className="page-title">文书模板</h2>
       <p className="page-desc">法律文书模板库，支持智能填写和 DOCX 导出</p>
 
-      <div className="tabs">
+      <div className="tabs" data-section="templates-categories">
         {categories.map(c => (
           <button key={c} className={`tab ${category === c ? 'active' : ''}`} onClick={() => setCategory(c)}>
             {c === 'all' ? '全部' : c}
@@ -54,7 +69,7 @@ export default function Templates() {
       </div>
 
       {loading ? <Loading /> : (
-        <div className="stats-grid">
+        <div className="stats-grid" data-section="templates-grid">
           {filtered.map(t => (
             <div key={t.template_id || t.id} className="card">
               <h4>{t.name || t.title}</h4>
@@ -74,7 +89,7 @@ export default function Templates() {
       {/* Wizard Modal */}
       {wizard && (
         <div className="modal-overlay" onClick={() => setWizard(null)}>
-          <div className="modal-dialog" style={{ maxWidth:600 }} onClick={e => e.stopPropagation()}>
+          <div className="modal-dialog" style={{ maxWidth:600 }} onClick={e => e.stopPropagation()} data-section="templates-wizard">
             <h3 className="modal-title">{wizard.template.name || wizard.template.title} — 填写信息</h3>
             {wizard.template.required_fields?.map((f: any) => (
               <div className="form-group" key={f.key}>

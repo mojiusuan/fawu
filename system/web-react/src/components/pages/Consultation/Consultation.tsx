@@ -91,12 +91,12 @@ export default function Consultation() {
   }
 
   return (
-    <div className="page-section">
+    <div className="page-section" data-section="consultation">
       <h2 className="page-title">智能咨询</h2>
       <p className="page-desc">7x24 小时 AI 法律咨询，基于法规库和判例库提供专业回答</p>
 
       {/* Chat Area */}
-      <div className="card" style={{ marginBottom:'1rem', minHeight:'300px', maxHeight:'60vh', overflowY:'auto', display:'flex', flexDirection:'column' }}>
+      <div className="card" style={{ marginBottom:'1rem', minHeight:'300px', maxHeight:'60vh', overflowY:'auto', display:'flex', flexDirection:'column' }} data-section="consultation-chat">
         <div style={{ flex:1 }}>
           {messages.length === 0 ? (
             <div style={{ textAlign:'center', padding:'2rem', color:'var(--text-secondary)' }}>
@@ -105,7 +105,7 @@ export default function Consultation() {
               <p style={{ fontSize:'.88rem', maxWidth:420, margin:'0 auto 1.5rem', lineHeight:1.7 }}>
                 输入您的法律问题，AI 将基于法律法规和判例数据库为您提供专业解答。
               </p>
-              <div style={{ display:'flex', flexDirection:'column', gap:'.5rem', maxWidth:360, margin:'0 auto' }}>
+              <div style={{ display:'flex', flexDirection:'column', gap:'.5rem', maxWidth:360, margin:'0 auto' }} data-section="consultation-quick">
                 {QUICK_QUESTIONS.map((q, i) => (
                   <button key={i} className="chat-hint" onClick={() => setInput(q)}>{q}</button>
                 ))}
@@ -174,8 +174,8 @@ export default function Consultation() {
       </div>
 
       {/* Input Bar */}
-      <div className="card" style={{ display:'flex', gap:'.75rem', alignItems:'center', padding:'.75rem 1rem' }}>
-        <select className="form-select" style={{ width:'120px' }} value={scope} onChange={e => setScope(e.target.value)}>
+      <div className="card" style={{ display:'flex', gap:'.75rem', alignItems:'center', padding:'.75rem 1rem' }} data-section="consultation-input">
+        <select className="form-select" style={{ width:'120px' }} value={scope} onChange={e => setScope(e.target.value)} data-section="consultation-scope">
           {SCOPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
         <input

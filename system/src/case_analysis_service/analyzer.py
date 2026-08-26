@@ -316,6 +316,7 @@ class CaseAnalyzer:
                 existing = json.loads(self._store_path.read_text(encoding="utf-8"))
             record = {
                 "analysis_id": analysis_id,
+                "case_id": report.get("case_id", ""),
                 "case_type": case_type,
                 "case_type_name": case_type_name,
                 "report": report,
@@ -337,6 +338,19 @@ class CaseAnalyzer:
         except Exception:
             pass
         return None
+
+    def list_analyses(self, case_id: str = "") -> list[dict]:
+        """列出所有历史分析，可按 case_id 过滤"""
+        if not self._store_path.exists():
+            return []
+        try:
+            data = json.loads(self._store_path.read_text(encoding="utf-8"))
+        except Exception:
+            return []
+        if case_id:
+            data = [r for r in data if r.get("case_id") == case_id]
+        data.sort(key=lambda x: x.get("generated_at", ""), reverse=True)
+        return data
 
 
 case_analyzer = CaseAnalyzer()

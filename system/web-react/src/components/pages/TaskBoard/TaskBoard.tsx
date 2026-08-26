@@ -130,7 +130,7 @@ export default function TaskBoard() {
   };
 
   return (
-    <div className="page-section">
+    <div className="page-section" data-section="task-board">
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
         <div>
           <h2 className="page-title">任务看板</h2>
@@ -139,7 +139,7 @@ export default function TaskBoard() {
         <button className="btn btn-accent" onClick={() => setShowCreate(true)}>+ 新建任务</button>
       </div>
 
-      <div className="tabs">
+      <div className="tabs" data-section="task-board-tabs">
         <button className={`tab ${view === 'my_tasks' ? 'active' : ''}`} onClick={() => setView('my_tasks')}>
           📌 我的待办
         </button>
@@ -157,7 +157,7 @@ export default function TaskBoard() {
       ) : (
         tasks.map(task => (
           <div key={task.task_id} className={`task-card priority-${task.priority}`} style={{ cursor:'pointer' }}
-            onClick={() => openDetail(task)}>
+            onClick={() => openDetail(task)} data-section="task-board-list">
             <div className="task-card-header">
               <span className="task-card-title">{task.title}</span>
               <span className={`badge badge-${
@@ -225,7 +225,7 @@ export default function TaskBoard() {
       {/* Task Detail Modal */}
       {detailTask && (
         <div className="modal-overlay" onClick={() => setDetailTask(null)}>
-          <div className="modal-dialog" style={{ maxWidth:600 }} onClick={e => e.stopPropagation()}>
+          <div className="modal-dialog" style={{ maxWidth:600 }} onClick={e => e.stopPropagation()} data-section="task-board-detail">
             <h3 className="modal-title">{detailTask.title}</h3>
             <div style={{ display:'flex', gap:'1rem', marginBottom:'1rem', flexWrap:'wrap' }}>
               <span className={`badge badge-${
@@ -294,7 +294,7 @@ export default function TaskBoard() {
       {/* Create Task Dialog */}
       {showCreate && (
         <div className="modal-overlay" onClick={() => setShowCreate(false)}>
-          <div className="modal-dialog" style={{ maxWidth:550 }} onClick={e => e.stopPropagation()}>
+          <div className="modal-dialog" style={{ maxWidth:550 }} onClick={e => e.stopPropagation()} data-section="task-board-create">
             <h3 className="modal-title">新建任务</h3>
             <div className="form-group">
               <label className="form-label">任务标题 *</label>

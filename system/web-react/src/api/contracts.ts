@@ -2,15 +2,24 @@ import { api } from './client';
 import type { Contract, RiskLevel } from '../types';
 
 interface ReviewResult {
-  contract: Contract;
-  summary: string;
+  contract_id: string;
+  review_summary: string;
+  high_risks: number;
+  medium_risks: number;
+  low_risks: number;
   clauses: { clause_number: string; content: string; risk_level: RiskLevel; risk_analysis: string; law_basis: string; suggestion: string }[];
-  stats: { high: number; medium: number; low: number };
+  suggestions: string;
+  audit_id: string;
 }
 
 interface CompareResult {
-  diffs: { clause: string; type: string; detail: string; favor: string }[];
-  stats: { total: number; identical: number; formal: number; substantive: number };
+  contract_a_title: string;
+  contract_b_title: string;
+  total_clauses: number;
+  identical: number;
+  formal_diff: number;
+  substantive_diff: number;
+  differences: { clause: string; type: string; detail: string; favor: string }[];
 }
 
 interface GenerateRequest {
@@ -27,7 +36,7 @@ interface GenerateResult {
 
 export const contractApi = {
   upload(formData: FormData) {
-    return api.upload<Contract>('/api/contracts/upload', formData);
+    return api.upload<Contract>('/api/contracts/upload/file', formData);
   },
   create(data: { title: string; contract_type: string; party_a: string; party_b: string; content: string; assigned_to?: string }) {
     return api.post<Contract>('/api/contracts/upload', data);

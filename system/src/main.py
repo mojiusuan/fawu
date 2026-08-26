@@ -150,12 +150,51 @@ async def export_audit_report(
     current_user: dict = Depends(require_role("admin", "auditor")),
 ):
     """导出审计报告（仅管理员和审计员）"""
+    from fastapi.responses import StreamingResponse
+    from urllib.parse import quote
+    import io
     from src.audit_service.reporter import audit_reporter
     try:
         path = audit_reporter.export(format)
-        return {"status": "ok", "path": str(path), "format": format}
+        content = path.read_text(encoding="utf-8")
+        buf = io.BytesIO(content.encode("utf-8"))
+        media_map = {"json": "application/json", "csv": "text/csv", "md": "text/markdown"}
+        ext = format if format in ("json", "csv") else "md"
+        safe_name = quote(f"audit_report.{ext}")
+        return StreamingResponse(
+            buf,
+            media_type=media_map.get(format, "text/markdown"),
+            headers={"Content-Disposition": f"attachment; filename*=UTF-8''{safe_name}"},
+        )
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+
+@app.post("/api/kg/reconnect")
+async def reconnect_kg(current_user: dict = Depends(require_role("admin", "legal"))):
+    """强制重置 KG 连接状态（调试用）"""
+    from src.knowledge_graph.query import kg_query
+    from src.knowledge_graph.builder import graph_builder
+    kg_query._available = None
+    kg_query.driver = None
+    graph_builder._available = None
+    graph_builder.driver = None
+    try:
+        kg_query.connect()
+        q_ok = True
+        q_err = ""
+    except Exception as e:
+        q_ok = False
+        q_err = str(e)
+    try:
+        graph_builder.connect()
+        b_ok = True
+        b_err = ""
+    except Exception as e:
+        b_ok = False
+        b_err = str(e)
+    return {"kg_query_ok": q_ok, "kg_query_error": q_err,
+            "graph_builder_ok": b_ok, "graph_builder_error": b_err}
 
 
 @app.get("/api/kg/search")
@@ -184,6 +223,41 @@ async def get_kg_stats(current_user: dict = Depends(require_role("admin", "legal
         return {"stats": stats, "available": True}
     except Exception:
         return {"stats": {"nodes": {}, "relationships": 0, "total_nodes": 0}, "available": False}
+
+
+@app.get("/api/kg/entity/{entity_type}/{entity_id}")
+async def get_kg_entity(entity_type: str, entity_id: str,
+                        current_user: dict = Depends(require_role("admin", "legal"))):
+    """查询单个实体及其所有关系"""
+    from src.knowledge_graph.query import kg_query
+    try:
+        entity = kg_query.query_entity(entity_type, entity_id)
+        relations = kg_query.query_relations(entity_type, entity_id)
+        return {
+            "entity": entity.model_dump() if entity else None,
+            "relations": [r.model_dump() for r in relations],
+            "available": True,
+        }
+    except Exception as e:
+        logger.warning(f"KG 实体查询失败: {e}")
+        return {"entity": None, "relations": [], "available": False}
+
+
+@app.get("/api/kg/subgraph/{entity_type}/{entity_id}")
+async def get_kg_subgraph(entity_type: str, entity_id: str, depth: int = 2,
+                          current_user: dict = Depends(require_role("admin", "legal"))):
+    """获取实体的子图（N 跳邻居）"""
+    from src.knowledge_graph.query import kg_query
+    try:
+        subgraph = kg_query.get_subgraph(entity_type, entity_id, min(depth, 4))
+        return {
+            "entities": [e.model_dump() for e in subgraph.entities],
+            "relationships": [r.model_dump() for r in subgraph.relationships],
+            "available": True,
+        }
+    except Exception as e:
+        logger.warning(f"KG 子图查询失败: {e}")
+        return {"entities": [], "relationships": [], "available": False}
 
 
 # ---- 首页 ----

@@ -27,7 +27,7 @@ class ContractType(str, Enum):
 
 class ContractUploadRequest(BaseModel):
     title: str = Field(..., description="合同名称")
-    contract_type: ContractType = Field(default=ContractType.OTHER, description="合同类型")
+    contract_type: str = Field(default="其他", description="合同类型")
     content: str = Field(..., description="合同文本内容")
     party_a: str = Field(default="", description="甲方")
     party_b: str = Field(default="", description="乙方")

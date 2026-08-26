@@ -30,6 +30,7 @@ class CaseProfileInfo(BaseModel):
 
 
 class AnalysisRequest(BaseModel):
+    case_id: str = Field(default="", description="关联的案件档案ID")
     case_type: str = Field(..., description="案由")
     structured_facts: dict = Field(default_factory=dict, description="结构化案情要素")
 

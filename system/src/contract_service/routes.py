@@ -23,16 +23,38 @@ router = APIRouter(prefix="/api/contracts", tags=["合同管理"])
 
 @router.post("/upload", response_model=ContractInfo)
 async def upload_contract(req: ContractUploadRequest, current_user: dict = Depends(require_role("admin","legal","business"))):
-    """上传/创建合同"""
+    """上传/创建合同（JSON）"""
+    ct = req.contract_type.value if hasattr(req.contract_type, "value") else req.contract_type
     contract = contract_service.create_contract(
         title=req.title,
-        contract_type=req.contract_type.value if hasattr(req.contract_type, "value") else req.contract_type,
+        contract_type=ct,
         content=req.content,
         party_a=req.party_a,
         party_b=req.party_b,
     )
-    # 解析条款
     clauses = contract_service.parse_clauses(req.content)
+    contract.clauses = clauses
+    return contract
+
+
+@router.post("/upload/file", response_model=ContractInfo)
+async def upload_contract_file(file: UploadFile = File(...), title: str = "", contract_type: str = "其他",
+                                party_a: str = "", party_b: str = "",
+                                current_user: dict = Depends(require_role("admin","legal","business"))):
+    """上传合同文件（multipart/form-data）"""
+    content_bytes = await file.read()
+    try:
+        content = content_bytes.decode("utf-8")
+    except UnicodeDecodeError:
+        content = content_bytes.decode("gbk", errors="replace")
+    contract = contract_service.create_contract(
+        title=title or (file.filename or "未命名合同"),
+        contract_type=contract_type,
+        content=content,
+        party_a=party_a,
+        party_b=party_b,
+    )
+    clauses = contract_service.parse_clauses(content)
     contract.clauses = clauses
     return contract
 

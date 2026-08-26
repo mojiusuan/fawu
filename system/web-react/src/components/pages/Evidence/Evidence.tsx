@@ -28,13 +28,13 @@ export default function Evidence() {
   }
 
   return (
-    <div className="page-section">
+    <div className="page-section" data-section="evidence">
       <h2 className="page-title">证据指引</h2>
       <p className="page-desc">各类案件的证据清单和保全提示</p>
 
       {loading ? <Loading /> : (
         <div>
-          <div className="tabs">
+          <div className="tabs" data-section="evidence-tabs">
             {caseTypes.map((ct: any) => (
               <button key={ct.type_key} className={`tab ${selected === ct.type_key ? 'active' : ''}`}
                 onClick={() => loadGuide(ct.type_key)}>

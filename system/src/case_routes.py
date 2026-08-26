@@ -70,9 +70,18 @@ async def analyze_case(req: AnalysisRequest, current_user: dict = Depends(get_cu
     report = await case_analyzer.analyze(
         case_type=req.case_type,
         structured_facts=req.structured_facts,
+        case_id=req.case_id or "",
         user_id=current_user.get("user_id", "anonymous"),
     )
+    # 关联到案件档案
+    if req.case_id:
+        case_service.link_analysis(req.case_id, report.get("analysis_id", ""))
     return report
+
+
+@router.get("/analyses")
+async def list_analyses(case_id: str = "", current_user: dict = Depends(get_current_user)):
+    return case_analyzer.list_analyses(case_id=case_id)
 
 
 @router.get("/analyses/{analysis_id}")

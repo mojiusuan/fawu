@@ -135,5 +135,710 @@
       "is_expired": false
     },
     "disclaimer": "本分析由AI生成，不构成正式法律意见。"
+  },
+  {
+    "analysis_id": "5c5dfb70",
+    "case_type": "labor",
+    "case_type_name": "劳动争议",
+    "report": {
+      "analysis_id": "5c5dfb70",
+      "case_id": "",
+      "summary": "用户未提供具体的案情要素，无法进行案情摘要。请补充案件事实，例如：劳动者与用人单位之间的争议类型（如工资、加班费、解除劳动合同等）、关键时间节点、双方主张等。",
+      "legal_basis": [],
+      "similar_cases": [],
+      "risk_assessment": {
+        "level": "无法评估",
+        "factors": [
+          "因未提供案情要素，无法分析有利或不利因素。",
+          "请补充具体事实，例如：是否签订劳动合同、是否缴纳社保、解除原因等。"
+        ],
+        "suggestions": [
+          "请提供详细的案情要素，包括但不限于：争议焦点、当事人身份、关键证据、时间线等。",
+          "建议咨询专业律师，结合具体事实进行法律分析。"
+        ]
+      },
+      "evidence_checklist": [
+        {
+          "name": "身份证",
+          "description": "申请人及被申请人身份证明",
+          "collected": false,
+          "required": true,
+          "tip": "被申请人为企业的，可在国家企业信用信息公示系统查询企业信息"
+        },
+        {
+          "name": "劳动合同",
+          "description": "书面劳动合同或能够证明劳动关系的材料",
+          "collected": false,
+          "required": true,
+          "tip": "如无书面合同，可用工资记录、工作证、考勤记录等替代"
+        },
+        {
+          "name": "工资记录",
+          "description": "近12个月工资银行流水或工资条",
+          "collected": false,
+          "required": true,
+          "tip": "银行APP可导出，非常重要，请务必准备"
+        },
+        {
+          "name": "解除/终止劳动关系证明",
+          "description": "解除劳动合同通知书、辞职信、辞退通知等",
+          "collected": false,
+          "required": true,
+          "tip": "注意通知上的日期和签章"
+        },
+        {
+          "name": "考勤记录",
+          "description": "能够证明劳动时间、加班情况的记录",
+          "collected": false,
+          "required": true,
+          "tip": "可包括钉钉打卡、企业微信等记录"
+        },
+        {
+          "name": "社保缴纳记录",
+          "description": "社保缴费明细",
+          "collected": false,
+          "required": true,
+          "tip": "可通过各地人社APP查询"
+        },
+        {
+          "name": "工作证/工牌",
+          "description": "工作证件或身份证明",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "聊天记录",
+          "description": "与上级/HR关于争议事项的微信/邮件沟通记录",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "录音录像",
+          "description": "与争议相关的录音或录像",
+          "collected": false,
+          "required": false,
+          "tip": "注意录音证据需具备合法性，不能以窃听等方式获取"
+        },
+        {
+          "name": "证人证言",
+          "description": "同事或其他知情人证言",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "公司规章制度",
+          "description": "员工手册、公司规章制度等",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        }
+      ],
+      "limitation_check": {
+        "limitation_type": "labor_arbitration",
+        "limitation_name": "劳动争议仲裁时效",
+        "period_text": "1年",
+        "period_days": 365,
+        "event_date": "2026-06-20",
+        "deadline_date": "2027-06-20",
+        "days_remaining": 364,
+        "is_expired": false,
+        "status_text": "剩余 364 天",
+        "legal_basis": "《劳动争议调解仲裁法》第二十七条",
+        "special_rules": [
+          "劳动关系存续期间因拖欠劳动报酬发生争议的，劳动者申请仲裁不受一年时效限制",
+          "劳动关系终止的，应当自劳动关系终止之日起一年内提出"
+        ],
+        "interruption_reasons": [
+          "权利人向义务人提出履行请求",
+          "义务人同意履行义务",
+          "权利人提起诉讼或者申请仲裁",
+          "与提起诉讼或申请仲裁具有同等效力的其他情形"
+        ],
+        "suspension_reasons": [
+          "不可抗力",
+          "无民事行为能力人或限制民事行为能力人无法定代理人",
+          "继承开始后未确定继承人或遗产管理人",
+          "权利人被义务人或其他人控制",
+          "其他导致权利人不能行使请求权的障碍"
+        ]
+      },
+      "fee_estimate": {
+        "case_type": "劳动争议",
+        "fee_type": "按件收费",
+        "court_fee": 10,
+        "preservation_fee": 0,
+        "total": 10,
+        "note": "劳动争议案件每件10元"
+      },
+      "disclaimer": "本分析报告由 AI 生成，仅供参考，不构成法律意见。具体案件请咨询执业律师。"
+    },
+    "generated_at": "2026-06-20T17:50:04.046207"
+  },
+  {
+    "analysis_id": "7fed4c06",
+    "case_type": "marriage",
+    "case_type_name": "婚姻家事",
+    "report": {
+      "analysis_id": "7fed4c06",
+      "case_id": "",
+      "summary": "用户未提供具体的案情要素，无法进行案情分析。请补充案件事实，如当事人关系、争议焦点、财产状况、子女情况等。",
+      "legal_basis": [],
+      "similar_cases": [],
+      "risk_assessment": {
+        "level": "中",
+        "factors": [
+          "不利因素：缺乏具体案情事实，无法进行针对性分析",
+          "有利因素：无"
+        ],
+        "suggestions": [
+          "请提供详细的案情要素，包括但不限于：当事人身份、婚姻状况、争议财产清单、子女抚养情况、是否存在过错行为等",
+          "建议咨询专业律师获取正式法律意见"
+        ]
+      },
+      "evidence_checklist": [
+        {
+          "name": "身份证",
+          "description": "双方身份证",
+          "collected": false,
+          "required": true,
+          "tip": ""
+        },
+        {
+          "name": "结婚证",
+          "description": "结婚证",
+          "collected": false,
+          "required": true,
+          "tip": ""
+        },
+        {
+          "name": "户口本",
+          "description": "双方及子女户口本",
+          "collected": false,
+          "required": true,
+          "tip": ""
+        },
+        {
+          "name": "子女出生证明",
+          "description": "子女出生医学证明（如有）",
+          "collected": false,
+          "required": true,
+          "tip": ""
+        },
+        {
+          "name": "财产证明",
+          "description": "房产证、车辆登记证、银行存款证明、股票账户等",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "收入证明",
+          "description": "双方收入证明、银行流水",
+          "collected": false,
+          "required": false,
+          "tip": "影响抚养费计算"
+        },
+        {
+          "name": "债务证明",
+          "description": "夫妻共同债务的相关凭证",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "家暴证据",
+          "description": "报警记录、伤情照片、医院诊断、告诫书等（如涉及）",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "分居证明",
+          "description": "能够证明分居事实的证据（如涉及）",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "感情破裂证据",
+          "description": "能够证明夫妻感情确已破裂的证据",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        }
+      ],
+      "limitation_check": {
+        "limitation_type": "general",
+        "limitation_name": "一般诉讼时效",
+        "period_text": "3年",
+        "period_days": 1095,
+        "event_date": "2026-06-28",
+        "deadline_date": "2029-06-27",
+        "days_remaining": 1094,
+        "is_expired": false,
+        "status_text": "剩余 1094 天",
+        "legal_basis": "《民法典》第一百八十八条",
+        "special_rules": [],
+        "interruption_reasons": [
+          "权利人向义务人提出履行请求",
+          "义务人同意履行义务",
+          "权利人提起诉讼或者申请仲裁",
+          "与提起诉讼或申请仲裁具有同等效力的其他情形"
+        ],
+        "suspension_reasons": [
+          "不可抗力",
+          "无民事行为能力人或限制民事行为能力人无法定代理人",
+          "继承开始后未确定继承人或遗产管理人",
+          "权利人被义务人或其他人控制",
+          "其他导致权利人不能行使请求权的障碍"
+        ]
+      },
+      "fee_estimate": {},
+      "disclaimer": "本分析报告由 AI 生成，仅供参考，不构成法律意见。具体案件请咨询执业律师。"
+    },
+    "generated_at": "2026-06-28T21:22:42.028179"
+  },
+  {
+    "analysis_id": "dc295473",
+    "case_type": "marriage",
+    "case_type_name": "婚姻家事",
+    "report": {
+      "analysis_id": "dc295473",
+      "case_id": "",
+      "summary": "本案为婚姻家事纠纷，涉及财产分割与子女抚养权。当事人于2026年1月28日结婚，育有一子（10岁）一女（3岁）。共同财产包括价值500万元的房产、20万元车辆及70万元存款。争议焦点为财产如何分割及子女抚养权归属。",
+      "legal_basis": [
+        {
+          "law": "中华人民共和国民法典",
+          "article": "第一千零八十七条",
+          "content": "离婚时，夫妻的共同财产由双方协议处理；协议不成的，由人民法院根据财产的具体情况，按照照顾子女、女方和无过错方权益的原则判决。",
+          "relevance": "本案财产分割需遵循照顾子女和女方权益原则，法院可酌情对抚养子女一方或多分财产。"
+        },
+        {
+          "law": "中华人民共和国民法典",
+          "article": "第一千零八十四条",
+          "content": "父母与子女间的关系，不因父母离婚而消除。离婚后，子女无论由父或者母直接抚养，仍是父母双方的子女。离婚后，父母对于子女仍有抚养、教育、保护的权利和义务。离婚后，不满两周岁的子女，以由母亲直接抚养为原则。已满两周岁的子女，父母双方对抚养问题协议不成的，由人民法院根据双方的具体情况，按照最有利于未成年子女的原则判决。子女已满八周岁的，应当尊重其真实意愿。",
+          "relevance": "本案中，儿子已满8周岁，需尊重其意愿；女儿3岁，法院将根据最有利于子女原则判决抚养权归属。"
+        },
+        {
+          "law": "中华人民共和国民法典",
+          "article": "第一千零八十五条",
+          "content": "离婚后，子女由一方直接抚养的，另一方应当负担部分或者全部抚养费。负担费用的多少和期限的长短，由双方协议；协议不成的，由人民法院判决。前款规定的协议或者判决，不妨碍子女在必要时向父母任何一方提出超过协议或者判决原定数额的合理要求。",
+          "relevance": "未直接抚养子女的一方需支付抚养费，具体金额需结合双方收入及子女实际需求确定。"
+        }
+      ],
+      "similar_cases": [],
+      "risk_assessment": {
+        "level": "中",
+        "factors": [
+          "有利因素：1. 双方有明确共同财产（房产、车辆、存款），分割基础清晰；2. 子女年龄差异明显，法院可能根据年龄特点分别判决抚养权，减少争议；3. 法律明确照顾子女和女方权益，若女方直接抚养子女，可能获得更多财产份额。",
+          "不利因素：1. 财产分割需考虑实际出资、贷款情况等细节（如房产是否有贷款），若信息不全可能影响分割方案；2. 子女抚养权争夺可能激烈，尤其是儿子已满8周岁，其意愿可能影响判决；3. 若一方存在过错（如家暴、出轨），可能影响财产分割比例，但案情未提及，需进一步核实。"
+        ],
+        "suggestions": [
+          "1. 建议双方先就财产分割和抚养权进行协商，达成书面协议以减少诉讼成本；",
+          "2. 收集并整理财产证明（如房产证、车辆登记证、银行流水）、子女抚养情况证明（如日常照顾记录、学校联系信息）；",
+          "3. 若儿子已满8周岁，建议与其沟通了解其真实意愿，并在诉讼中提交相关证据；",
+          "4. 咨询专业律师，评估是否存在过错方或特殊财产（如婚前财产、赠与），以优化分割方案；",
+          "5. 注意诉讼时效，及时启动法律程序，避免财产转移风险。"
+        ]
+      },
+      "evidence_checklist": [
+        {
+          "name": "身份证",
+          "description": "双方身份证",
+          "collected": false,
+          "required": true,
+          "tip": ""
+        },
+        {
+          "name": "结婚证",
+          "description": "结婚证",
+          "collected": false,
+          "required": true,
+          "tip": ""
+        },
+        {
+          "name": "户口本",
+          "description": "双方及子女户口本",
+          "collected": false,
+          "required": true,
+          "tip": ""
+        },
+        {
+          "name": "子女出生证明",
+          "description": "子女出生医学证明（如有）",
+          "collected": false,
+          "required": true,
+          "tip": ""
+        },
+        {
+          "name": "财产证明",
+          "description": "房产证、车辆登记证、银行存款证明、股票账户等",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "收入证明",
+          "description": "双方收入证明、银行流水",
+          "collected": false,
+          "required": false,
+          "tip": "影响抚养费计算"
+        },
+        {
+          "name": "债务证明",
+          "description": "夫妻共同债务的相关凭证",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "家暴证据",
+          "description": "报警记录、伤情照片、医院诊断、告诫书等（如涉及）",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "分居证明",
+          "description": "能够证明分居事实的证据（如涉及）",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "感情破裂证据",
+          "description": "能够证明夫妻感情确已破裂的证据",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        }
+      ],
+      "limitation_check": {
+        "limitation_type": "general",
+        "limitation_name": "一般诉讼时效",
+        "period_text": "3年",
+        "period_days": 1095,
+        "event_date": "2026-06-28",
+        "deadline_date": "2029-06-27",
+        "days_remaining": 1094,
+        "is_expired": false,
+        "status_text": "剩余 1094 天",
+        "legal_basis": "《民法典》第一百八十八条",
+        "special_rules": [],
+        "interruption_reasons": [
+          "权利人向义务人提出履行请求",
+          "义务人同意履行义务",
+          "权利人提起诉讼或者申请仲裁",
+          "与提起诉讼或申请仲裁具有同等效力的其他情形"
+        ],
+        "suspension_reasons": [
+          "不可抗力",
+          "无民事行为能力人或限制民事行为能力人无法定代理人",
+          "继承开始后未确定继承人或遗产管理人",
+          "权利人被义务人或其他人控制",
+          "其他导致权利人不能行使请求权的障碍"
+        ]
+      },
+      "fee_estimate": {},
+      "disclaimer": "本分析报告由 AI 生成，仅供参考，不构成法律意见。具体案件请咨询执业律师。"
+    },
+    "generated_at": "2026-06-28T21:30:15.333915"
+  },
+  {
+    "analysis_id": "46d4d2fa",
+    "case_type": "marriage",
+    "case_type_name": "婚姻家事",
+    "report": {
+      "analysis_id": "46d4d2fa",
+      "case_id": "",
+      "summary": "本案为婚姻家事纠纷，涉及夫妻于2026年6月1日结婚，育有一子（10岁）一女（8岁）。夫妻共同财产包括价值500万的房产、20万车辆及70万现金。争议焦点为财产分割，男方存在出轨行为且有证据。需依据《民法典》相关条款分析财产分割及过错责任。",
+      "legal_basis": [
+        {
+          "law": "中华人民共和国民法典",
+          "article": "第一千零八十七条",
+          "content": "离婚时，夫妻的共同财产由双方协议处理；协议不成的，由人民法院根据财产的具体情况，按照照顾子女、女方和无过错方权益的原则判决。",
+          "relevance": "本案中，男方出轨属于过错行为，法院在分割共同财产（房产、车辆、现金）时应考虑照顾女方及子女权益，可能对女方有利。"
+        },
+        {
+          "law": "中华人民共和国民法典",
+          "article": "第一千零九十一条",
+          "content": "有下列情形之一，导致离婚的，无过错方有权请求损害赔偿：（一）重婚；（二）与他人同居；（三）实施家庭暴力；（四）虐待、遗弃家庭成员；（五）有其他重大过错。",
+          "relevance": "男方出轨行为若构成“与他人同居”或“其他重大过错”，女方作为无过错方可主张损害赔偿，影响财产分割结果。"
+        },
+        {
+          "law": "中华人民共和国民法典",
+          "article": "第一千零八十五条",
+          "content": "离婚后，子女由一方直接抚养的，另一方应当负担部分或者全部抚养费。负担费用的多少和期限的长短，由双方协议；协议不成的，由人民法院判决。",
+          "relevance": "本案涉及两名未成年子女（10岁、8岁），抚养权归属将影响抚养费计算及财产分割中的照顾子女因素。"
+        }
+      ],
+      "similar_cases": [],
+      "risk_assessment": {
+        "level": "中",
+        "factors": [
+          "有利因素：女方持有男方出轨证据，可主张男方为过错方，依据《民法典》第1087条争取多分财产，并依据第1091条请求损害赔偿。",
+          "有利因素：两名子女均未成年，法院在分割财产时通常优先考虑子女利益，可能对女方抚养方倾斜。",
+          "不利因素：出轨证据需证明达到“与他人同居”程度（持续稳定共同生活），若仅为一般暧昧或短暂行为，可能不构成法定过错。",
+          "不利因素：财产分割需明确房产、车辆、现金是否为夫妻共同财产，若存在婚前财产或赠与、继承等情形，需进一步核实。"
+        ],
+        "suggestions": [
+          "建议收集并固定出轨证据（如聊天记录、照片、视频、证人证言等），确保能证明“与他人同居”或重大过错。",
+          "建议评估子女抚养权归属，若女方争取抚养权，可结合照顾子女原则要求多分财产。",
+          "建议核实财产来源，特别是房产是否涉及婚前购买或父母出资，必要时申请财产调查。",
+          "建议咨询专业律师，评估损害赔偿金额及诉讼策略，避免因证据不足影响主张。"
+        ]
+      },
+      "evidence_checklist": [
+        {
+          "name": "身份证",
+          "description": "双方身份证",
+          "collected": false,
+          "required": true,
+          "tip": ""
+        },
+        {
+          "name": "结婚证",
+          "description": "结婚证",
+          "collected": false,
+          "required": true,
+          "tip": ""
+        },
+        {
+          "name": "户口本",
+          "description": "双方及子女户口本",
+          "collected": false,
+          "required": true,
+          "tip": ""
+        },
+        {
+          "name": "子女出生证明",
+          "description": "子女出生医学证明（如有）",
+          "collected": false,
+          "required": true,
+          "tip": ""
+        },
+        {
+          "name": "财产证明",
+          "description": "房产证、车辆登记证、银行存款证明、股票账户等",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "收入证明",
+          "description": "双方收入证明、银行流水",
+          "collected": false,
+          "required": false,
+          "tip": "影响抚养费计算"
+        },
+        {
+          "name": "债务证明",
+          "description": "夫妻共同债务的相关凭证",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "家暴证据",
+          "description": "报警记录、伤情照片、医院诊断、告诫书等（如涉及）",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "分居证明",
+          "description": "能够证明分居事实的证据（如涉及）",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "感情破裂证据",
+          "description": "能够证明夫妻感情确已破裂的证据",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        }
+      ],
+      "limitation_check": {
+        "limitation_type": "general",
+        "limitation_name": "一般诉讼时效",
+        "period_text": "3年",
+        "period_days": 1095,
+        "event_date": "2026-06-28",
+        "deadline_date": "2029-06-27",
+        "days_remaining": 1094,
+        "is_expired": false,
+        "status_text": "剩余 1094 天",
+        "legal_basis": "《民法典》第一百八十八条",
+        "special_rules": [],
+        "interruption_reasons": [
+          "权利人向义务人提出履行请求",
+          "义务人同意履行义务",
+          "权利人提起诉讼或者申请仲裁",
+          "与提起诉讼或申请仲裁具有同等效力的其他情形"
+        ],
+        "suspension_reasons": [
+          "不可抗力",
+          "无民事行为能力人或限制民事行为能力人无法定代理人",
+          "继承开始后未确定继承人或遗产管理人",
+          "权利人被义务人或其他人控制",
+          "其他导致权利人不能行使请求权的障碍"
+        ]
+      },
+      "fee_estimate": {},
+      "disclaimer": "本分析报告由 AI 生成，仅供参考，不构成法律意见。具体案件请咨询执业律师。"
+    },
+    "generated_at": "2026-06-28T21:32:39.730086"
+  },
+  {
+    "analysis_id": "43231a90",
+    "case_id": "c006",
+    "case_type": "marriage",
+    "case_type_name": "婚姻家事",
+    "report": {
+      "analysis_id": "43231a90",
+      "case_id": "c006",
+      "summary": "本案为婚姻家事纠纷，涉及子女抚养权和抚养费问题。女方因男方出轨，要求获得5岁女儿的抚养权，并要求男方每月支付5000元抚养费。双方有500万房产和20万车产，但争议焦点不在财产分割。",
+      "legal_basis": [
+        {
+          "law": "《中华人民共和国民法典》",
+          "article": "第一千零八十四条",
+          "content": "离婚后，不满两周岁的子女，以由母亲直接抚养为原则。已满两周岁的子女，父母双方对抚养问题协议不成的，由人民法院根据双方的具体情况，按照最有利于未成年子女的原则判决。子女已满八周岁的，应当尊重其真实意愿。",
+          "relevance": "本案中女儿5岁，未满8周岁，法院将根据最有利于子女原则判决抚养权，女方需证明自身条件更优，男方出轨可能影响其作为抚养方的适宜性。"
+        },
+        {
+          "law": "《中华人民共和国民法典》",
+          "article": "第一千零八十五条",
+          "content": "离婚后，子女由一方直接抚养的，另一方应当负担部分或者全部抚养费。负担费用的多少和期限的长短，由双方协议；协议不成的，由人民法院判决。前款规定的协议或者判决，不妨碍子女在必要时向父母任何一方提出超过协议或者判决原定数额的合理要求。",
+          "relevance": "女方主张每月5000元抚养费，法院将根据子女实际需要、父母负担能力和当地生活水平综合确定，男方出轨不影响其支付义务，但需核实其收入水平。"
+        },
+        {
+          "law": "《中华人民共和国民法典》",
+          "article": "第一千零九十一条",
+          "content": "有下列情形之一，导致离婚的，无过错方有权请求损害赔偿：（一）重婚；（二）与他人同居；（三）实施家庭暴力；（四）虐待、遗弃家庭成员；（五）有其他重大过错。",
+          "relevance": "男方出轨可能构成“与他人同居”或“其他重大过错”，女方作为无过错方，可主张离婚损害赔偿，但需提供证据证明出轨事实。"
+        }
+      ],
+      "similar_cases": [],
+      "risk_assessment": {
+        "level": "中",
+        "factors": [
+          "有利因素：男方出轨是过错行为，法院可能倾向于将抚养权判给无过错方女方，以利于子女成长；女方主张抚养费有法律依据，男方有财产（500万房产、20万车产）表明其有支付能力。",
+          "不利因素：女方主张每月5000元抚养费，需提供男方收入证明或当地生活水平标准，若男方收入较低或无法证明，法院可能调低金额；女方需提供充分证据证明男方出轨（如聊天记录、照片、证人证言等），否则法院可能不认定过错；女儿5岁，法院会综合考量双方抚养条件（如经济能力、居住环境、教育背景等），若女方条件不占优，抚养权可能存争议。"
+        ],
+        "suggestions": [
+          "建议女方收集并固定男方出轨的证据，如微信聊天记录、转账记录、照片、视频或证人证言，以支持过错主张和抚养权请求。",
+          "建议女方提供自身收入证明、工作稳定性证明及抚养计划（如女儿教育、医疗安排），以证明其抚养能力。",
+          "建议女方收集男方收入证明（如工资单、银行流水、纳税记录），以支持每月5000元抚养费的合理性；若男方收入不明确，可申请法院调查。",
+          "建议双方就财产分割（500万房产、20万车产）另行协商或诉讼，本案争议焦点为抚养费，但财产分割可能影响男方支付能力。",
+          "建议咨询当地律师，了解法院对抚养费金额的裁量标准（如当地人均消费支出），以调整预期。"
+        ]
+      },
+      "evidence_checklist": [
+        {
+          "name": "身份证",
+          "description": "双方身份证",
+          "collected": false,
+          "required": true,
+          "tip": ""
+        },
+        {
+          "name": "结婚证",
+          "description": "结婚证",
+          "collected": false,
+          "required": true,
+          "tip": ""
+        },
+        {
+          "name": "户口本",
+          "description": "双方及子女户口本",
+          "collected": false,
+          "required": true,
+          "tip": ""
+        },
+        {
+          "name": "子女出生证明",
+          "description": "子女出生医学证明（如有）",
+          "collected": false,
+          "required": true,
+          "tip": ""
+        },
+        {
+          "name": "财产证明",
+          "description": "房产证、车辆登记证、银行存款证明、股票账户等",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "收入证明",
+          "description": "双方收入证明、银行流水",
+          "collected": false,
+          "required": false,
+          "tip": "影响抚养费计算"
+        },
+        {
+          "name": "债务证明",
+          "description": "夫妻共同债务的相关凭证",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "家暴证据",
+          "description": "报警记录、伤情照片、医院诊断、告诫书等（如涉及）",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "分居证明",
+          "description": "能够证明分居事实的证据（如涉及）",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        },
+        {
+          "name": "感情破裂证据",
+          "description": "能够证明夫妻感情确已破裂的证据",
+          "collected": false,
+          "required": false,
+          "tip": ""
+        }
+      ],
+      "limitation_check": {
+        "limitation_type": "general",
+        "limitation_name": "一般诉讼时效",
+        "period_text": "3年",
+        "period_days": 1095,
+        "event_date": "2026-06-28",
+        "deadline_date": "2029-06-27",
+        "days_remaining": 1094,
+        "is_expired": false,
+        "status_text": "剩余 1094 天",
+        "legal_basis": "《民法典》第一百八十八条",
+        "special_rules": [],
+        "interruption_reasons": [
+          "权利人向义务人提出履行请求",
+          "义务人同意履行义务",
+          "权利人提起诉讼或者申请仲裁",
+          "与提起诉讼或申请仲裁具有同等效力的其他情形"
+        ],
+        "suspension_reasons": [
+          "不可抗力",
+          "无民事行为能力人或限制民事行为能力人无法定代理人",
+          "继承开始后未确定继承人或遗产管理人",
+          "权利人被义务人或其他人控制",
+          "其他导致权利人不能行使请求权的障碍"
+        ]
+      },
+      "fee_estimate": {},
+      "disclaimer": "本分析报告由 AI 生成，仅供参考，不构成法律意见。具体案件请咨询执业律师。"
+    },
+    "generated_at": "2026-06-28T21:45:36.190228"
   }
 ]

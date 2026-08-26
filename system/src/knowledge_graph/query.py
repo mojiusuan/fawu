@@ -15,8 +15,9 @@ class KGQuery:
         self._available = None
 
     def _ensure_connected(self) -> bool:
-        if self._available is not None:
-            return self._available
+        # 已连上则缓存，失败则每次重试（Neo4j 可能后启动）
+        if self._available:
+            return True
         try:
             self.connect()
             self._available = True

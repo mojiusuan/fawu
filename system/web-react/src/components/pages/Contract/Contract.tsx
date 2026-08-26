@@ -37,11 +37,11 @@ export default function Contract() {
   ];
 
   return (
-    <div className="page-section">
+    <div className="page-section" data-section="contract">
       <h2 className="page-title">合同管理</h2>
       <p className="page-desc">上传、审查、比对和生成法律合同</p>
 
-      <div className="tabs">
+      <div className="tabs" data-section="contract-tabs">
         {tabs.map(t => (
           <button key={t.key} className={`tab ${tab === t.key ? 'active' : ''}`} onClick={() => setTab(t.key)}>
             {t.label}
@@ -49,10 +49,12 @@ export default function Contract() {
         ))}
       </div>
 
+      <div data-section={`contract-tab-${tab}`}>
       {tab === 'upload' && <UploadTab onUploaded={loadContracts} />}
       {tab === 'review' && <ReviewTab contracts={contracts} loading={loadingContracts} onReload={loadContracts} />}
       {tab === 'compare' && <CompareTab contracts={contracts} loading={loadingContracts} />}
       {tab === 'generate' && <GenerateTab />}
+      </div>
     </div>
   );
 }
@@ -116,7 +118,7 @@ function UploadTab({ onUploaded }: { onUploaded: () => void }) {
   }
 
   return (
-    <form onSubmit={handleUpload}>
+    <form onSubmit={handleUpload} data-section="contract-tab-upload">
       <div
         className={`file-drop-zone ${dragOver ? 'dragover' : ''}`}
         onDragOver={e => { e.preventDefault(); setDragOver(true); }}
@@ -193,7 +195,7 @@ function ReviewTab({ contracts, loading, onReload }: { contracts: Contract[]; lo
       const high = (res.clauses || []).filter(c => c.risk_level === 'high').length;
       const medium = (res.clauses || []).filter(c => c.risk_level === 'medium').length;
       const low = (res.clauses || []).filter(c => c.risk_level === 'low').length;
-      setResult({ clauses: res.clauses || [], summary: res.summary || '', stats: { high, medium, low } });
+      setResult({ clauses: res.clauses || [], summary: res.review_summary || '', stats: { high, medium, low } });
       showToast('审查完成', 'success');
       onReload();
     } catch (e: any) {
@@ -210,7 +212,7 @@ function ReviewTab({ contracts, loading, onReload }: { contracts: Contract[]; lo
   }
 
   return (
-    <div>
+    <div data-section="contract-tab-review">
       <div className="form-row">
         <div className="form-group">
           <label className="form-label">
@@ -235,8 +237,24 @@ function ReviewTab({ contracts, loading, onReload }: { contracts: Contract[]; lo
       {progress && <div className="progress-card"><span className="spinner" /> {progress}</div>}
 
       {result && (
-        <div>
-          <div className="stats-grid" style={{ marginTop:'1rem' }}>
+        <div data-section="contract-review-result">
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:'1rem', marginBottom:'.5rem' }}>
+            <h3 style={{ margin:0 }}>审查结果</h3>
+            <button className="btn btn-outline btn-sm" onClick={() => {
+              const token = localStorage.getItem('auth_token');
+              const headers: Record<string, string> = {};
+              if (token) headers['Authorization'] = `Bearer ${JSON.parse(token)}`;
+              fetch(`${window.location.origin}/api/export/contract-review/${selectedId}`, { headers })
+                .then(r => r.blob()).then(blob => {
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url; a.download = `审查报告.docx`;
+                  document.body.appendChild(a); a.click(); a.remove();
+                  URL.revokeObjectURL(url);
+                }).catch(() => showToast('导出失败', 'error'));
+            }}>📥 导出 Word</button>
+          </div>
+          <div className="stats-grid">
             <div className="stat-card"><div className="icon">🔴</div><div className="value">{result.stats.high}</div><div className="label">高风险</div></div>
             <div className="stat-card"><div className="icon">🟡</div><div className="value">{result.stats.medium}</div><div className="label">中风险</div></div>
             <div className="stat-card"><div className="icon">🟢</div><div className="value">{result.stats.low}</div><div className="label">低风险</div></div>
@@ -288,14 +306,27 @@ function CompareTab({ contracts }: { contracts: Contract[]; loading: boolean }) 
   const [idB, setIdB] = useState('');
   const [result, setResult] = useState<{ diffs: any[]; stats: any } | null>(null);
   const [comparing, setComparing] = useState(false);
+  const [progress, setProgress] = useState('');
 
   async function handleCompare() {
     if (!idA || !idB) { showToast('请选择两份合同', 'warning'); return; }
+    if (idA === idB) { showToast('请选择两份不同的合同', 'warning'); return; }
     setComparing(true);
+    setResult(null);
+
+    const stages = ['正在加载合同条款...', '正在逐条比对分析...', '正在识别差异类型...', '正在评估条款利弊...', '正在生成比对报告...'];
+    let i = 0;
+    setProgress(stages[0]);
+    const timer = setInterval(() => { i++; if (i < stages.length) setProgress(stages[i]); }, 3000);
+
     try {
       const res = await contractApi.compare(idA, idB);
+      clearInterval(timer);
+      setProgress('');
       setResult(res);
     } catch (e: any) {
+      clearInterval(timer);
+      setProgress('');
       showToast(e.message || '比对失败', 'error');
     } finally {
       setComparing(false);
@@ -303,7 +334,7 @@ function CompareTab({ contracts }: { contracts: Contract[]; loading: boolean }) 
   }
 
   return (
-    <div>
+    <div data-section="contract-tab-compare">
       <div className="form-row">
         <div className="form-group">
           <label className="form-label">合同 A</label>
@@ -324,20 +355,26 @@ function CompareTab({ contracts }: { contracts: Contract[]; loading: boolean }) 
         {comparing ? '比对中...' : '开始比对'}
       </button>
 
+      {progress && <div className="progress-card"><span className="spinner" /> {progress}</div>}
+
       {result && (
         <div style={{ marginTop:'1rem' }}>
           <div className="stats-grid">
-            <div className="stat-card"><div className="value">{result.stats?.total || 0}</div><div className="label">总条款</div></div>
-            <div className="stat-card"><div className="value">{result.stats?.identical || 0}</div><div className="label">一致</div></div>
-            <div className="stat-card"><div className="value">{result.stats?.formal || 0}</div><div className="label">形式差异</div></div>
-            <div className="stat-card"><div className="value">{result.stats?.substantive || 0}</div><div className="label">实质性差异</div></div>
+            <div className="stat-card"><div className="value">{result.total_clauses || 0}</div><div className="label">总条款</div></div>
+            <div className="stat-card"><div className="value">{result.identical || 0}</div><div className="label">一致</div></div>
+            <div className="stat-card"><div className="value">{result.formal_diff || 0}</div><div className="label">形式差异</div></div>
+            <div className="stat-card"><div className="value">{result.substantive_diff || 0}</div><div className="label">实质性差异</div></div>
           </div>
-          {(result.diffs || []).filter((d: any) => d.type !== 'identical').map((d: any, i: number) => (
+          {(result.differences || []).filter((d: any) => d.type !== '一致' && d.type !== 'identical').map((d: any, i: number) => {
+            const typeLabel = d.type === 'substantive' ? '实质性差异' : d.type === 'formal' ? '形式差异' : d.type === 'identical' ? '一致' : (d.type || '差异');
+            const favorLabel = d.favor === '甲方' || d.favor === '乙方' || d.favor === '无' ? d.favor : '';
+            return (
             <div key={i} className="card" style={{ marginBottom:'.5rem' }}>
-              <strong>{d.clause || '条款'} — {d.type}</strong>
-              <p style={{ marginTop:'.25rem', color:'var(--text-secondary)' }}>{d.detail} {d.favor ? `(对${d.favor}有利)` : ''}</p>
+              <strong>{d.clause || '条款'} — {typeLabel}</strong>
+              <p style={{ marginTop:'.25rem', color:'var(--text-secondary)' }}>{d.detail}{favorLabel ? `（对${favorLabel}有利）` : ''}</p>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
@@ -369,7 +406,7 @@ function GenerateTab() {
   }
 
   return (
-    <div>
+    <div data-section="contract-tab-generate">
       <div className="form-row">
         <div className="form-group">
           <label className="form-label">合同类型</label>

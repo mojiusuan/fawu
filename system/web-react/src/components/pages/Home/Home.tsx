@@ -9,12 +9,12 @@ export default function Home() {
   if (!user) return null;
 
   return (
-    <div className="page-section">
+    <div className="page-section" data-section="home">
       <h2 className="page-title">系统首页</h2>
       <p className="page-desc">欢迎回来，{user.display_name}</p>
 
       {/* Stats Grid */}
-      <div className="stats-grid">
+      <div className="stats-grid" data-section="home-stats">
         <div className="stat-card">
           <div className="icon">📄</div>
           <div className="value">合同管理</div>
@@ -36,7 +36,7 @@ export default function Home() {
       <RoleDashboard role={user.role} navigate={navigate} />
 
       {/* System Info */}
-      <div className="card" style={{ marginTop:'1.5rem' }}>
+      <div className="card" style={{ marginTop:'1.5rem' }} data-section="home-system-info">
         <div className="tabs">
           <button className="tab active">AI 引擎</button>
           <button className="tab">技术架构</button>
@@ -66,7 +66,7 @@ function RoleDashboard({ role, navigate }: { role: Role; navigate: (path: string
   switch (role) {
     case 'business':
       return (
-        <div className="home-grid">
+        <div className="home-grid" data-section="home-role-dashboard">
           <div className="card">
             <h3 style={{ marginBottom:'.75rem' }}>📋 我的合同</h3>
             <p style={{ color:'var(--text-secondary)', fontSize:'.88rem', marginBottom:'1rem' }}>
@@ -91,7 +91,7 @@ function RoleDashboard({ role, navigate }: { role: Role; navigate: (path: string
 
     case 'legal':
       return (
-        <div className="home-grid">
+        <div className="home-grid" data-section="home-role-dashboard">
           <div className="card">
             <h3 style={{ marginBottom:'.75rem' }}>📌 待办任务</h3>
             <p style={{ color:'var(--text-secondary)', fontSize:'.88rem', marginBottom:'1rem' }}>
@@ -116,7 +116,7 @@ function RoleDashboard({ role, navigate }: { role: Role; navigate: (path: string
 
     case 'auditor':
       return (
-        <div className="home-grid">
+        <div className="home-grid" data-section="home-role-dashboard">
           <div className="card">
             <h3 style={{ marginBottom:'.75rem' }}>🔍 审计概览</h3>
             <p style={{ color:'var(--text-secondary)', fontSize:'.88rem', marginBottom:'1rem' }}>
@@ -141,7 +141,7 @@ function RoleDashboard({ role, navigate }: { role: Role; navigate: (path: string
 
     case 'admin':
       return (
-        <div className="home-grid">
+        <div className="home-grid" data-section="home-role-dashboard">
           <div className="card">
             <h3 style={{ marginBottom:'.75rem' }}>⚙️ 系统管理</h3>
             <p style={{ color:'var(--text-secondary)', fontSize:'.88rem', marginBottom:'1rem' }}>
