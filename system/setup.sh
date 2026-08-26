@@ -26,11 +26,11 @@ echo "[OK] venv"
 
 echo ""
 echo "[2/7] Installing Python dependencies..."
-PIP_INDEX="${PIP_INDEX:-https://pypi.tuna.tsinghua.edu.cn/simple}"
-pip install -r requirements.txt -i "$PIP_INDEX" || {
+PIP_INDEX="${PIP_INDEX:-https://mirrors.aliyun.com/pypi/simple/}"
+pip install -r requirements.txt -i "$PIP_INDEX" --timeout 120 --retries 5 || {
     echo ""
     echo "[ERROR] pip install failed."
-    echo "  China:  PIP_INDEX=https://mirrors.aliyun.com/pypi/simple/ ./setup.sh"
+    echo "  China:  PIP_INDEX=https://mirrors.cloud.tencent.com/pypi/simple/ ./setup.sh"
     echo "  Global: PIP_INDEX=https://pypi.org/simple/ ./setup.sh"
     exit 1
 }

@@ -35,12 +35,12 @@ echo [OK] venv
 
 echo.
 echo [2/7] Installing Python dependencies...
-set PIP_INDEX=https://pypi.tuna.tsinghua.edu.cn/simple
-pip install -r requirements.txt -i %PIP_INDEX%
+set PIP_INDEX=https://mirrors.aliyun.com/pypi/simple/
+pip install -r requirements.txt -i %PIP_INDEX% --timeout 120 --retries 5
 if errorlevel 1 (
     echo.
     echo [ERROR] pip install failed. Try:
-    echo   pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/
+    echo   pip install -r requirements.txt -i https://mirrors.cloud.tencent.com/pypi/simple/ --timeout 120 --retries 5
     pause
     exit /b 1
 )
