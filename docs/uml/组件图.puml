@@ -1,0 +1,139 @@
+@startuml 组件图
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontSize 14
+skinparam ArrowColor #1B2A4A
+skinparam ArrowThickness 1.8
+skinparam componentBackgroundColor #FFFFFF
+skinparam componentBorderColor #5B6E8A
+skinparam componentBorderThickness 1.5
+skinparam componentFontSize 13
+skinparam interfaceBackgroundColor #FDF8ED
+skinparam interfaceBorderColor #C4A35A
+skinparam databaseBackgroundColor #E8EDF2
+skinparam databaseBorderColor #3A6B8C
+skinparam packageBackgroundColor #FFFFFF
+skinparam packageBorderColor #5B6E8A
+skinparam packageFontSize 15
+skinparam linetype ortho
+skinparam nodesep 200
+skinparam ranksep 220
+skinparam padding 20
+scale 1.2
+
+title 智能法务系统 — 组件图
+
+package "Web 前端 (SPA)" #F5F0E8 {
+  [index.html] as HTML
+  [js/app.js] as AppJS
+  [css/style.css] as CSS
+}
+
+package "FastAPI 应用层" #E8EDF2 {
+
+  package "业务路由" #F7F3EB {
+    [contract_service\n/routes.py] as ContractRoutes
+    [consultation_service\n/routes.py] as ConsultRoutes
+    [case_routes.py] as CaseRoutes
+    [calculator_routes.py] as CalcRoutes
+    [template_routes.py] as TplRoutes
+    [evidence_routes.py] as EvidRoutes
+    [topic_routes.py] as TopicRoutes
+  }
+
+  package "系统路由" #F0EDE5 {
+    [auth_service\n/routes.py] as AuthRoutes
+    [settings_routes.py] as SettingsRoutes
+    [knowledge_routes.py] as KBRoutes
+    [rpa_routes.py] as RPARoutes
+    [export_routes.py] as ExportRoutes
+  }
+
+  package "业务服务" #DCE5D8 {
+    [contract_service\n/agent.py] as ContractAgent
+    [consultation_service\n/agent.py] as ConsultAgent
+    [case_analysis_service\n/analyzer.py] as CaseAnalyzer
+    [case_service.py] as CaseService
+    [calculator_service.py] as CalcService
+    [document_service.py] as DocService
+    [evidence_service.py] as EvidService
+    [topic_service.py] as TopicService
+  }
+
+  package "基础设施" #F0ECF5 {
+    [rag_service\n/retriever.py] as HybridRetriever
+    [rag_service\n/embedder.py] as Embedder
+    [knowledge_graph\n/] as KGSvc
+    [agent_service\n/orchestrator.py] as AgentOrch
+    [agent_service\n/rpa_agent.py] as RPAAgent
+    [audit_service\n/logger.py] as AuditLogger
+    [auth_service\n/user_store.py] as UserStore
+    [utils/llm_client.py] as LLMClient
+  }
+}
+
+cloud "LLM API\n(DeepSeek/Claude/GPT)" as LLMCloud
+cloud "Neo4j\n图数据库" as Neo4jCloud
+
+database "ChromaDB\n向量库" as ChromaDB
+database "Whoosh\n全文索引" as Whoosh
+database "JSON 文件\n(contracts/users/...)" as JSONStore
+folder "logs/" as LogFiles
+folder "prompts/" as PromptsDir
+folder "knowledge/" as KBDir
+
+' ═══════════════ 前端 → 后端 ═══════════════
+HTML --> AppJS : <script>
+HTML --> CSS : <link>
+AppJS --> ContractRoutes : HTTP REST
+
+' ═══════════════ 路由 → 服务 ═══════════════
+ContractRoutes --> ContractAgent
+ConsultRoutes --> ConsultAgent
+CaseRoutes --> CaseService
+CaseRoutes --> CaseAnalyzer
+CalcRoutes --> CalcService
+TplRoutes --> DocService
+EvidRoutes --> EvidService
+TopicRoutes --> TopicService
+AuthRoutes --> UserStore
+ExportRoutes --> ContractAgent
+RPARoutes --> RPAAgent
+KBRoutes --> HybridRetriever
+KBRoutes --> Embedder
+SettingsRoutes --> LLMClient
+
+' ═══════════════ 服务 → 基础设施 ═══════════════
+ContractAgent --> LLMClient
+ContractAgent --> HybridRetriever
+ConsultAgent --> LLMClient
+ConsultAgent --> HybridRetriever
+CaseAnalyzer --> LLMClient
+CaseAnalyzer --> HybridRetriever
+AgentOrch --> LLMClient
+RPAAgent --> LLMClient
+KGSvc --> LLMClient
+Embedder --> LLMClient
+
+ContractAgent --> AuditLogger
+ConsultAgent --> AuditLogger
+HybridRetriever --> AuditLogger
+RPAAgent --> AuditLogger
+AgentOrch --> AuditLogger
+
+' ═══════════════ 外部与存储 ═══════════════
+LLMClient --> LLMCloud : HTTPS
+KGSvc --> Neo4jCloud : bolt://
+
+HybridRetriever --> ChromaDB
+HybridRetriever --> Whoosh
+HybridRetriever --> KBDir : 初始化读取
+
+ContractAgent --> JSONStore : 读写合同
+UserStore --> JSONStore : 读写用户
+CaseService --> JSONStore : 读写案件
+
+AuditLogger --> LogFiles : 追加写入
+LLMClient --> PromptsDir : 读取模板
+
+@enduml

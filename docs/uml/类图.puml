@@ -18,32 +18,21 @@ skinparam packageBorderColor #5B6E8A
 skinparam packageFontSize 14
 skinparam packageFontStyle bold
 skinparam linetype ortho
-skinparam nodesep 90
-skinparam ranksep 100
+skinparam nodesep 95
+skinparam ranksep 105
 skinparam padding 14
-scale 1.0
+scale 1.05
 
-title 智能法务系统 — 完整类图
+title 智能法务系统 — 核心类图
 
-package "全局配置" #FDF8ED {
-  class Settings {
-    + LLM_PROVIDER : str
-    + llm_model : str
-    + NEO4J_URI : str
-    + JWT_SECRET_KEY : str
-    + ensure_directories()
+package "认证授权" #E8EDF2 {
+  class UserInfo {
+    + id : str
+    + username : str
+    + role : Role
+    + created_at : datetime
   }
 
-  class SettingsUpdate {
-    + llm_provider : str
-    + deepseek_api_key : str
-    + anthropic_api_key : str
-    + openai_api_key : str
-    + llm_temperature : float
-  }
-}
-
-package "认证授权 (auth_service)" #E8EDF2 {
   enum Role {
     admin
     legal
@@ -51,51 +40,15 @@ package "认证授权 (auth_service)" #E8EDF2 {
     auditor
   }
 
-  class UserInfo {
-    + id : str
-    + username : str
-    + display_name : str
-    + role : Role
-    + created_at : str
-  }
-
   class UserStore {
-    + get_by_username()
-    + create_user()
-    + list_users()
-    + delete_user()
-    + update_user()
-  }
-
-  class UserCreateRequest {
-    + username : str
-    + password : str
-    + display_name : str
-    + role : Role
-  }
-
-  class LoginRequest {
-    + username : str
-    + password : str
-  }
-
-  class LoginResponse {
-    + access_token : str
-    + token_type : str
-    + user : UserInfo
+    + get_by_username(username) : UserInfo
+    + create_user(...) : UserInfo
+    + list_users() : list[UserInfo]
+    + delete_user(id) : bool
   }
 }
 
-package "合同管理 (contract_service)" #F5F0E8 {
-  enum ContractType {
-    买卖合同
-    租赁合同
-    服务合同
-    劳动合同
-    借款合同
-    其他
-  }
-
+package "合同管理" #F5F0E8 {
   enum RiskLevel {
     high
     medium
@@ -109,15 +62,15 @@ package "合同管理 (contract_service)" #F5F0E8 {
     + contract_type : str
     + party_a : str
     + party_b : str
-    + content : str
+    + content : text
     + review_status : str
     + clauses : ClauseInfo[]
-    + created_at : str
+    + created_at : datetime
   }
 
   class ClauseInfo {
     + clause_number : str
-    + content : str
+    + content : text
     + risk_level : RiskLevel
     + risk_analysis : str
     + law_basis : str
@@ -125,385 +78,249 @@ package "合同管理 (contract_service)" #F5F0E8 {
   }
 
   class ContractService {
-    + create_contract()
-    + get_contract()
-    + list_contracts()
-    + parse_clauses()
-    + build_review_result()
-    + build_compare_result()
+    + create_contract(...) : ContractInfo
+    + get_contract(id) : ContractInfo
+    + list_contracts() : list
+    + parse_clauses(text) : ClauseInfo[]
+    + build_review_result(...) : ReviewResult
   }
 
   class ContractAgent {
     - client : LLMClient
-    + review_contract()
-    + compare_contracts()
-    + generate_contract()
+    + review_contract(...) : tuple
+    + compare_contracts(...) : list
+    + generate_contract(...) : str
   }
 
   class ContractReviewResult {
-    + contract_id : str
     + high_risks : int
     + medium_risks : int
     + low_risks : int
     + clauses : ClauseInfo[]
-    + suggestions : str
     + audit_id : str
-  }
-
-  class ContractCompareResult {
-    + contract_a_title : str
-    + contract_b_title : str
-    + total_clauses : int
-    + identical : int
-    + formal_diff : int
-    + substantive_diff : int
-    + differences : list
-  }
-
-  class ContractGenerateResult {
-    + title : str
-    + content : str
-    + warnings : list
   }
 }
 
-package "法律咨询 (consultation_service)" #DCE5D8 {
+package "法律咨询" #DCE5D8 {
   class ConsultationService {
-    + add_history()
-    + get_history()
+    + add_history(q, s) : void
+    + get_history() : list
   }
 
   class ConsultationAgent {
     - client : LLMClient
-    + ask()
-  }
-
-  class AskRequest {
-    + question : str
-    + source_type : str
+    + ask(question, source, user) : tuple
   }
 
   class AskResponse {
-    + question : str
     + answer : str
     + search_results : list
-    + law_basis : list
+    + law_basis : list[str]
     + audit_id : str
-    + disclaimer : str
-  }
-
-  class SearchResult {
-    + article : str
-    + excerpt : str
-    + source : str
-    + date : str
-    + relevance : str
   }
 
   class ConsultationHistory {
     + id : str
-    + question : str
-    + answer_summary : str
-    + timestamp : str
-  }
-
-  class SearchRequest {
-    + query : str
-    + source_type : str
-    + top_k : int
-  }
-
-  class SearchResponse {
-    + query : str
-    + results : list
-    + total : int
+    + question : text
+    + answer_summary : text
+    + timestamp : datetime
   }
 }
 
-package "案件分析 (case_analysis_service)" #FDF8ED {
+package "RAG 检索引擎" #D6E0EB {
+  class HybridRetriever {
+    - _chroma_client
+    - _whoosh_index
+    + search(query, type, top_k) : list
+    + index_documents(chunks) : int
+    + search_laws(query, k) : list
+    + search_cases(query, k) : list
+  }
+
+  class EmbeddingService {
+    - client : LLMClient
+    + embed_query(text) : vector
+    + embed_chunks(chunks) : list[vector]
+  }
+
+  class CitationFormatter {
+    + format_search_result(r) : dict
+    + format_law_citation(r) : str
+  }
+
+  class LegalDocumentParser {
+    + parse(file_path) : list
+    + parse_to_documents(path) : list
+  }
+}
+
+package "Agent 编排" #F0ECF5 {
+  class AgentOrchestrator {
+    - client : LLMClient
+    - graph : StateGraph
+    + run(user_input) : dict
+  }
+
+  class AgentState {
+    + user_input : str
+    + task_type : str
+    + next_agent : str
+    + context : dict
+    + result : str
+    + finished : bool
+  }
+
+  class RPAAgent {
+    - client : LLMClient
+    + extract_contract_data(path) : dict
+    + fill_form(fields, data) : dict
+  }
+}
+
+package "案件分析" #FDF8ED {
   class CaseService {
-    + create()
-    + get()
-    + list_by_user()
-    + update()
-    + delete()
+    + create(user, name, type, desc) : dict
+    + get(id) : dict
+    + list_by_user(uid, status) : list
+    + update(id, ...) : dict
+    + delete(id) : bool
   }
 
   class CaseAnalyzer {
     - client : LLMClient
-    + analyze()
-    + get_analysis()
-    + get_case_types()
+    + analyze(type, facts, id, user) : dict
+    + get_analysis(id) : dict
   }
 
   class CaseMatcher {
-    + match_by_case_type()
-    + rerank_cases()
+    + match_by_case_type(type, facts) : list
+    + rerank_cases(query, rag, kg) : list
   }
 
   class CaseProfileInfo {
     + case_id : str
     + case_name : str
     + case_type : str
-    + description : str
+    + description : text
     + status : str
     + structured_facts : dict
-    + user_id : str
-  }
-
-  class AnalysisRequest {
-    + case_type : str
-    + structured_facts : dict
-  }
-
-  class AnalysisResponse {
-    + analysis_id : str
-    + summary : str
-    + legal_basis : list
-    + risk_assessment : dict
-    + similar_cases : list
-    + evidence_checklist : list
-    + fee_estimate : dict
-    + limitation_check : dict
-    + disclaimer : str
   }
 }
 
-package "RAG 检索引擎 (rag_service)" #D6E0EB {
-  class HybridRetriever {
-    - _chroma_client
-    - _whoosh_index
-    + search()
-    + index_documents()
-    + search_laws()
-    + search_cases()
-  }
-
-  class EmbeddingService {
-    - client : LLMClient
-    + embed_query()
-    + embed_chunks()
-  }
-
-  class CitationFormatter {
-    + format_search_result()
-    + format_law_citation()
-    + format_case_citation()
-  }
-
-  class LegalDocumentParser {
-    + parse()
-    + parse_to_documents()
-  }
-}
-
-package "Agent 编排 (agent_service)" #F0ECF5 {
-  class AgentOrchestrator {
-    - client : LLMClient
-    - graph : StateGraph
-    + run()
-    - _supervisor_node()
-    - _contract_node()
-    - _consultation_node()
-    - _route()
-  }
-
-  class RPAAgent {
-    - client : LLMClient
-    + extract_contract_data()
-    + fill_form()
-    + batch_extract_key_clauses()
-  }
-
-  class AgentState {
-    + user_input : str
-    + task_type : str
-    + messages : list
-    + next_agent : str
-    + context : dict
-    + result : str
-    + finished : bool
-  }
-}
-
-package "知识图谱 (knowledge_graph)" #E8D5C0 {
+package "知识图谱" #E8D5C0 {
   class GraphBuilder {
     - driver : Neo4jDriver
-    + build_from_documents()
-    + build_from_case_data()
-    + create_entity()
-    + create_relationship()
-    + get_stats()
+    + build_from_documents(docs) : int
+    + create_entity(type, props) : str
+    + create_relationship(...) : void
+    + get_stats() : dict
   }
 
   class KnowledgeExtractor {
     - client : LLMClient
-    + extract_from_text()
-    + extract_from_contract()
-    + extract_from_case()
-    + extract_from_law_document()
+    + extract_from_text(text) : dict
+    + extract_from_contract(title, clauses) : dict
+    + extract_from_case(data) : dict
   }
 
   class KGQuery {
-    - driver : Neo4jDriver
     + is_available : bool
-    + search_fulltext()
-    + query_entity()
-    + query_relations()
-    + find_related_articles()
-    + find_case_precedents()
-  }
-
-  class Law {
-    + name : str
-    + issuing_body : str
-    + effective_date : str
-    + law_type : str
-  }
-
-  class Case {
-    + title : str
-    + case_number : str
-    + court : str
-    + case_type : str
-    + parties : list
-    + facts : str
-    + verdict : str
-    + case_date : str
-  }
-
-  class LegalConcept {
-    + name : str
-    + definition : str
-    + related_laws : list
-  }
-
-  class Court {
-    + name : str
-    + level : str
-    + jurisdiction : str
-  }
-
-  class RiskPoint {
-    + risk_type : str
-    + level : str
-    + description : str
-    + law_basis : str
-    + suggestion : str
-  }
-
-  class GraphQueryResult {
-    + entities : list
-    + relationships : list
+    + search_fulltext(keyword) : list
+    + query_entity(type, id) : dict
+    + find_case_precedents(article) : list
   }
 }
 
-package "审计服务 (audit_service)" #F0EDE5 {
+package "审计服务" #F0EDE5 {
   class AuditLogger {
-    + log()
-    + log_rag_query()
-    + log_prompt_usage()
-    + get_all_logs()
-    + get_stats()
-    + query()
+    + log(user, task, model, ...) : str
+    + log_rag_query(q, source, count) : void
+    + get_all_logs(limit) : list
+    + get_stats() : dict
   }
 
   class AuditReporter {
-    + generate_report()
-    + export()
+    + generate_report() : str
+    + export(format) : str
   }
 }
 
-package "工具服务" #E8EDF2 {
-  class CalculatorService {
-    + calc_court_fee()
-    + calc_compensation()
-    + check_limitation()
-  }
-
-  class DocumentService {
-    + list_templates()
-    + get_template()
-    + assemble()
-  }
-
-  class EvidenceService {
-    + get_guide()
-    + list_case_types_with_guides()
-  }
-
-  class TopicService {
-    + list_topics()
-    + get_topic()
-    + search()
-  }
-}
-
-package "基础设施 (utils)" #F7F3EB {
+package "基础设施" #F7F3EB {
   class LLMClient {
     - provider : str
     - model : str
-    + generate()
-    + embed_query()
-    + embed_texts()
+    + generate(system, user, temp) : tuple
+    + embed_query(text) : vector
+    + embed_texts(texts) : list[vector]
   }
 
-  class LocalEmbedding {
-    + embed_query()
-    + embed_documents()
-    + aembed_query()
-    + aembed_documents()
+  class Settings {
+    + LLM_PROVIDER : str
+    + llm_model : str
+    + NEO4J_URI : str
+    + JWT_SECRET_KEY : str
+    + ensure_directories() : void
   }
 }
 
 ' ═══════════════ 关系 ═══════════════
+' 泛化 Generalization       ————▷  子类→父类（实线+空心三角）
+' 依赖 Dependency           ----▷  使用类→被依赖类（虚线+箭头）
+' 关联 Association          ————▷  单向关联（实线+箭头）
+' 组合 Composition          ◆————  部分→整体（实线+实心菱形）
+' 聚合 Aggregation          ◇————  部分→整体（实线+空心菱形）
 
-Settings ..> LLMClient : 配置
+' ── 认证授权 ──
+UserInfo "1" ..> "1" Role : 类型引用
+UserStore "1" --> "0..*" UserInfo : 管理
 
-UserStore --> UserInfo : 管理
-UserInfo --> Role
-LoginResponse --> UserInfo
-UserCreateRequest --> Role
+' ── 用户关联各业务模块 ──
+UserInfo "1" ..> "0..*" ContractService : 发起
+UserInfo "1" ..> "0..*" ConsultationService : 发起
+UserInfo "1" ..> "0..*" CaseService : 发起
+UserInfo "1" ..> "0..*" AuditLogger : 操作追溯
 
-ContractService --> ContractAgent : 委托
-ContractService --> ContractInfo : 管理
-ContractService ..> ContractReviewResult
-ContractService ..> ContractCompareResult
-ContractService ..> ContractGenerateResult
-ContractInfo *-- ClauseInfo
-ClauseInfo --> RiskLevel
-ContractAgent ..> LLMClient : 调用
+' ── 全局配置 ──
+Settings "1" ..> "1" LLMClient : 创建与配置
 
-ConsultationService --> ConsultationAgent : 委托
-ConsultationAgent ..> LLMClient : 调用
-ConsultationAgent --> HybridRetriever
-AskResponse --> SearchResult
+' ── 合同管理 ──
+ContractService "1" --> "1" ContractAgent : 委托审查
+ContractService "1" --> "0..*" ContractInfo : 管理
+ContractInfo "1" *-- "1..*" ClauseInfo : 组合（内嵌JSON）
+ClauseInfo "0..*" ..> "1" RiskLevel : 类型引用
+ContractService "1" ..> "0..*" ContractReviewResult : 产出
+ContractAgent "1" ..> "1" LLMClient : 调用
 
-ConsultationService --> ConsultationHistory
+' ── 法律咨询 ──
+ConsultationService "1" --> "1" ConsultationAgent : 委托问答
+ConsultationService "1" --> "0..*" ConsultationHistory : 管理
+ConsultationAgent "1" ..> "1" LLMClient : 调用
+ConsultationAgent "1" --> "1" HybridRetriever : RAG检索
 
-CaseService --> CaseAnalyzer : 委托
-CaseService --> CaseMatcher : 委托
-CaseAnalyzer ..> LLMClient : 调用
+' ── 案件分析 ──
+CaseService "1" --> "1" CaseAnalyzer : 委托分析
+CaseService "1" --> "1" CaseMatcher : 委托匹配
+CaseService "1" --> "0..*" CaseProfileInfo : 管理
+CaseAnalyzer "1" ..> "1" LLMClient : 调用
 
-HybridRetriever --> EmbeddingService
-HybridRetriever --> CitationFormatter
-EmbeddingService ..> LLMClient : 调用
-LocalEmbedding <|-- LLMClient : 备选
+' ── RAG 引擎 ──
+HybridRetriever "1" --> "1" EmbeddingService : 向量化
+HybridRetriever "1" --> "1" CitationFormatter : 格式化
+EmbeddingService "1" ..> "1" LLMClient : 调用
 
-AgentOrchestrator ..> LLMClient : 调用
-AgentOrchestrator --> AgentState
-RPAAgent ..> LLMClient : 调用
+' ── Agent 编排 ──
+AgentOrchestrator "1" ..> "1" LLMClient : 调用
+AgentOrchestrator "1" --> "1..*" AgentState : 管理状态
+RPAAgent "1" ..> "1" LLMClient : 调用
 
-GraphBuilder --> KnowledgeExtractor : 依赖
-KnowledgeExtractor ..> LLMClient : 调用
-GraphBuilder --> KGQuery : 填充
+' ── 知识图谱 ──
+GraphBuilder "1" --> "1" KnowledgeExtractor : 实体抽取
+KnowledgeExtractor "1" ..> "1" LLMClient : 调用
+GraphBuilder "1" --> "1" KGQuery : 填充索引
 
-AuditLogger ..> ContractAgent : 记录
-AuditLogger ..> ConsultationAgent : 记录
-AuditLogger ..> HybridRetriever : 记录
-
-CalculatorService ..> Settings : 读规则配置
-DocumentService ..> Settings : 读模板配置
-EvidenceService ..> Settings : 读指引配置
+' ── 审计 ──
+AuditLogger "1" ..> "0..*" ContractAgent : 记录
+AuditLogger "1" ..> "0..*" ConsultationAgent : 记录
+AuditLogger "1" ..> "0..*" HybridRetriever : 记录
 
 @enduml
